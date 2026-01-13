@@ -57,41 +57,52 @@ jobs:
           
           # 处理所有可能的提问
           expect {
-              # [高优先级] 处理 Provider 和 Kernel 选择
-              # 源码确认：直接回车会选择默认值 (Default/Mainline)
-              -re {.*Provider.*} { send "\r"; exp_continue }
-              -re {.*Kernel.*}   { send "\r"; exp_continue }
+              # [Revision 11] 全面重构：使用严谨的正则匹配 Prompt (以 : 结尾)
+              # 目的：防止脚本错误地匹配到日志信息 (如 "Available user interfaces") 导致提前/重复发送输入
 
-              # 使用正则 (-re) 忽略 ANSI 颜色代码和前缀干扰
-              -re {.*Work path.*} { send "\r"; exp_continue }
-              -re {.*pmaports.*} { send "\r"; exp_continue }
+              # --- High Priority / Dynamic Prompts ---
               
-              "Channel" { send "edge\r"; exp_continue }
-              "Vendor" { send "xiaomi\r"; exp_continue }
-              "Device codename" { send "sagit\r"; exp_continue }
-              "User interface" { send "console\r"; exp_continue }
+              # Provider & Kernel: 允许默认值
+              -re {Provider.*:\s*$} { send "\r"; exp_continue }
+              -re {Kernel.*:\s*$}   { send "\r"; exp_continue }
+
+              # Work path & pmaports: 忽略颜色代码
+              -re {Work path.*:\s*$} { send "\r"; exp_continue }
+              -re {pmaports path.*:\s*$} { send "\r"; exp_continue }
+
+              # --- Standard Prompts ---
+
+              -re {Channel.*:\s*$} { send "edge\r"; exp_continue }
+              -re {Vendor.*:\s*$} { send "xiaomi\r"; exp_continue }
+              -re {Device codename.*:\s*$} { send "sagit\r"; exp_continue }
+              -re {User interface.*:\s*$} { send "console\r"; exp_continue }
+
+              # Systemd: 必须回车 (Default)
+              -re {Install systemd.*:\s*$} { send "\r"; exp_continue }
+
+              # Additional Options: 统一选 No (Change them?)
+              -re {Change them.*:\s*$} { send "n\r"; exp_continue }
+
+              # Specific options (should be skipped if "Change them" works, but kept as safeguard)
+              -re {Extra space.*:\s*$} { send "\r"; exp_continue }
+              -re {Boot size.*:\s*$} { send "\r"; exp_continue }
+              -re {Jobs.*:\s*$} { send "\r"; exp_continue }
+              -re {Ccache size.*:\s*$} { send "\r"; exp_continue }
+              -re {Sudo timer.*:\s*$} { send "\r"; exp_continue }
+              -re {Change mirror.*:\s*$} { send "\r"; exp_continue }
               
-              # Systemd 验证修复: 源码要求 ^(default|always|never)$
-              # 之前发送 "systemd" 是非法的。直接回车选择 [default] (即安装 systemd)
-              "Install systemd" { send "\r"; exp_continue }
+              # Misc Setup
+              -re {Use this timezone.*:\s*$} { send "\r"; exp_continue }
+              -re {Locale.*:\s*$} { send "\r"; exp_continue }
+              -re {Device hostname.*:\s*$} { send "\r"; exp_continue }
+              -re {SSH keys.*:\s*$} { send "\r"; exp_continue }
+              -re {Keymap.*:\s*$} { send "\r"; exp_continue }
+              -re {Enable this package.*:\s*$} { send "\r"; exp_continue }
               
-              "Extra space" { send "\r"; exp_continue }
-              "Boot size" { send "\r"; exp_continue }
-              "Jobs" { send "\r"; exp_continue }
-              "Ccache size" { send "\r"; exp_continue }
-              "Sudo timer" { send "\r"; exp_continue }
-              "Change mirror" { send "\r"; exp_continue }
-              "Timezone" { send "\r"; exp_continue }
-              "Locale" { send "\r"; exp_continue }
-              "Hostname" { send "\r"; exp_continue }
-              "SSH keys" { send "\r"; exp_continue }
-              "Keymap" { send "\r"; exp_continue }
-              "Enable this package" { send "\r"; exp_continue }
-              
-              # 匹配到 Change them? (Additional options) 时回答 no (默认)
-              "Change them" { send "n\r"; exp_continue }
-              
-              # 通用兜底策略 (正则匹配以 ]: 结尾)
+              # Zap chroots confirm
+              -re {Zap existing chroots.*:\s*$} { send "y\r"; exp_continue }
+
+              # 通用兜底 (以 ]: 结尾，且之前没被匹配到)
               -re {]:\s*$} { send "\r"; exp_continue }
 
               timeout { puts "Expect timeout!"; exit 1 }
