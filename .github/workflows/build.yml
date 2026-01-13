@@ -85,12 +85,13 @@ jobs:
           echo "=== Step 4: Verifying config ===" >> build.log
           pmbootstrap status >> build.log 2>&1 || echo "pmbootstrap status failed (expected if first run)" >> build.log
 
-      - name: Build Rootfs with Docker
+      - name: Build Rootfs with Docker (TWRP Zip)
         run: |
           set -o pipefail
           # --add: 预装 docker,docker-compose 等包
           # --password: CI 自动化安装时使用的虚拟密码 (明文，仅用于测试)
-          pmbootstrap install --add docker,docker-compose,nano,htop --password changeme 2>&1 | tee -a build.log
+          # --android-recovery-zip: 生成 TWRP 可直接刷入的 zip 包
+          pmbootstrap install --add docker,docker-compose,nano,htop --password changeme --android-recovery-zip 2>&1 | tee -a build.log
 
       - name: Upload Build Log on Failure
         if: failure()
