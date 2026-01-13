@@ -51,10 +51,15 @@ jobs:
           touch build.log
           
           # [Revision 17] 预初始化 Config 并强制刷新 pmaports
-          # 1. 初始化 Config (否则 pull 会报错 "Run init first")
-          # 2. 强制拉取最新的 pmaports (确保 edge 分支包含 testing 设备)
+          # 1. 初始化 Config
+          # 2. 强制拉取最新的 pmaports 并记录日志
           pmbootstrap config work ~/.local/var/pmbootstrap
-          pmbootstrap pull || true
+          echo "Executing: pmbootstrap pull" >> build.log
+          pmbootstrap pull >> build.log 2>&1 || echo "pmbootstrap pull failed" >> build.log
+          
+          # Debug: List pmaports directory to verify content
+          echo "Listing pmaports device directory:" >> build.log
+          ls -F ~/.local/var/pmbootstrap/cache_git/pmaports/device || echo "pmaports/device dir not found" >> build.log
 
           # 生成自动化交互脚本
           cat <<EOF > init.expect
