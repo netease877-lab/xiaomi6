@@ -100,8 +100,8 @@ jobs:
 
               # 使用 Edge 分支 (Testing 设备首选)
               -re {Channel.*:} { send "edge\r"; exp_continue }
-              -re {Vendor.*:} { send "xiaomi\r"; exp_continue }
-              -re {Device codename.*:} { send "sagit\r"; exp_continue }
+              -re {Vendor.*\[.*\]:} { send "xiaomi\r"; exp_continue }
+              -re {Device codename.*\[.*\]:} { send "sagit\r"; exp_continue }
               -re {User interface.*:} { send "console\r"; exp_continue }
 
               # Systemd
