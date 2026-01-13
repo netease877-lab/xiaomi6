@@ -88,13 +88,15 @@ jobs:
       - name: Build Rootfs with Docker (TWRP Zip)
         run: |
           set -o pipefail
-          # --add: 预装包 (精简版)
+          # --add: 预装包
           #   - docker,docker-compose,nano,htop: 用户需求
+          #   - firmware-xiaomi-sagit: Qualcomm WiFi/蓝牙固件
+          #   - pd-mapper,tqftpserv,qrtr,rmtfs: 主线内核 WiFi 所需服务
           # UI: fbkeyboard (Framebuffer 虚拟键盘，极致轻量)
           # --password: CI 自动化安装时使用的虚拟密码
           # --android-recovery-zip: 生成 TWRP 可直接刷入的 zip 包
           pmbootstrap install \
-            --add docker,docker-compose,nano,htop \
+            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs \
             --password changeme \
             --android-recovery-zip \
             2>&1 | tee -a build.log
@@ -103,6 +105,10 @@ jobs:
           echo "Disabling time-wait-sync service..." >> build.log
           pmbootstrap chroot -- systemctl disable systemd-time-wait-sync.service 2>&1 | tee -a build.log || true
           pmbootstrap chroot -- systemctl mask systemd-time-wait-sync.service 2>&1 | tee -a build.log || true
+          
+          # 配置 USB 网络使用 RNDIS (兼容 Windows 10)
+          echo "Configuring USB network to use RNDIS for Windows 10 compatibility..." >> build.log
+          pmbootstrap chroot -- sh -c 'mkdir -p /etc/deviceinfo.d && echo "deviceinfo_usb_network_function=rndis.usb0" > /etc/deviceinfo.d/usb_rndis.conf' 2>&1 | tee -a build.log || true
 
       - name: Upload Build Log on Failure
         if: failure()
