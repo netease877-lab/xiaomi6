@@ -45,104 +45,45 @@ jobs:
           # 验证版本
           pmbootstrap --version
 
-      - name: Initialize pmbootstrap (Robust Expect)
+      - name: Initialize pmbootstrap (Direct Config)
         run: |
-          mkdir -p ~/.config/pmbootstrap
+          mkdir -p ~/.config ~/.local/var/pmbootstrap/cache_git
           touch build.log
-          
-          # [Revision 19] 手动初始化环境 (Config + Pmaports)
-          # 1. 手动创建配置文件，绕过 config 命令的 "Run init first" 限制
-          mkdir -p ~/.config
-          echo "[pmbootstrap]" > ~/.config/pmbootstrap_v3.cfg
-          
-          # 2. 手动克隆 pmaports，确保 init 能直接找到设备
-          mkdir -p ~/.local/var/pmbootstrap/cache_git
-          echo "Cloning pmaports..." >> build.log
-          git clone --depth=1 https://gitlab.postmarketos.org/postmarketOS/pmaports.git ~/.local/var/pmbootstrap/cache_git/pmaports >> build.log 2>&1
-          
-          # 3. 验证环境 (Pull 应成功/跳过)
-          echo "Executing: pmbootstrap pull" >> build.log
-          pmbootstrap pull >> build.log 2>&1 || echo "pmbootstrap pull failed" >> build.log
 
-          # 生成自动化交互脚本
-          cat <<EOF > init.expect
-          set timeout 300
-          spawn pmbootstrap init
-          
-          # 处理所有可能的提问
-          # 开启 Expect 内部调试日志
-          exp_internal 1
+          # 1. 克隆 pmaports (master 分支，包含 edge 设备)
+          echo "=== Step 1: Cloning pmaports ===" >> build.log
+          git clone --depth=1 https://gitlab.postmarketos.org/postmarketOS/pmaports.git \
+              ~/.local/var/pmbootstrap/cache_git/pmaports >> build.log 2>&1
+          echo "pmaports cloned successfully" >> build.log
 
-          expect {
-              # [Revision 16] 回归 Edge 分支并强化稳定性:
-              # 1. 确认 sagit 是 Testing 设备，Edge 分支支持最完善。
-              #    之前的 "Device not found" 是因为 pmaports 没更新 (已由 pmbootstrap pull 修复)。
-              # 2. 保持 "Create new device port" 的熔断机制 (Exit 1)，防止脚本挂起。
-
-              # --- High Priority ---
-              -re {Provider.*:} { send "\r"; exp_continue }
-              -re {Kernel.*:}   { send "\r"; exp_continue }
-
-              # Work path & pmaports
-              -re {Work path.*:} { send "\r"; exp_continue }
-              -re {pmaports.*:} { send "\r"; exp_continue }
-              
-              # --- Dynamic Wizard Intercepts (Failure modes) ---
-              # 匹配 "Do you want to create a new device port?"
-              # 必须直接 exit 1 (Fail Fast)，让 CI 报错，而不是挂起。
-              -re {.*create a new device port.*:} { 
-                  puts "ERROR: Device not found in pmaports! Aborting."; 
-                  exit 1 
-              }
-              -re {Type\?.*:} { send "mainline\r"; exp_continue }
-
-              # --- Standard Prompts ---
-
-              # 使用 Edge 分支 (Testing 设备首选)
-              -re {Channel.*:} { send "edge\r"; exp_continue }
-              -re {Vendor.*\[.*\]:} { send "xiaomi\r"; exp_continue }
-              -re {Device codename.*\[.*\]:} { send "sagit\r"; exp_continue }
-              -re {User interface.*:} { send "console\r"; exp_continue }
-
-              # Systemd
-              -re {Install systemd.*:} { send "\r"; exp_continue }
-
-              # Additional Options
-              -re {Change them.*:} { send "n\r"; exp_continue }
-
-              # Specific options
-              -re {Extra space.*:} { send "\r"; exp_continue }
-              -re {Boot size.*:} { send "\r"; exp_continue }
-              -re {Jobs.*:} { send "\r"; exp_continue }
-              -re {Ccache size.*:} { send "\r"; exp_continue }
-              -re {Sudo timer.*:} { send "\r"; exp_continue }
-              -re {Change mirror.*:} { send "\r"; exp_continue }
-              
-              # Misc Setup
-              -re {Use this timezone.*:} { send "\r"; exp_continue }
-              -re {Locale.*:} { send "\r"; exp_continue }
-              -re {Device hostname.*:} { send "\r"; exp_continue }
-              -re {SSH keys.*:} { send "\r"; exp_continue }
-              -re {Keymap.*:} { send "\r"; exp_continue }
-              -re {Enable this package.*:} { send "\r"; exp_continue }
-              
-              # Zap chroots confirm
-              -re {Zap existing chroots.*:} { send "y\r"; exp_continue }
-
-              # 通用兜底 (去掉 \s*$ 锚点)
-              -re {]:} { send "\r"; exp_continue }
-
-              timeout { puts "Expect timeout!"; exit 1 }
-              eof
-          }
+          # 2. 直接生成完整配置文件 (无需 init 交互)
+          # 根据 pmb/core/config.py 源码，配置文件为 INI 格式
+          echo "=== Step 2: Generating config file ===" >> build.log
+          cat <<EOF > ~/.config/pmbootstrap_v3.cfg
+          [pmbootstrap]
+          device = xiaomi-sagit
+          ui = console
+          work = /home/runner/.local/var/pmbootstrap
+          hostname = mi6
+          user = user
+          systemd = default
+          extra_packages = docker,docker-compose,nano,htop
+          is_default_channel = False
+          aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports
           EOF
-          
-          # 执行脚本并捕获日志 (使用 set -o pipefail 确保错误不仅被记录还能传导)
-          set -o pipefail
-          (
-            chmod +x init.expect
-            expect init.expect
-          ) 2>&1 | tee -a build.log
+
+          echo "Config file content:" >> build.log
+          cat ~/.config/pmbootstrap_v3.cfg >> build.log
+
+          # 3. 初始化工作目录结构 (work_version = 8，来自 pmb/config/__init__.py)
+          echo "=== Step 3: Initializing work directory ===" >> build.log
+          mkdir -p ~/.local/var/pmbootstrap
+          echo "8" > ~/.local/var/pmbootstrap/version
+          echo "work directory initialized with version 8" >> build.log
+
+          # 4. 验证配置是否被正确读取
+          echo "=== Step 4: Verifying config ===" >> build.log
+          pmbootstrap status >> build.log 2>&1 || echo "pmbootstrap status failed (expected if first run)" >> build.log
 
       - name: Build Rootfs with Docker
         run: |
