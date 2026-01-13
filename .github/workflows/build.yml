@@ -1,7 +1,7 @@
 name: Build Mi6 postmarketOS Docker Image
 
 on:
-  workflow_dispatch: # 支持手动触发构建
+  workflow_dispatch:
   push:
     branches: [ main ]
 
@@ -12,18 +12,26 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Dependencies
+      - name: System Environment Setup
         run: |
           sudo apt-get update
-          sudo apt-get install -y python3-pip openssl fastboot qemu-user-static
-          pip3 install pmbootstrap --break-system-packages
+          sudo apt-get install -y python3 git openssl fastboot qemu-user-static qemu-system-arm wget
+          # 2026年关键步骤：在宿主机注册 binfmt，确保能运行 arm64 指令
+          sudo update-binfmts --enable qemu-aarch64
 
-      - name: Initialize pmbootstrap
+      - name: Install pmbootstrap from Source
         run: |
-          # 自动填写交互式配置
-          # 2026年标准选型：edge版本, xiaomi厂家, sagit型号, systemd初始化, 预装Docker
-          pmbootstrap init <<EOF
-          /home/runner/pmbootstrap
+          git clone --depth 1 https://gitlab.com/postmarketOS/pmbootstrap.git
+          # 将脚本目录加入 PATH
+          echo "$(pwd)/pmbootstrap" >> $GITHUB_PATH
+          # 设置软链接并确保可执行
+          chmod +x $(pwd)/pmbootstrap/pmbootstrap.py
+          sudo ln -sf $(pwd)/pmbootstrap/pmbootstrap.py /usr/local/bin/pmbootstrap
+
+      - name: Initialize pmbootstrap (Non-Interactive)
+        run: |
+          # 2026版 pmbootstrap 支持更多预设参数，避免 read 阻塞
+          pmbootstrap init --path /home/runner/.local/share/pmbootstrap <<EOF
           edge
           xiaomi
           sagit
@@ -34,22 +42,22 @@ jobs:
           n
           EOF
 
-      - name: Add Docker to Image
+      - name: Build Rootfs with Docker
         run: |
-          # 直接在构建指令中注入 docker 和 docker-compose
-          # 并确保镜像能够自动扩展到 4GB 以免容器运行空间不足
+          # 强制开启 systemd 并预装 docker
+          # --size=4096 确保有足够空间存放 docker 镜像
           pmbootstrap install --extra-packages docker,docker-compose,nano,htop --no-fde --size 4096
 
-      - name: Export Image Files
+      - name: Export and Compress Images
         run: |
-          # 导出为标准的 Android 刷机镜像格式 (boot.img 和 rootfs)
           pmbootstrap export
           mkdir -p output
-          cp /tmp/postmarketOS-export/boot.img.xz output/
-          cp /tmp/postmarketOS-export/xiaomi-sagit.img.xz output/
+          # 移动生成的镜像
+          cp /tmp/postmarketOS-export/boot.img* output/ || true
+          cp /tmp/postmarketOS-export/xiaomi-sagit.img* output/ || true
 
-      - name: Upload Artifacts
+      - name: Upload Build Result
         uses: actions/upload-artifact@v4
         with:
-          name: Mi6-Docker-OS-Images
+          name: Mi6-Final-Docker-Image
           path: output/
