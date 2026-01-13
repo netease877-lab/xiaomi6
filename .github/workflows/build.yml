@@ -60,9 +60,10 @@ jobs:
           exp_internal 1
 
           expect {
-              # [Revision 13] 进一步放宽正则:
-              # 1. pmaports path 可能因为换行或长路径导致匹配失败 -> 改为匹配 "pmaports.*:"
-              # 2. 通用兜底 "]:" 去掉行尾锚点，防止被隐形字符阻挡
+              # [Revision 14] 针对 "Device not found" 的修复:
+              # 1. 切换 Channel 为 stable (v24.12)，确保 sagit 设备可用
+              # 2. 增加对 "Create new device port?" 引导的拦截 (选 n)，防止死循环超时
+              # 3. 增加对 "Type? (mainline/downstream)" 的兜底
 
               # --- High Priority ---
               -re {Provider.*:} { send "\r"; exp_continue }
@@ -70,12 +71,18 @@ jobs:
 
               # Work path & pmaports
               -re {Work path.*:} { send "\r"; exp_continue }
-              # 简化 pmaports 匹配 (忽略 "path" 单字，防止空格/格式问题)
               -re {pmaports.*:} { send "\r"; exp_continue }
+              
+              # --- Dynamic Wizard Intercepts (Failure modes) ---
+              # 如果设备未找到，它会问是否新建。必须回答 n 以便报错退出，而不是挂起。
+              -re {Create new device port.*:} { send "n\r"; exp_continue }
+              # 如果它执意要问类型 (mainline/downstream)
+              -re {Type\?.*:} { send "mainline\r"; exp_continue }
 
               # --- Standard Prompts ---
 
-              -re {Channel.*:} { send "edge\r"; exp_continue }
+              # 切换到 Stable 分支，确保 sagit 存在
+              -re {Channel.*:} { send "v24.12\r"; exp_continue }
               -re {Vendor.*:} { send "xiaomi\r"; exp_continue }
               -re {Device codename.*:} { send "sagit\r"; exp_continue }
               -re {User interface.*:} { send "console\r"; exp_continue }
