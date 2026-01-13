@@ -57,15 +57,24 @@ jobs:
           
           # 处理所有可能的提问
           expect {
-              # [高优先级] 处理 Provider 选择 (如 Kernel/Userland 实现)
-              # 源码分析确认：直接回车会选择 "default"
+              # [高优先级] 处理 Provider 和 Kernel 选择
+              # 源码确认：直接回车会选择默认值 (Default/Mainline)
               -re {.*Provider.*} { send "\r"; exp_continue }
+              -re {.*Kernel.*}   { send "\r"; exp_continue }
 
+              # 使用正则 (-re) 忽略 ANSI 颜色代码和前缀干扰
+              -re {.*Work path.*} { send "\r"; exp_continue }
+              -re {.*pmaports.*} { send "\r"; exp_continue }
+              
               "Channel" { send "edge\r"; exp_continue }
               "Vendor" { send "xiaomi\r"; exp_continue }
               "Device codename" { send "sagit\r"; exp_continue }
               "User interface" { send "console\r"; exp_continue }
-              "Install systemd" { send "systemd\r"; exp_continue }
+              
+              # Systemd 验证修复: 源码要求 ^(default|always|never)$
+              # 之前发送 "systemd" 是非法的。直接回车选择 [default] (即安装 systemd)
+              "Install systemd" { send "\r"; exp_continue }
+              
               "Extra space" { send "\r"; exp_continue }
               "Boot size" { send "\r"; exp_continue }
               "Jobs" { send "\r"; exp_continue }
@@ -81,10 +90,6 @@ jobs:
               
               # 匹配到 Change them? (Additional options) 时回答 no (默认)
               "Change them" { send "n\r"; exp_continue }
-
-              # 使用正则 (-re) 忽略 ANSI 颜色代码和前缀干扰
-              -re {.*Work path.*} { send "\r"; exp_continue }
-              -re {.*pmaports.*} { send "\r"; exp_continue }
               
               # 通用兜底策略 (正则匹配以 ]: 结尾)
               -re {]:\s*$} { send "\r"; exp_continue }
