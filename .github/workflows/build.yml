@@ -1,0 +1,55 @@
+name: Build Mi6 postmarketOS Docker Image
+
+on:
+  workflow_dispatch: # 支持手动触发构建
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip openssl fastboot qemu-user-static
+          pip3 install pmbootstrap --break-system-packages
+
+      - name: Initialize pmbootstrap
+        run: |
+          # 自动填写交互式配置
+          # 2026年标准选型：edge版本, xiaomi厂家, sagit型号, systemd初始化, 预装Docker
+          pmbootstrap init <<EOF
+          /home/runner/pmbootstrap
+          edge
+          xiaomi
+          sagit
+          y
+          user
+          console
+          systemd
+          n
+          EOF
+
+      - name: Add Docker to Image
+        run: |
+          # 直接在构建指令中注入 docker 和 docker-compose
+          # 并确保镜像能够自动扩展到 4GB 以免容器运行空间不足
+          pmbootstrap install --extra-packages docker,docker-compose,nano,htop --no-fde --size 4096
+
+      - name: Export Image Files
+        run: |
+          # 导出为标准的 Android 刷机镜像格式 (boot.img 和 rootfs)
+          pmbootstrap export
+          mkdir -p output
+          cp /tmp/postmarketOS-export/boot.img.xz output/
+          cp /tmp/postmarketOS-export/xiaomi-sagit.img.xz output/
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mi6-Docker-OS-Images
+          path: output/
