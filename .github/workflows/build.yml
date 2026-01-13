@@ -47,10 +47,7 @@ jobs:
 
       - name: Initialize pmbootstrap (Robust Expect)
         run: |
-          mkdir -p ~/.config/pmbootstrap
-          touch build.log
-          
-          # 预先拉取最新的 pmaports，确保设备信息是最新的
+          # 预先拉取最新的 pmaports，确保设备信息是最新的 (尤其是 Edge 分支)
           pmbootstrap pull || true
 
           # 生成自动化交互脚本
@@ -63,10 +60,10 @@ jobs:
           exp_internal 1
 
           expect {
-              # [Revision 15] 修复 "Create new device port" 匹配和死循环:
-              # 1. 修正 Regex: 原来是 "Create new...", 实际是 "Do you want to create a new..."
-              # 2. 策略变更: 如果设备未找到，回答 n 会导致死循环 (ask again).
-              #    必须直接 exit 1 (Fail Fast)，让 CI 报错，而不是挂起。
+              # [Revision 16] 回归 Edge 分支并强化稳定性:
+              # 1. 确认 sagit 是 Testing 设备，Edge 分支支持最完善。
+              #    之前的 "Device not found" 是因为 pmaports 没更新 (已由 pmbootstrap pull 修复)。
+              # 2. 保持 "Create new device port" 的熔断机制 (Exit 1)，防止脚本挂起。
 
               # --- High Priority ---
               -re {Provider.*:} { send "\r"; exp_continue }
@@ -78,6 +75,7 @@ jobs:
               
               # --- Dynamic Wizard Intercepts (Failure modes) ---
               # 匹配 "Do you want to create a new device port?"
+              # 必须直接 exit 1 (Fail Fast)，让 CI 报错，而不是挂起。
               -re {.*create a new device port.*:} { 
                   puts "ERROR: Device not found in pmaports! Aborting."; 
                   exit 1 
@@ -86,8 +84,8 @@ jobs:
 
               # --- Standard Prompts ---
 
-              # 使用 Stable 分支 v24.12
-              -re {Channel.*:} { send "v24.12\r"; exp_continue }
+              # 使用 Edge 分支 (Testing 设备首选)
+              -re {Channel.*:} { send "edge\r"; exp_continue }
               -re {Vendor.*:} { send "xiaomi\r"; exp_continue }
               -re {Device codename.*:} { send "sagit\r"; exp_continue }
               -re {User interface.*:} { send "console\r"; exp_continue }
