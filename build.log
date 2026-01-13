@@ -180,3 +180,9 @@ n
 [11:34:21] [1mContinue? (y/n) [n][0m: 
 [11:34:21] [1mLocale [en_US][0m: 
 [11:34:21] [1mDevice hostname (short form, e.g. 'foo') [qemu-amd64][0m: Expect timeout!
+spawn pmbootstrap init
+[11:42:23] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[11:42:23] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.[0m
+[11:42:23] [1mWork path [/home/runner/.local/var/pmbootstrap][0m: 
+[11:42:23] Location of the 'pmaports' path, containing package definitions.[0m
+<er/.local/var/pmbootstrap/cache_git/pmaports][0m: Expect timeout!
