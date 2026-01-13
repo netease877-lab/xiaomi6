@@ -12,3 +12,58 @@ spawn pmbootstrap init
 [08:41:04] [1mWork path [/home/runner/.local/var/pmbootstrap][0m: 
 [08:41:04] Location of the 'pmaports' path, containing package definitions.[0m
 <er/.local/var/pmbootstrap/cache_git/pmaports][0m: Expect timeout!
+spawn pmbootstrap init
+[11:15:29] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[11:15:29] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.[0m
+[11:15:29] [1mWork path [/home/runner/.local/var/pmbootstrap][0m: 
+[11:15:29] Location of the 'pmaports' path, containing package definitions.[0m
+<er/.local/var/pmbootstrap/cache_git/pmaports][0m: 
+
+[11:15:29] Setting up the native chroot and cloning the package build recipes (pmaports)...[0m
+[11:15:29] Clone git repository: https://gitlab.postmarketos.org/postmarketOS/pmaports.git[0m
+
+
+Cloning into '/home/runner/.local/var/pmbootstrap/cache_git/pmaports'...
+
+[11:16:50] Choose the postmarketOS release channel.[0m
+[11:16:50] Available (13):[0m
+[11:16:50] * edge: Rolling release / Most devices / Occasional breakage: https://postmarketos.org/edge[0m
+[11:16:50] * v25.12: Latest release / Recommended for best stability[0m
+[11:16:50] * v25.06: Old release (supported until 2026-01-23)[0m
+[11:16:50] [1mChannel [edge][0m: 
+edge
+[11:16:50] [94mNOTE:[0m pmaports is on master branch, copying git hooks.[0m
+
+[11:16:50] Choose your target device vendor (either an existing one, or a new one for porting).[0m
+[11:16:50] Available vendors (103): acer, alcatel, amazon, amediatech, amlogic, apple, ark, arrow, asus, ayn, bananapi, barnesnoble, beelink, blackberry, bq, clockworkpi, cubietech, cutiepi, dongshanpi, epson, essential, fairphone, finepower, fly, fxtec, generic, goclever, google, gp, hisense, htc, huawei, inet, infocus, jolla, khadas, klipad, kobo, lark, leeco, lenovo, lg, librecomputer, linksys, lynx, mangopi, medion, meizu, microsoft, mnt, mobvoi, motorola, nextbit, nobby, nokia, nothing, nvidia, odroid, oneplus, oppo, ouya, pine64, planet, pocketbook, postmarketos, powkiddy, purism, qcom, qemu, qualcomm, radxa, raspberry, realme, rockchip, samsung, semc, sharp, shift, sipeed, solidrun, sony, sourceparts, sqfmi, starway, surftab, t2m, thundercomm, tokio, tolino, trekstor, valve, vernee, vivo, volla, wd, wexler, wiko, wileyfox, xiaomi, xunlong, yu, zte, zuk[0m
+[11:16:50] [1mVendor [qemu][0m: 
+xiaomi
+[11:16:50] Devices are categorised as follows, from best to worst:
+* [95mMain[0m: ports where mostly everything works.
+* [94mCommunity[0m: often mostly usable, but may lack important functionality.
+* [92mTesting[0m: anything from "just boots in some sense" to almost fully functioning ports.
+* [93mDownstream[0m: ports that use a downstream kernel — very limited functionality. Not recommended.
+
+Available devices by codename (5): [95maarch64[0m (main), [95mamd64[0m (main), [95mloongarch64[0m (main), [95mppc64le[0m (main), [95mriscv64[0m (main)[0m
+[11:16:50] [1mDevice codename [amd64][0m: 
+sagit
+[11:16:50] Which kernel do you want to use with your device?[0m
+[11:16:50] Available kernels (4):[0m
+[11:16:50] * lts: Alpine LTS kernel (recommended)[0m
+[11:16:50] * none: No kernel (does not boot! can be used during pmbootstrap testing to save time)[0m
+[11:16:50] * stable: Alpine Stable kernel[0m
+[11:16:50] * virt: Alpine Virt kernel (minimal, no audio/mouse/network)[0m
+[11:16:50] [1mKernel [stable][0m: 
+[11:16:50] [1mUsername [user][0m: edge
+[11:16:50] Available providers for postmarketos-base-ui-wifi (2):[0m
+[11:16:50] * wpa_supplicant: Use wpa_supplicant as the WiFi backend. [1m(default)[0m[0m
+[11:16:50] * iwd: Use iwd as the WiFi backend (but may not work with all devices)[0m
+[11:16:50] [1mProvider [default][0m: 
+[11:16:50] Available providers for postmarketos-usb-moded-default-profile (2):[0m
+[11:16:50] * developer: Make 'developer mode' the default usb-moded profile (always enables usb networking) [1m(default)[0m[0m
+[11:16:50] * charging: Make 'charging mode' the default usb-moded profile (usb networking must be manually enabled)[0m
+[11:16:50] [1mProvider [default][0m: xiaomi
+[11:16:50] [91mERROR:[0m Invalid provider specified, please type in one from the list above.[0m
+[11:16:50] [1mProvider [default][0m: sagit
+[11:16:50] [91mERROR:[0m Invalid provider specified, please type in one from the list above.[0m
+[11:16:50] [1mProvider [default][0m: Expect timeout!
