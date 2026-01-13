@@ -57,8 +57,6 @@ jobs:
           
           # 处理所有可能的提问
           expect {
-              "Work path" { send "\r"; exp_continue }
-              "pmaports path" { send "\r"; exp_continue }
               "Channel" { send "edge\r"; exp_continue }
               "Vendor" { send "xiaomi\r"; exp_continue }
               "Device codename" { send "sagit\r"; exp_continue }
@@ -79,6 +77,10 @@ jobs:
               
               # 匹配到 Change them? (Additional options) 时回答 no (默认)
               "Change them" { send "n\r"; exp_continue }
+
+              # 通用兜底策略：匹配所有以 ]: 结尾的提示符 (如 Work path, pmaports path, Timezone 等)
+              # 统一回答回车 (接受默认值)
+              "]:" { send "\r"; exp_continue }
 
               timeout { puts "Expect timeout!"; exit 1 }
               eof
@@ -105,11 +107,15 @@ jobs:
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          # 防止冲突
-          git pull --rebase
-          # 强制添加日志文件
+          
+          # 1. 先提交本地修改 (解决 unstaged changes 错误)
           git add --force build.log
           git commit -m "ci: build failure log [skip ci]"
+          
+          # 2. 再拉取远程更新 (rebase)
+          git pull --rebase
+          
+          # 3. 推送
           git push
 
       - name: Export and Compress Images
