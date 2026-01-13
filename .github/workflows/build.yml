@@ -88,10 +88,10 @@ jobs:
       - name: Build Rootfs with Docker
         run: |
           set -o pipefail
-          # --extra-packages 预装 docker,docker-compose 等
-          # --size 4096 确保有 4GB 空间
-          # --no-fde 关闭全盘加密
-          pmbootstrap install --extra-packages docker,docker-compose,nano,htop --no-fde --size 4096 2>&1 | tee -a build.log
+          # --add: 预装 docker,docker-compose 等包
+          # --no-fde: 已弃用但保留兼容性 (FDE 默认关闭)
+          # 镜像大小由 pmbootstrap config extra_space 控制 (已在配置文件中设置)
+          pmbootstrap install --add docker,docker-compose,nano,htop 2>&1 | tee -a build.log
 
       - name: Upload Build Log on Failure
         if: failure()
