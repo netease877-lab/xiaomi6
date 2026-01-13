@@ -47,7 +47,13 @@ jobs:
 
       - name: Initialize pmbootstrap (Robust Expect)
         run: |
-          # 预先拉取最新的 pmaports，确保设备信息是最新的 (尤其是 Edge 分支)
+          mkdir -p ~/.config/pmbootstrap
+          touch build.log
+          
+          # [Revision 17] 预初始化 Config 并强制刷新 pmaports
+          # 1. 初始化 Config (否则 pull 会报错 "Run init first")
+          # 2. 强制拉取最新的 pmaports (确保 edge 分支包含 testing 设备)
+          pmbootstrap config work ~/.local/var/pmbootstrap
           pmbootstrap pull || true
 
           # 生成自动化交互脚本
