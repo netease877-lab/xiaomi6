@@ -93,22 +93,34 @@ jobs:
           #   - firmware-xiaomi-sagit: Qualcomm WiFi/蓝牙固件
           #   - pd-mapper,tqftpserv,qrtr,rmtfs: 主线内核 WiFi 所需服务
           # UI: fbkeyboard (Framebuffer 虚拟键盘，极致轻量)
-          # --password: CI 自动化安装时使用的虚拟密码
+          # --password: 用户密码
           # --android-recovery-zip: 生成 TWRP 可直接刷入的 zip 包
           pmbootstrap install \
             --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs \
-            --password changeme \
+            --password zhoutong \
             --android-recovery-zip \
             2>&1 | tee -a build.log
           
-          # 禁用 NTP 时间同步等待服务 (避免启动卡住)
-          echo "Disabling time-wait-sync service..." >> build.log
-          pmbootstrap chroot -- systemctl disable systemd-time-wait-sync.service 2>&1 | tee -a build.log || true
-          pmbootstrap chroot -- systemctl mask systemd-time-wait-sync.service 2>&1 | tee -a build.log || true
-          
           # 配置 USB 网络使用 RNDIS (兼容 Windows 10)
+          # 使用 -r 参数确保写入 rootfs 而不是 native chroot
           echo "Configuring USB network to use RNDIS for Windows 10 compatibility..." >> build.log
-          pmbootstrap chroot -- sh -c 'mkdir -p /etc/deviceinfo.d && echo "deviceinfo_usb_network_function=rndis.usb0" > /etc/deviceinfo.d/usb_rndis.conf' 2>&1 | tee -a build.log || true
+          pmbootstrap chroot -r -- sh -c 'mkdir -p /etc/deviceinfo.d && echo "deviceinfo_usb_network_function=rndis.usb0" > /etc/deviceinfo.d/usb_rndis.conf' 2>&1 | tee -a build.log || true
+          
+          # 创建 WiFi 启动脚本 (自动加载驱动)
+          echo "Creating WiFi startup script..." >> build.log
+          pmbootstrap chroot -r -- sh -c 'cat > /etc/local.d/wifi-init.start << "WIFISCRIPT"
+#!/bin/sh
+# 加载 WiFi 驱动
+modprobe qcom-wcnss-pil 2>/dev/null || true
+modprobe ath10k_snoc 2>/dev/null || true
+modprobe wcn36xx 2>/dev/null || true
+
+# 启动 WiFi 服务
+sleep 2
+echo 1 > /dev/wcnss_wlan 2>/dev/null || true
+WIFISCRIPT
+chmod +x /etc/local.d/wifi-init.start
+rc-update add local default 2>/dev/null || true' 2>&1 | tee -a build.log || true
 
       - name: Upload Build Log on Failure
         if: failure()
