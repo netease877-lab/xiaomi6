@@ -186,3 +186,218 @@ spawn pmbootstrap init
 [11:42:23] [1mWork path [/home/runner/.local/var/pmbootstrap][0m: 
 [11:42:23] Location of the 'pmaports' path, containing package definitions.[0m
 <er/.local/var/pmbootstrap/cache_git/pmaports][0m: Expect timeout!
+spawn pmbootstrap init
+Gate keeper glob pattern for 'Provider.*:' is 'Provider*:'. Activating booster.
+Gate keeper glob pattern for 'Kernel.*:' is 'Kernel*:'. Activating booster.
+Gate keeper glob pattern for 'Work path.*:' is 'Work path*:'. Activating booster.
+Gate keeper glob pattern for 'pmaports path.*:' is 'pmaports path*:'. Activating booster.
+Gate keeper glob pattern for 'Channel.*:' is 'Channel*:'. Activating booster.
+Gate keeper glob pattern for 'Vendor.*:' is 'Vendor*:'. Activating booster.
+Gate keeper glob pattern for 'Device codename.*:' is 'Device codename*:'. Activating booster.
+Gate keeper glob pattern for 'User interface.*:' is 'User interface*:'. Activating booster.
+Gate keeper glob pattern for 'Install systemd.*:' is 'Install systemd*:'. Activating booster.
+Gate keeper glob pattern for 'Change them.*:' is 'Change them*:'. Activating booster.
+Gate keeper glob pattern for 'Extra space.*:' is 'Extra space*:'. Activating booster.
+Gate keeper glob pattern for 'Boot size.*:' is 'Boot size*:'. Activating booster.
+Gate keeper glob pattern for 'Jobs.*:' is 'Jobs*:'. Activating booster.
+Gate keeper glob pattern for 'Ccache size.*:' is 'Ccache size*:'. Activating booster.
+Gate keeper glob pattern for 'Sudo timer.*:' is 'Sudo timer*:'. Activating booster.
+Gate keeper glob pattern for 'Change mirror.*:' is 'Change mirror*:'. Activating booster.
+Gate keeper glob pattern for 'Use this timezone.*:' is 'Use this timezone*:'. Activating booster.
+Gate keeper glob pattern for 'Locale.*:' is 'Locale*:'. Activating booster.
+Gate keeper glob pattern for 'Device hostname.*:' is 'Device hostname*:'. Activating booster.
+Gate keeper glob pattern for 'SSH keys.*:' is 'SSH keys*:'. Activating booster.
+Gate keeper glob pattern for 'Keymap.*:' is 'Keymap*:'. Activating booster.
+Gate keeper glob pattern for 'Enable this package.*:' is 'Enable this package*:'. Activating booster.
+Gate keeper glob pattern for 'Zap existing chroots.*:' is 'Zap existing chroots*:'. Activating booster.
+Gate keeper glob pattern for ']:\s*$' is ']:*'. Activating booster.
+
+expect: does "" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports path.*:"? Gate "pmaports path*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:\s*$"? Gate "]:*"? gate=no
+[11:51:02] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+
+expect: does "[11:51:02] \u001b[94mNOTE:\u001b[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports path.*:"? Gate "pmaports path*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:\s*$"? Gate "]:*"? gate=no
+[11:51:02] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.[0m
+
+expect: does "[11:51:02] \u001b[94mNOTE:\u001b[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)\u001b[0m\r\n[11:51:02] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports path.*:"? Gate "pmaports path*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:\s*$"? Gate "]:*"? gate=no
+[11:51:02] [1mWork path [/home/runner/.local/var/pmbootstrap][0m: 
+expect: does "[11:51:02] \u001b[94mNOTE:\u001b[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)\u001b[0m\r\n[11:51:02] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.\u001b[0m\r\n[11:51:02] \u001b[1mWork path [/home/runner/.local/var/pmbootstrap]\u001b[0m: " (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=yes re=yes
+expect: set expect_out(0,string) "Work path [/home/runner/.local/var/pmbootstrap]\u001b[0m:"
+expect: set expect_out(spawn_id) "exp3"
+expect: set expect_out(buffer) "[11:51:02] \u001b[94mNOTE:\u001b[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)\u001b[0m\r\n[11:51:02] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.\u001b[0m\r\n[11:51:02] \u001b[1mWork path [/home/runner/.local/var/pmbootstrap]\u001b[0m:"
+send: sending "\r" to { exp3 }
+expect: continuing expect
+
+expect: does " " (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports path.*:"? Gate "pmaports path*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:\s*$"? Gate "]:*"? gate=no
+
+
+expect: does " \r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports path.*:"? Gate "pmaports path*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:\s*$"? Gate "]:*"? gate=no
+[11:51:02] Location of the 'pmaports' path, containing package definitions.[0m
+
+expect: does " \r\n[11:51:02] Location of the 'pmaports' path, containing package definitions.\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports path.*:"? Gate "pmaports path*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:\s*$"? Gate "]:*"? gate=no
+<er/.local/var/pmbootstrap/cache_git/pmaports][0m: 
+expect: does " \r\n[11:51:02] Location of the 'pmaports' path, containing package definitions.\u001b[0m\r\n<er/.local/var/pmbootstrap/cache_git/pmaports]\u001b[0m: " (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports path.*:"? Gate "pmaports path*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:\s*$"? Gate "]:*"? gate=no
+expect: timed out
+Expect timeout!
