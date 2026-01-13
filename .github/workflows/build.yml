@@ -57,6 +57,8 @@ jobs:
           
           # 处理所有可能的提问
           expect {
+              "Work path" { send "\r"; exp_continue }
+              "pmaports path" { send "\r"; exp_continue }
               "Channel" { send "edge\r"; exp_continue }
               "Vendor" { send "xiaomi\r"; exp_continue }
               "Device codename" { send "sagit\r"; exp_continue }
