@@ -88,10 +88,22 @@ jobs:
       - name: Build Rootfs with Docker (TWRP Zip)
         run: |
           set -o pipefail
-          # --add: 预装 docker,docker-compose 等包
-          # --password: CI 自动化安装时使用的虚拟密码 (明文，仅用于测试)
+          # --add: 预装包
+          #   - docker,docker-compose,nano,htop: 用户需求
+          #   - postmarketos-mkinitfs-hook-debug-shell: USB 调试 shell
+          #   - openssh-server: SSH 服务
+          # --password: CI 自动化安装时使用的虚拟密码
           # --android-recovery-zip: 生成 TWRP 可直接刷入的 zip 包
-          pmbootstrap install --add docker,docker-compose,nano,htop --password changeme --android-recovery-zip 2>&1 | tee -a build.log
+          pmbootstrap install \
+            --add docker,docker-compose,nano,htop,openssh-server,postmarketos-mkinitfs-hook-debug-shell \
+            --password changeme \
+            --android-recovery-zip \
+            2>&1 | tee -a build.log
+          
+          # 禁用 NTP 时间同步等待服务 (避免启动卡住)
+          echo "Disabling time-wait-sync service..." >> build.log
+          pmbootstrap chroot -- systemctl disable systemd-time-wait-sync.service 2>&1 | tee -a build.log || true
+          pmbootstrap chroot -- systemctl mask systemd-time-wait-sync.service 2>&1 | tee -a build.log || true
 
       - name: Upload Build Log on Failure
         if: failure()
