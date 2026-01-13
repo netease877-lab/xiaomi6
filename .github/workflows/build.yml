@@ -15,8 +15,7 @@ jobs:
       - name: System Environment Setup
         run: |
           sudo apt-get update
-          # 核心修复：添加 binfmt-support 以获取 update-binfmts 命令
-          # 添加 git, openssl, fastboot, qemu 等基础构建工具
+          # 安装构建所需的系统工具
           sudo apt-get install -y \
             python3 \
             git \
@@ -26,26 +25,31 @@ jobs:
             binfmt-support \
             wget
           
-          # 2026年环境自检：确保宿主机支持并注册 aarch64 模拟
+          # 注册 aarch64 模拟支持
           sudo update-binfmts --enable qemu-aarch64 || echo "binfmt already enabled"
 
-      - name: Install pmbootstrap from Source
+      - name: Install pmbootstrap from Source (New Domain)
         run: |
-          # 克隆官方最新源码，绕过 pip 环境限制
-          git clone --depth 1 https://gitlab.com/postmarketOS/pmbootstrap.git
-          # 获取绝对路径并设置权限
+          # 核心修复：使用迁移后的官方新域名 gitlab.postmarketos.org
+          git clone --depth 1 https://gitlab.postmarketos.org/postmarketOS/pmbootstrap.git
+          
+          # 获取绝对路径并设置执行权限
           PMB_PATH=$(pwd)/pmbootstrap/pmbootstrap.py
           chmod +x $PMB_PATH
-          # 建立软链接到系统路径
+          
+          # 建立系统软链接
           sudo ln -sf $PMB_PATH /usr/local/bin/pmbootstrap
-          # 验证安装
+          
+          # 验证安装是否成功
           pmbootstrap --version
 
       - name: Initialize pmbootstrap (Non-Interactive)
         run: |
-          # 2026版 pmbootstrap 初始化：指定路径并静默配置
-          # 针对小米6 (sagit) 开启 systemd
+          # 确保缓存目录存在
           mkdir -p /home/runner/.local/share/pmbootstrap
+          
+          # 针对小米6 (sagit) 进行静默初始化
+          # 2026年策略：使用 edge 分支以获取最新的 Docker 兼容内核
           pmbootstrap init --path /home/runner/.local/share/pmbootstrap <<EOF
           edge
           xiaomi
@@ -59,16 +63,17 @@ jobs:
 
       - name: Build Rootfs with Docker
         run: |
-          # 核心步骤：预装 docker 并扩展分区大小
-          # --no-fde 跳过磁盘加密，方便作为服务器使用
+          # --extra-packages 预装 docker 环境
+          # --size 4096 确保刷入 userdata 后有足够空间
+          # --no-fde 关闭全盘加密，防止老设备启动缓慢
           pmbootstrap install --extra-packages docker,docker-compose,nano,htop --no-fde --size 4096
 
       - name: Export and Compress Images
         run: |
-          # 导出镜像至常用格式
+          # 导出镜像
           pmbootstrap export
           mkdir -p output
-          # 2026年文件名规则匹配
+          # 兼容不同的导出文件名后缀
           cp /tmp/postmarketOS-export/boot.img* output/ || true
           cp /tmp/postmarketOS-export/xiaomi-sagit.img* output/ || true
 
