@@ -56,53 +56,58 @@ jobs:
           spawn pmbootstrap init
           
           # 处理所有可能的提问
+          # 开启 Expect 内部调试日志 (输出到 stdout/build.log)
+          # 这样如果再有匹配失败，我们能看到缓冲区里到底有什么字符 (ANSI, hidden chars)
+          exp_internal 1
+
           expect {
-              # [Revision 11] 全面重构：使用严谨的正则匹配 Prompt (以 : 结尾)
-              # 目的：防止脚本错误地匹配到日志信息 (如 "Available user interfaces") 导致提前/重复发送输入
+              # [Revision 12] 移除行尾锚点 ($):
+              # 之前的超时是因为 regex 要求行尾 ($)，但 prompt 后面可能紧跟 ANSI 重置码或其他不可见字符
+              # 现在的策略：只要匹配到 "由冒号结尾的关键提示词" 即可响应。
+              # 冒号 (:) 是区分 Log 和 Prompt 的关键。
 
               # --- High Priority / Dynamic Prompts ---
               
-              # Provider & Kernel: 允许默认值
-              -re {Provider.*:\s*$} { send "\r"; exp_continue }
-              -re {Kernel.*:\s*$}   { send "\r"; exp_continue }
+              -re {Provider.*:} { send "\r"; exp_continue }
+              -re {Kernel.*:}   { send "\r"; exp_continue }
 
-              # Work path & pmaports: 忽略颜色代码
-              -re {Work path.*:\s*$} { send "\r"; exp_continue }
-              -re {pmaports path.*:\s*$} { send "\r"; exp_continue }
+              # Work path & pmaports
+              -re {Work path.*:} { send "\r"; exp_continue }
+              -re {pmaports path.*:} { send "\r"; exp_continue }
 
               # --- Standard Prompts ---
 
-              -re {Channel.*:\s*$} { send "edge\r"; exp_continue }
-              -re {Vendor.*:\s*$} { send "xiaomi\r"; exp_continue }
-              -re {Device codename.*:\s*$} { send "sagit\r"; exp_continue }
-              -re {User interface.*:\s*$} { send "console\r"; exp_continue }
+              -re {Channel.*:} { send "edge\r"; exp_continue }
+              -re {Vendor.*:} { send "xiaomi\r"; exp_continue }
+              -re {Device codename.*:} { send "sagit\r"; exp_continue }
+              -re {User interface.*:} { send "console\r"; exp_continue }
 
-              # Systemd: 必须回车 (Default)
-              -re {Install systemd.*:\s*$} { send "\r"; exp_continue }
+              # Systemd
+              -re {Install systemd.*:} { send "\r"; exp_continue }
 
-              # Additional Options: 统一选 No (Change them?)
-              -re {Change them.*:\s*$} { send "n\r"; exp_continue }
+              # Additional Options
+              -re {Change them.*:} { send "n\r"; exp_continue }
 
-              # Specific options (should be skipped if "Change them" works, but kept as safeguard)
-              -re {Extra space.*:\s*$} { send "\r"; exp_continue }
-              -re {Boot size.*:\s*$} { send "\r"; exp_continue }
-              -re {Jobs.*:\s*$} { send "\r"; exp_continue }
-              -re {Ccache size.*:\s*$} { send "\r"; exp_continue }
-              -re {Sudo timer.*:\s*$} { send "\r"; exp_continue }
-              -re {Change mirror.*:\s*$} { send "\r"; exp_continue }
+              # Specific options
+              -re {Extra space.*:} { send "\r"; exp_continue }
+              -re {Boot size.*:} { send "\r"; exp_continue }
+              -re {Jobs.*:} { send "\r"; exp_continue }
+              -re {Ccache size.*:} { send "\r"; exp_continue }
+              -re {Sudo timer.*:} { send "\r"; exp_continue }
+              -re {Change mirror.*:} { send "\r"; exp_continue }
               
               # Misc Setup
-              -re {Use this timezone.*:\s*$} { send "\r"; exp_continue }
-              -re {Locale.*:\s*$} { send "\r"; exp_continue }
-              -re {Device hostname.*:\s*$} { send "\r"; exp_continue }
-              -re {SSH keys.*:\s*$} { send "\r"; exp_continue }
-              -re {Keymap.*:\s*$} { send "\r"; exp_continue }
-              -re {Enable this package.*:\s*$} { send "\r"; exp_continue }
+              -re {Use this timezone.*:} { send "\r"; exp_continue }
+              -re {Locale.*:} { send "\r"; exp_continue }
+              -re {Device hostname.*:} { send "\r"; exp_continue }
+              -re {SSH keys.*:} { send "\r"; exp_continue }
+              -re {Keymap.*:} { send "\r"; exp_continue }
+              -re {Enable this package.*:} { send "\r"; exp_continue }
               
               # Zap chroots confirm
-              -re {Zap existing chroots.*:\s*$} { send "y\r"; exp_continue }
+              -re {Zap existing chroots.*:} { send "y\r"; exp_continue }
 
-              # 通用兜底 (以 ]: 结尾，且之前没被匹配到)
+              # 通用兜底 (以 ]: 结尾)
               -re {]:\s*$} { send "\r"; exp_continue }
 
               timeout { puts "Expect timeout!"; exit 1 }
