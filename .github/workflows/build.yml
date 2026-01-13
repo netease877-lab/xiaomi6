@@ -50,6 +50,9 @@ jobs:
           mkdir -p ~/.config/pmbootstrap
           touch build.log
           
+          # 预先拉取最新的 pmaports，确保设备信息是最新的
+          pmbootstrap pull || true
+
           # 生成自动化交互脚本
           cat <<EOF > init.expect
           set timeout 300
@@ -60,10 +63,10 @@ jobs:
           exp_internal 1
 
           expect {
-              # [Revision 14] 针对 "Device not found" 的修复:
-              # 1. 切换 Channel 为 stable (v24.12)，确保 sagit 设备可用
-              # 2. 增加对 "Create new device port?" 引导的拦截 (选 n)，防止死循环超时
-              # 3. 增加对 "Type? (mainline/downstream)" 的兜底
+              # [Revision 15] 修复 "Create new device port" 匹配和死循环:
+              # 1. 修正 Regex: 原来是 "Create new...", 实际是 "Do you want to create a new..."
+              # 2. 策略变更: 如果设备未找到，回答 n 会导致死循环 (ask again).
+              #    必须直接 exit 1 (Fail Fast)，让 CI 报错，而不是挂起。
 
               # --- High Priority ---
               -re {Provider.*:} { send "\r"; exp_continue }
@@ -74,14 +77,16 @@ jobs:
               -re {pmaports.*:} { send "\r"; exp_continue }
               
               # --- Dynamic Wizard Intercepts (Failure modes) ---
-              # 如果设备未找到，它会问是否新建。必须回答 n 以便报错退出，而不是挂起。
-              -re {Create new device port.*:} { send "n\r"; exp_continue }
-              # 如果它执意要问类型 (mainline/downstream)
+              # 匹配 "Do you want to create a new device port?"
+              -re {.*create a new device port.*:} { 
+                  puts "ERROR: Device not found in pmaports! Aborting."; 
+                  exit 1 
+              }
               -re {Type\?.*:} { send "mainline\r"; exp_continue }
 
               # --- Standard Prompts ---
 
-              # 切换到 Stable 分支，确保 sagit 存在
+              # 使用 Stable 分支 v24.12
               -re {Channel.*:} { send "v24.12\r"; exp_continue }
               -re {Vendor.*:} { send "xiaomi\r"; exp_continue }
               -re {Device codename.*:} { send "sagit\r"; exp_continue }
