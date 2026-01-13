@@ -78,8 +78,11 @@ jobs:
               # 匹配到 Change them? (Additional options) 时回答 no (默认)
               "Change them" { send "n\r"; exp_continue }
 
-              # 通用兜底策略：匹配所有以 ]: 结尾的提示符 (如 Work path, pmaports path, Timezone 等)
-              # 统一回答回车 (接受默认值)
+              # 强制匹配 Work path 和 pmaports path (不依赖通用兜底)
+              "Work path" { send "\r"; exp_continue }
+              "pmaports path" { send "\r"; exp_continue }
+              
+              # 通用兜底策略 (保留但不依赖)
               "]:" { send "\r"; exp_continue }
 
               timeout { puts "Expect timeout!"; exit 1 }
