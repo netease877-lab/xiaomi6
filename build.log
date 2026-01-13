@@ -4765,3 +4765,33 @@ expect: does "55] Choose your target device vendor (either an existing one, or a
 "]:"? Gate "]:"? gate=no
 expect: timed out
 Expect timeout!
+=== Step 1: Cloning pmaports ===
+Cloning into '/home/runner/.local/var/pmbootstrap/cache_git/pmaports'...
+pmaports cloned successfully
+=== Step 2: Generating config file ===
+Config file content:
+[pmbootstrap]
+device = xiaomi-sagit
+ui = console
+work = /home/runner/.local/var/pmbootstrap
+hostname = mi6
+user = user
+systemd = default
+extra_packages = docker,docker-compose,nano,htop
+is_default_channel = False
+aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports
+=== Step 3: Initializing work directory ===
+work directory initialized with version 8
+=== Step 4: Verifying config ===
+[13:31:52] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[92mChannel[0m: systemd-edge (pmaports: master)
+[92mDevice[0m:  xiaomi-sagit (aarch64)
+[92mUI[0m:      console
+[92msystemd[0m: yes (default for selected UI)
+usage: pmbootstrap [-h] [-V] [-c CONFIG] [-j JOBS] [-E EXTRA_SPACE]
+                   [-B BOOT_SIZE] [-p APORTS] [-t TIMEOUT] [-w WORK] [-y]
+                   [--as-root] [-o] [--no-ccache] [--no-cross] [-l LOG]
+                   [--details-to-stdout] [-v] [-q]
+                   {shutdown,index,work_migrate,repo_missing,kconfig,export,sideload,netboot,flasher,initfs,qemu,pkgrel_bump,pkgver_bump,aportupgrade,newapkbuild,lint,test,status,ci,init,log,zap,stats,update,build_init,chroot,install,checksum,aportgen,build,deviceinfo_parse,apkbuild_parse,apkindex_parse,config,bootimg_analyze,pull}
+                   ...
+pmbootstrap: error: unrecognized arguments: --extra-packages docker,docker-compose,nano,htop --size 4096
