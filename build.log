@@ -2,3 +2,7 @@ spawn pmbootstrap init
 [07:53:33] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
 [07:53:33] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.[0m
 [07:53:33] [1mWork path [/home/runner/.local/var/pmbootstrap][0m: Expect timeout!
+spawn pmbootstrap init
+[08:33:19] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[08:33:19] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.[0m
+[08:33:19] [1mWork path [/home/runner/.local/var/pmbootstrap][0m: Expect timeout!
