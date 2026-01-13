@@ -78,12 +78,12 @@ jobs:
               # 匹配到 Change them? (Additional options) 时回答 no (默认)
               "Change them" { send "n\r"; exp_continue }
 
-              # 强制匹配 Work path 和 pmaports path (不依赖通用兜底)
-              "Work path" { send "\r"; exp_continue }
-              "pmaports path" { send "\r"; exp_continue }
+              # 使用正则 (-re) 忽略 ANSI 颜色代码和前缀干扰
+              -re {.*Work path.*} { send "\r"; exp_continue }
+              -re {.*pmaports.*} { send "\r"; exp_continue }
               
-              # 通用兜底策略 (保留但不依赖)
-              "]:" { send "\r"; exp_continue }
+              # 通用兜底策略 (正则匹配以 ]: 结尾)
+              -re {]:\s*$} { send "\r"; exp_continue }
 
               timeout { puts "Expect timeout!"; exit 1 }
               eof
