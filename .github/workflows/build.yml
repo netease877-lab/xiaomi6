@@ -15,7 +15,7 @@ jobs:
       - name: System Environment Setup
         run: |
           sudo apt-get update
-          # 安装构建所需的系统工具
+          # 安装构建所需的系统工具以及 binfmt-support
           sudo apt-get install -y \
             python3 \
             git \
@@ -28,44 +28,43 @@ jobs:
           # 注册 aarch64 模拟支持
           sudo update-binfmts --enable qemu-aarch64 || echo "binfmt already enabled"
 
-      - name: Install pmbootstrap from Source (New Domain)
+      - name: Install pmbootstrap from Source (Correct Domain)
         run: |
-          # 核心修复：使用迁移后的官方新域名 gitlab.postmarketos.org
+          # 修复：使用官方新域名 gitlab.postmarketos.org
           git clone --depth 1 https://gitlab.postmarketos.org/postmarketOS/pmbootstrap.git
           
-          # 获取绝对路径并设置执行权限
+          # 设置软链接
           PMB_PATH=$(pwd)/pmbootstrap/pmbootstrap.py
           chmod +x $PMB_PATH
-          
-          # 建立系统软链接
           sudo ln -sf $PMB_PATH /usr/local/bin/pmbootstrap
           
-          # 验证安装是否成功
+          # 验证版本
           pmbootstrap --version
 
-      - name: Initialize pmbootstrap (Non-Interactive)
+      - name: Initialize pmbootstrap (Robust)
         run: |
-          # 确保缓存目录存在
-          mkdir -p /home/runner/.local/share/pmbootstrap
+          mkdir -p ~/.config/pmbootstrap
+          # 预先配置参数以减少交互式输入的脆弱性
+          pmbootstrap config work /home/runner/.local/share/pmbootstrap
+          pmbootstrap config channel edge
+          pmbootstrap config user user
           
-          # 针对小米6 (sagit) 进行静默初始化
-          # 2026年策略：使用 edge 分支以获取最新的 Docker 兼容内核
-          pmbootstrap init --path /home/runner/.local/share/pmbootstrap <<EOF
-          edge
+          # 交互式初始化：补充剩余必要信息
+          # 顺序：Vendor(xiaomi) -> Device(sagit) -> Keymap(默认) -> UI(console) -> UI Extras(默认) -> Systemd(y)
+          pmbootstrap init <<EOF
           xiaomi
           sagit
-          y
-          user
+          
           console
-          systemd
-          n
+          
+          y
           EOF
 
       - name: Build Rootfs with Docker
         run: |
-          # --extra-packages 预装 docker 环境
-          # --size 4096 确保刷入 userdata 后有足够空间
-          # --no-fde 关闭全盘加密，防止老设备启动缓慢
+          # --extra-packages 预装 docker,docker-compose 等
+          # --size 4096 确保有 4GB 空间
+          # --no-fde 关闭全盘加密
           pmbootstrap install --extra-packages docker,docker-compose,nano,htop --no-fde --size 4096
 
       - name: Export and Compress Images
@@ -73,9 +72,8 @@ jobs:
           # 导出镜像
           pmbootstrap export
           mkdir -p output
-          # 兼容不同的导出文件名后缀
-          cp /tmp/postmarketOS-export/boot.img* output/ || true
-          cp /tmp/postmarketOS-export/xiaomi-sagit.img* output/ || true
+          # 兼容导出文件
+          cp -r /tmp/postmarketOS-export/* output/
 
       - name: Upload Build Result
         uses: actions/upload-artifact@v4
