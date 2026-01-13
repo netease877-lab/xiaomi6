@@ -2822,3 +2822,796 @@ expect: set expect_out(0,string) " v24.12\r\n[12:48:40] \u001b[1mThe specified d
 expect: set expect_out(spawn_id) "exp3"
 expect: set expect_out(buffer) " v24.12\r\n[12:48:40] \u001b[1mThe specified device ('qemu-v24.12') could not be found in existing ports.\u001b[0m\r\nIf you're trying to select a device that is supported, check the following:\r\n\r\n* Make sure you spelled the vendor name and codename correctly. \r\n* Check if you're on the right release branch. Devices in the 'downstream' category are only available on the 'edge' branch; if you selected a stable branch, run pmbootstrap init again and select 'edge'.\r\n* If the device is supported by a generic port, type in the vendor and codename of the generic port.\r\n\r\nIf you want to create a new device port, follow the guide at <https://postmarketos.org/porting/>.\u001b[0m\r\n[12:48:40] \u001b[1mDo you want to create a new device port? (y/n) [y]\u001b[0m: \r\n[12:48:40] What type of port are you creating?\u001b[0m\r\nsagit\r\n[12:48:40] * mainline: Port using upstream/mainline kernel, compatible with upstream user space.\u001b[0m\r\n[12:48:40] * downstream: Port using downstream kernel, using the original (e.g. Android) kernel sources, at least partially incompatible with upstream user space.\u001b[0m\r\n[12:48:40] \u001b[1mType? (mainline/downstream)\u001b[0m:"
 ERROR: Device not found in pmaports! Aborting.
+spawn pmbootstrap init
+Gate keeper glob pattern for 'Provider.*:' is 'Provider*:'. Activating booster.
+Gate keeper glob pattern for 'Kernel.*:' is 'Kernel*:'. Activating booster.
+Gate keeper glob pattern for 'Work path.*:' is 'Work path*:'. Activating booster.
+Gate keeper glob pattern for 'pmaports.*:' is 'pmaports*:'. Activating booster.
+Gate keeper glob pattern for '.*create a new device port.*:' is '*create a new device port*:'. Activating booster.
+Gate keeper glob pattern for 'Type\?.*:' is 'Type\?*:'. Activating booster.
+Gate keeper glob pattern for 'Channel.*:' is 'Channel*:'. Activating booster.
+Gate keeper glob pattern for 'Vendor.*:' is 'Vendor*:'. Activating booster.
+Gate keeper glob pattern for 'Device codename.*:' is 'Device codename*:'. Activating booster.
+Gate keeper glob pattern for 'User interface.*:' is 'User interface*:'. Activating booster.
+Gate keeper glob pattern for 'Install systemd.*:' is 'Install systemd*:'. Activating booster.
+Gate keeper glob pattern for 'Change them.*:' is 'Change them*:'. Activating booster.
+Gate keeper glob pattern for 'Extra space.*:' is 'Extra space*:'. Activating booster.
+Gate keeper glob pattern for 'Boot size.*:' is 'Boot size*:'. Activating booster.
+Gate keeper glob pattern for 'Jobs.*:' is 'Jobs*:'. Activating booster.
+Gate keeper glob pattern for 'Ccache size.*:' is 'Ccache size*:'. Activating booster.
+Gate keeper glob pattern for 'Sudo timer.*:' is 'Sudo timer*:'. Activating booster.
+Gate keeper glob pattern for 'Change mirror.*:' is 'Change mirror*:'. Activating booster.
+Gate keeper glob pattern for 'Use this timezone.*:' is 'Use this timezone*:'. Activating booster.
+Gate keeper glob pattern for 'Locale.*:' is 'Locale*:'. Activating booster.
+Gate keeper glob pattern for 'Device hostname.*:' is 'Device hostname*:'. Activating booster.
+Gate keeper glob pattern for 'SSH keys.*:' is 'SSH keys*:'. Activating booster.
+Gate keeper glob pattern for 'Keymap.*:' is 'Keymap*:'. Activating booster.
+Gate keeper glob pattern for 'Enable this package.*:' is 'Enable this package*:'. Activating booster.
+Gate keeper glob pattern for 'Zap existing chroots.*:' is 'Zap existing chroots*:'. Activating booster.
+Gate keeper glob pattern for ']:' is ']:'. Activating booster.
+
+expect: does "" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:53:10] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+
+expect: does "[12:53:10] \u001b[94mNOTE:\u001b[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:53:10] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.[0m
+
+expect: does "[12:53:10] \u001b[94mNOTE:\u001b[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)\u001b[0m\r\n[12:53:10] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:53:10] [1mWork path [/home/runner/.local/var/pmbootstrap][0m: 
+expect: does "[12:53:10] \u001b[94mNOTE:\u001b[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)\u001b[0m\r\n[12:53:10] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.\u001b[0m\r\n[12:53:10] \u001b[1mWork path [/home/runner/.local/var/pmbootstrap]\u001b[0m: " (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=yes re=yes
+expect: set expect_out(0,string) "Work path [/home/runner/.local/var/pmbootstrap]\u001b[0m:"
+expect: set expect_out(spawn_id) "exp3"
+expect: set expect_out(buffer) "[12:53:10] \u001b[94mNOTE:\u001b[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)\u001b[0m\r\n[12:53:10] Location of the 'work' path. Multiple chroots (native, device arch, device rootfs) will be created in there.\u001b[0m\r\n[12:53:10] \u001b[1mWork path [/home/runner/.local/var/pmbootstrap]\u001b[0m:"
+send: sending "\r" to { exp3 }
+expect: continuing expect
+
+expect: does " " (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+
+
+expect: does " \r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:53:10] Location of the 'pmaports' path, containing package definitions.[0m
+
+expect: does " \r\n[12:53:10] Location of the 'pmaports' path, containing package definitions.\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+<er/.local/var/pmbootstrap/cache_git/pmaports][0m: 
+expect: does " \r\n[12:53:10] Location of the 'pmaports' path, containing package definitions.\u001b[0m\r\n<er/.local/var/pmbootstrap/cache_git/pmaports]\u001b[0m: " (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=yes re=yes
+expect: set expect_out(0,string) "pmaports' path, containing package definitions.\u001b[0m\r\n<er/.local/var/pmbootstrap/cache_git/pmaports]\u001b[0m:"
+expect: set expect_out(spawn_id) "exp3"
+expect: set expect_out(buffer) " \r\n[12:53:10] Location of the 'pmaports' path, containing package definitions.\u001b[0m\r\n<er/.local/var/pmbootstrap/cache_git/pmaports]\u001b[0m:"
+send: sending "\r" to { exp3 }
+expect: continuing expect
+
+expect: does " " (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+
+
+expect: does " \r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:53:10] Setting up the native chroot and cloning the package build recipes (pmaports)...[0m
+
+expect: does " \r\n[12:53:10] Setting up the native chroot and cloning the package build recipes (pmaports)...\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:53:10] Clone git repository: https://gitlab.postmarketos.org/postmarketOS/pmaports.git[0m
+
+expect: does " \r\n[12:53:10] Setting up the native chroot and cloning the package build recipes (pmaports)...\u001b[0m\r\n[12:53:10] Clone git repository: https://gitlab.postmarketos.org/postmarketOS/pmaports.git\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=yes re=yes
+expect: set expect_out(0,string) "pmaports)...\u001b[0m\r\n[12:53:10] Clone git repository: https:"
+expect: set expect_out(spawn_id) "exp3"
+expect: set expect_out(buffer) " \r\n[12:53:10] Setting up the native chroot and cloning the package build recipes (pmaports)...\u001b[0m\r\n[12:53:10] Clone git repository: https:"
+send: sending "\r" to { exp3 }
+expect: continuing expect
+
+expect: does "//gitlab.postmarketos.org/postmarketOS/pmaports.git\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+
+
+expect: does "//gitlab.postmarketos.org/postmarketOS/pmaports.git\u001b[0m\r\n\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+Cloning into '/home/runner/.local/var/pmbootstrap/cache_git/pmaports'...
+
+expect: does "//gitlab.postmarketos.org/postmarketOS/pmaports.git\u001b[0m\r\n\r\nCloning into '/home/runner/.local/var/pmbootstrap/cache_git/pmaports'...\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:54:42] Choose the postmarketOS release channel.[0m
+[12:54:42] Available (13):[0m
+
+expect: does "//gitlab.postmarketos.org/postmarketOS/pmaports.git\u001b[0m\r\n\r\nCloning into '/home/runner/.local/var/pmbootstrap/cache_git/pmaports'...\r\n[12:54:42] Choose the postmarketOS release channel.\u001b[0m\r\n[12:54:42] Available (13):\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=yes re=yes
+expect: set expect_out(0,string) "pmaports.git\u001b[0m\r\n\r\nCloning into '/home/runner/.local/var/pmbootstrap/cache_git/pmaports'...\r\n[12:54:42] Choose the postmarketOS release channel.\u001b[0m\r\n[12:54:42] Available (13):"
+expect: set expect_out(spawn_id) "exp3"
+expect: set expect_out(buffer) "//gitlab.postmarketos.org/postmarketOS/pmaports.git\u001b[0m\r\n\r\nCloning into '/home/runner/.local/var/pmbootstrap/cache_git/pmaports'...\r\n[12:54:42] Choose the postmarketOS release channel.\u001b[0m\r\n[12:54:42] Available (13):"
+send: sending "\r" to { exp3 }
+expect: continuing expect
+
+expect: does "\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:54:42] * edge: Rolling release / Most devices / Occasional breakage: https://postmarketos.org/edge[0m
+[12:54:42] * v25.12: Latest release / Recommended for best stability[0m
+[12:54:42] * v25.06: Old release (supported until 2026-01-23)[0m
+
+
+expect: does "\u001b[0m\r\n[12:54:42] * edge: Rolling release / Most devices / Occasional breakage: https://postmarketos.org/edge\u001b[0m\r\n[12:54:42] * v25.12: Latest release / Recommended for best stability\u001b[0m\r\n[12:54:42] * v25.06: Old release (supported until 2026-01-23)\u001b[0m\r\n\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:54:42] [1mChannel [edge][0m: 
+
+expect: does "\u001b[0m\r\n[12:54:42] * edge: Rolling release / Most devices / Occasional breakage: https://postmarketos.org/edge\u001b[0m\r\n[12:54:42] * v25.12: Latest release / Recommended for best stability\u001b[0m\r\n[12:54:42] * v25.06: Old release (supported until 2026-01-23)\u001b[0m\r\n\r\n[12:54:42] \u001b[1mChannel [edge]\u001b[0m: \r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=yes re=yes
+expect: set expect_out(0,string) "Channel [edge]\u001b[0m:"
+expect: set expect_out(spawn_id) "exp3"
+expect: set expect_out(buffer) "\u001b[0m\r\n[12:54:42] * edge: Rolling release / Most devices / Occasional breakage: https://postmarketos.org/edge\u001b[0m\r\n[12:54:42] * v25.12: Latest release / Recommended for best stability\u001b[0m\r\n[12:54:42] * v25.06: Old release (supported until 2026-01-23)\u001b[0m\r\n\r\n[12:54:42] \u001b[1mChannel [edge]\u001b[0m:"
+send: sending "edge\r" to { exp3 }
+expect: continuing expect
+
+expect: does " \r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+edge
+
+expect: does " \r\nedge\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:54:42] [94mNOTE:[0m pmaports is on master branch, copying git hooks.[0m
+
+expect: does " \r\nedge\r\n[12:54:42] \u001b[94mNOTE:\u001b[0m pmaports is on master branch, copying git hooks.\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:54:42] Choose your target device vendor (either an existing one, or a new one for porting).[0m
+
+expect: does " \r\nedge\r\n[12:54:42] \u001b[94mNOTE:\u001b[0m pmaports is on master branch, copying git hooks.\u001b[0m\r\n[12:54:42] Choose your target device vendor (either an existing one, or a new one for porting).\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=yes re=yes
+expect: set expect_out(0,string) "pmaports is on master branch, copying git hooks.\u001b[0m\r\n[12:54:"
+expect: set expect_out(spawn_id) "exp3"
+expect: set expect_out(buffer) " \r\nedge\r\n[12:54:42] \u001b[94mNOTE:\u001b[0m pmaports is on master branch, copying git hooks.\u001b[0m\r\n[12:54:"
+send: sending "\r" to { exp3 }
+expect: continuing expect
+
+expect: does "42] Choose your target device vendor (either an existing one, or a new one for porting).\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:54:42] Available vendors (103): acer, alcatel, amazon, amediatech, amlogic, apple, ark, arrow, asus, ayn, bananapi, barnesnoble, beelink, blackberry, bq, clockworkpi, cubietech, cutiepi, dongshanpi, epson, essential, fairphone, finepower, fly, fxtec, generic, goclever, google, gp, hisense, htc, huawei, inet, infocus, jolla, khadas, klipad, kobo, lark, leeco, lenovo, lg, librecomputer, linksys, lynx, mangopi, medion, meizu, microsoft, mnt, mobvoi, motorola, nextbit, nobby, nokia, nothing, nvidia, odroid, oneplus, oppo, ouya, pine64, planet, pocketbook, postmarketos, powkiddy, purism, qcom, qemu, qualcomm, radxa, raspberry, realme, rockchip, samsung, semc, sharp, shift, sipeed, solidrun, sony, sourceparts, sqfmi, starway, surftab, t2m, thundercomm, tokio, tolino, trekstor, valve, vernee, vivo, volla, wd, wexler, wiko, wileyfox, xiaomi, xunlong, yu, zte, zuk[0m
+
+expect: does "42] Choose your target device vendor (either an existing one, or a new one for porting).\u001b[0m\r\n[12:54:42] Available vendors (103): acer, alcatel, amazon, amediatech, amlogic, apple, ark, arrow, asus, ayn, bananapi, barnesnoble, beelink, blackberry, bq, clockworkpi, cubietech, cutiepi, dongshanpi, epson, essential, fairphone, finepower, fly, fxtec, generic, goclever, google, gp, hisense, htc, huawei, inet, infocus, jolla, khadas, klipad, kobo, lark, leeco, lenovo, lg, librecomputer, linksys, lynx, mangopi, medion, meizu, microsoft, mnt, mobvoi, motorola, nextbit, nobby, nokia, nothing, nvidia, odroid, oneplus, oppo, ouya, pine64, planet, pocketbook, postmarketos, powkiddy, purism, qcom, qemu, qualcomm, radxa, raspberry, realme, rockchip, samsung, semc, sharp, shift, sipeed, solidrun, sony, sourceparts, sqfmi, starway, surftab, t2m, thundercomm, tokio, tolino, trekstor, valve, vernee, vivo, volla, wd, wexler, wiko, wileyfox, xiaomi, xunlong, yu, zte, zuk\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:54:42] [1mVendor [qemu][0m: 
+
+
+expect: does "42] Choose your target device vendor (either an existing one, or a new one for porting).\u001b[0m\r\n[12:54:42] Available vendors (103): acer, alcatel, amazon, amediatech, amlogic, apple, ark, arrow, asus, ayn, bananapi, barnesnoble, beelink, blackberry, bq, clockworkpi, cubietech, cutiepi, dongshanpi, epson, essential, fairphone, finepower, fly, fxtec, generic, goclever, google, gp, hisense, htc, huawei, inet, infocus, jolla, khadas, klipad, kobo, lark, leeco, lenovo, lg, librecomputer, linksys, lynx, mangopi, medion, meizu, microsoft, mnt, mobvoi, motorola, nextbit, nobby, nokia, nothing, nvidia, odroid, oneplus, oppo, ouya, pine64, planet, pocketbook, postmarketos, powkiddy, purism, qcom, qemu, qualcomm, radxa, raspberry, realme, rockchip, samsung, semc, sharp, shift, sipeed, solidrun, sony, sourceparts, sqfmi, starway, surftab, t2m, thundercomm, tokio, tolino, trekstor, valve, vernee, vivo, volla, wd, wexler, wiko, wileyfox, xiaomi, xunlong, yu, zte, zuk\u001b[0m\r\n[12:54:42] \u001b[1mVendor [qemu]\u001b[0m: \r\n\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=yes re=yes
+expect: set expect_out(0,string) "Vendor [qemu]\u001b[0m:"
+expect: set expect_out(spawn_id) "exp3"
+expect: set expect_out(buffer) "42] Choose your target device vendor (either an existing one, or a new one for porting).\u001b[0m\r\n[12:54:42] Available vendors (103): acer, alcatel, amazon, amediatech, amlogic, apple, ark, arrow, asus, ayn, bananapi, barnesnoble, beelink, blackberry, bq, clockworkpi, cubietech, cutiepi, dongshanpi, epson, essential, fairphone, finepower, fly, fxtec, generic, goclever, google, gp, hisense, htc, huawei, inet, infocus, jolla, khadas, klipad, kobo, lark, leeco, lenovo, lg, librecomputer, linksys, lynx, mangopi, medion, meizu, microsoft, mnt, mobvoi, motorola, nextbit, nobby, nokia, nothing, nvidia, odroid, oneplus, oppo, ouya, pine64, planet, pocketbook, postmarketos, powkiddy, purism, qcom, qemu, qualcomm, radxa, raspberry, realme, rockchip, samsung, semc, sharp, shift, sipeed, solidrun, sony, sourceparts, sqfmi, starway, surftab, t2m, thundercomm, tokio, tolino, trekstor, valve, vernee, vivo, volla, wd, wexler, wiko, wileyfox, xiaomi, xunlong, yu, zte, zuk\u001b[0m\r\n[12:54:42] \u001b[1mVendor [qemu]\u001b[0m:"
+send: sending "xiaomi\r" to { exp3 }
+expect: continuing expect
+
+expect: does " \r\n\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+xiaomi
+
+expect: does " \r\n\r\nxiaomi\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:54:42] Devices are categorised as follows, from best to worst:
+* [95mMain[0m: ports where mostly everything works.
+* [94mCommunity[0m: often mostly usable, but may lack important functionality.
+* [92mTesting[0m: anything from "just boots in some sense" to almost fully functioning ports.
+* [93mDownstream[0m: ports that use a downstream kernel — very limited functionality. Not recommended.
+
+Available devices by codename (5): [95maarch64[0m (main), [95mamd64[0m (main), [95mloongarch64[0m (main), [95mppc64le[0m (main), [95mriscv64[0m (main)[0m
+
+expect: does " \r\n\r\nxiaomi\r\n[12:54:42] Devices are categorised as follows, from best to worst:\r\n* \u001b[95mMain\u001b[0m: ports where mostly everything works.\r\n* \u001b[94mCommunity\u001b[0m: often mostly usable, but may lack important functionality.\r\n* \u001b[92mTesting\u001b[0m: anything from "just boots in some sense" to almost fully functioning ports.\r\n* \u001b[93mDownstream\u001b[0m: ports that use a downstream kernel \u2014 very limited functionality. Not recommended.\r\n\r\nAvailable devices by codename (5): \u001b[95maarch64\u001b[0m (main), \u001b[95mamd64\u001b[0m (main), \u001b[95mloongarch64\u001b[0m (main), \u001b[95mppc64le\u001b[0m (main), \u001b[95mriscv64\u001b[0m (main)\u001b[0m\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:54:42] [1mDevice codename [amd64][0m: edge
+
+expect: does " \r\n\r\nxiaomi\r\n[12:54:42] Devices are categorised as follows, from best to worst:\r\n* \u001b[95mMain\u001b[0m: ports where mostly everything works.\r\n* \u001b[94mCommunity\u001b[0m: often mostly usable, but may lack important functionality.\r\n* \u001b[92mTesting\u001b[0m: anything from "just boots in some sense" to almost fully functioning ports.\r\n* \u001b[93mDownstream\u001b[0m: ports that use a downstream kernel \u2014 very limited functionality. Not recommended.\r\n\r\nAvailable devices by codename (5): \u001b[95maarch64\u001b[0m (main), \u001b[95mamd64\u001b[0m (main), \u001b[95mloongarch64\u001b[0m (main), \u001b[95mppc64le\u001b[0m (main), \u001b[95mriscv64\u001b[0m (main)\u001b[0m\r\n[12:54:42] \u001b[1mDevice codename [amd64]\u001b[0m: edge\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=yes re=yes
+expect: set expect_out(0,string) "Device codename [amd64]\u001b[0m:"
+expect: set expect_out(spawn_id) "exp3"
+expect: set expect_out(buffer) " \r\n\r\nxiaomi\r\n[12:54:42] Devices are categorised as follows, from best to worst:\r\n* \u001b[95mMain\u001b[0m: ports where mostly everything works.\r\n* \u001b[94mCommunity\u001b[0m: often mostly usable, but may lack important functionality.\r\n* \u001b[92mTesting\u001b[0m: anything from "just boots in some sense" to almost fully functioning ports.\r\n* \u001b[93mDownstream\u001b[0m: ports that use a downstream kernel \u2014 very limited functionality. Not recommended.\r\n\r\nAvailable devices by codename (5): \u001b[95maarch64\u001b[0m (main), \u001b[95mamd64\u001b[0m (main), \u001b[95mloongarch64\u001b[0m (main), \u001b[95mppc64le\u001b[0m (main), \u001b[95mriscv64\u001b[0m (main)\u001b[0m\r\n[12:54:42] \u001b[1mDevice codename [amd64]\u001b[0m:"
+send: sending "sagit\r" to { exp3 }
+expect: continuing expect
+
+expect: does " edge\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=no
+"Type\?.*:"? Gate "Type\?*:"? gate=no
+"Channel.*:"? Gate "Channel*:"? gate=no
+"Vendor.*:"? Gate "Vendor*:"? gate=no
+"Device codename.*:"? Gate "Device codename*:"? gate=no
+"User interface.*:"? Gate "User interface*:"? gate=no
+"Install systemd.*:"? Gate "Install systemd*:"? gate=no
+"Change them.*:"? Gate "Change them*:"? gate=no
+"Extra space.*:"? Gate "Extra space*:"? gate=no
+"Boot size.*:"? Gate "Boot size*:"? gate=no
+"Jobs.*:"? Gate "Jobs*:"? gate=no
+"Ccache size.*:"? Gate "Ccache size*:"? gate=no
+"Sudo timer.*:"? Gate "Sudo timer*:"? gate=no
+"Change mirror.*:"? Gate "Change mirror*:"? gate=no
+"Use this timezone.*:"? Gate "Use this timezone*:"? gate=no
+"Locale.*:"? Gate "Locale*:"? gate=no
+"Device hostname.*:"? Gate "Device hostname*:"? gate=no
+"SSH keys.*:"? Gate "SSH keys*:"? gate=no
+"Keymap.*:"? Gate "Keymap*:"? gate=no
+"Enable this package.*:"? Gate "Enable this package*:"? gate=no
+"Zap existing chroots.*:"? Gate "Zap existing chroots*:"? gate=no
+"]:"? Gate "]:"? gate=no
+[12:54:42] [1mThe specified device ('qemu-edge') could not be found in existing ports.[0m
+If you're trying to select a device that is supported, check the following:
+
+* Make sure you spelled the vendor name and codename correctly. 
+* Check if you're on the right release branch. Devices in the 'downstream' category are only available on the 'edge' branch; if you selected a stable branch, run pmbootstrap init again and select 'edge'.
+* If the device is supported by a generic port, type in the vendor and codename of the generic port.
+
+If you want to create a new device port, follow the guide at <https://postmarketos.org/porting/>.[0m
+[12:54:42] [1mDo you want to create a new device port? (y/n) [y][0m: 
+[12:54:42] What type of port are you creating?[0m
+[12:54:42] * mainline: Port using upstream/mainline kernel, compatible with upstream user space.[0m
+[12:54:42] * downstream: Port using downstream kernel, using the original (e.g. Android) kernel sources, at least partially incompatible with upstream user space.[0m
+[12:54:42] [1mType? (mainline/downstream)[0m: xiaomi
+
+expect: does " edge\r\n[12:54:42] \u001b[1mThe specified device ('qemu-edge') could not be found in existing ports.\u001b[0m\r\nIf you're trying to select a device that is supported, check the following:\r\n\r\n* Make sure you spelled the vendor name and codename correctly. \r\n* Check if you're on the right release branch. Devices in the 'downstream' category are only available on the 'edge' branch; if you selected a stable branch, run pmbootstrap init again and select 'edge'.\r\n* If the device is supported by a generic port, type in the vendor and codename of the generic port.\r\n\r\nIf you want to create a new device port, follow the guide at <https://postmarketos.org/porting/>.\u001b[0m\r\n[12:54:42] \u001b[1mDo you want to create a new device port? (y/n) [y]\u001b[0m: \r\n[12:54:42] What type of port are you creating?\u001b[0m\r\n[12:54:42] * mainline: Port using upstream/mainline kernel, compatible with upstream user space.\u001b[0m\r\n[12:54:42] * downstream: Port using downstream kernel, using the original (e.g. Android) kernel sources, at least partially incompatible with upstream user space.\u001b[0m\r\n[12:54:42] \u001b[1mType? (mainline/downstream)\u001b[0m: xiaomi\r\n" (spawn_id exp3) match regular expression "Provider.*:"? Gate "Provider*:"? gate=no
+"Kernel.*:"? Gate "Kernel*:"? gate=no
+"Work path.*:"? Gate "Work path*:"? gate=no
+"pmaports.*:"? Gate "pmaports*:"? gate=no
+".*create a new device port.*:"? Gate "*create a new device port*:"? gate=yes re=yes
+expect: set expect_out(0,string) " edge\r\n[12:54:42] \u001b[1mThe specified device ('qemu-edge') could not be found in existing ports.\u001b[0m\r\nIf you're trying to select a device that is supported, check the following:\r\n\r\n* Make sure you spelled the vendor name and codename correctly. \r\n* Check if you're on the right release branch. Devices in the 'downstream' category are only available on the 'edge' branch; if you selected a stable branch, run pmbootstrap init again and select 'edge'.\r\n* If the device is supported by a generic port, type in the vendor and codename of the generic port.\r\n\r\nIf you want to create a new device port, follow the guide at <https://postmarketos.org/porting/>.\u001b[0m\r\n[12:54:42] \u001b[1mDo you want to create a new device port? (y/n) [y]\u001b[0m: \r\n[12:54:42] What type of port are you creating?\u001b[0m\r\n[12:54:42] * mainline: Port using upstream/mainline kernel, compatible with upstream user space.\u001b[0m\r\n[12:54:42] * downstream: Port using downstream kernel, using the original (e.g. Android) kernel sources, at least partially incompatible with upstream user space.\u001b[0m\r\n[12:54:42] \u001b[1mType? (mainline/downstream)\u001b[0m:"
+expect: set expect_out(spawn_id) "exp3"
+expect: set expect_out(buffer) " edge\r\n[12:54:42] \u001b[1mThe specified device ('qemu-edge') could not be found in existing ports.\u001b[0m\r\nIf you're trying to select a device that is supported, check the following:\r\n\r\n* Make sure you spelled the vendor name and codename correctly. \r\n* Check if you're on the right release branch. Devices in the 'downstream' category are only available on the 'edge' branch; if you selected a stable branch, run pmbootstrap init again and select 'edge'.\r\n* If the device is supported by a generic port, type in the vendor and codename of the generic port.\r\n\r\nIf you want to create a new device port, follow the guide at <https://postmarketos.org/porting/>.\u001b[0m\r\n[12:54:42] \u001b[1mDo you want to create a new device port? (y/n) [y]\u001b[0m: \r\n[12:54:42] What type of port are you creating?\u001b[0m\r\n[12:54:42] * mainline: Port using upstream/mainline kernel, compatible with upstream user space.\u001b[0m\r\n[12:54:42] * downstream: Port using downstream kernel, using the original (e.g. Android) kernel sources, at least partially incompatible with upstream user space.\u001b[0m\r\n[12:54:42] \u001b[1mType? (mainline/downstream)\u001b[0m:"
+ERROR: Device not found in pmaports! Aborting.
