@@ -50,16 +50,19 @@ jobs:
           mkdir -p ~/.config/pmbootstrap
           touch build.log
           
-          # [Revision 17] 预初始化 Config 并强制刷新 pmaports
-          # 1. 初始化 Config
-          # 2. 强制拉取最新的 pmaports 并记录日志
-          pmbootstrap config work ~/.local/var/pmbootstrap
+          # [Revision 19] 手动初始化环境 (Config + Pmaports)
+          # 1. 手动创建配置文件，绕过 config 命令的 "Run init first" 限制
+          mkdir -p ~/.config
+          echo "[pmbootstrap]" > ~/.config/pmbootstrap_v3.cfg
+          
+          # 2. 手动克隆 pmaports，确保 init 能直接找到设备
+          mkdir -p ~/.local/var/pmbootstrap/cache_git
+          echo "Cloning pmaports..." >> build.log
+          git clone --depth=1 https://gitlab.postmarketos.org/postmarketOS/pmaports.git ~/.local/var/pmbootstrap/cache_git/pmaports >> build.log 2>&1
+          
+          # 3. 验证环境 (Pull 应成功/跳过)
           echo "Executing: pmbootstrap pull" >> build.log
           pmbootstrap pull >> build.log 2>&1 || echo "pmbootstrap pull failed" >> build.log
-          
-          # Debug: List pmaports directory to verify content
-          echo "Listing pmaports device directory:" >> build.log
-          ls -F ~/.local/var/pmbootstrap/cache_git/pmaports/device || echo "pmaports/device dir not found" >> build.log
 
           # 生成自动化交互脚本
           cat <<EOF > init.expect
