@@ -89,9 +89,8 @@ jobs:
         run: |
           set -o pipefail
           # --add: 预装 docker,docker-compose 等包
-          # --no-fde: 已弃用但保留兼容性 (FDE 默认关闭)
-          # 镜像大小由 pmbootstrap config extra_space 控制 (已在配置文件中设置)
-          pmbootstrap install --add docker,docker-compose,nano,htop 2>&1 | tee -a build.log
+          # --password: CI 自动化安装时使用的虚拟密码 (明文，仅用于测试)
+          pmbootstrap install --add docker,docker-compose,nano,htop --password changeme 2>&1 | tee -a build.log
 
       - name: Upload Build Log on Failure
         if: failure()
