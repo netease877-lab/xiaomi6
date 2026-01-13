@@ -15,7 +15,7 @@ jobs:
       - name: System Environment Setup
         run: |
           sudo apt-get update
-          # 安装构建所需的系统工具以及 binfmt-support
+          # 安装构建所需的系统工具以及 binfmt-support, expect
           sudo apt-get install -y \
             python3 \
             git \
@@ -23,7 +23,8 @@ jobs:
             fastboot \
             qemu-user-static \
             binfmt-support \
-            wget
+            wget \
+            expect
           
           # 注册 aarch64 模拟支持
           sudo update-binfmts --enable qemu-aarch64 || echo "binfmt already enabled"
@@ -41,33 +42,54 @@ jobs:
           # 验证版本
           pmbootstrap --version
 
-      - name: Initialize pmbootstrap (Robust Config)
+      - name: Initialize pmbootstrap (Robust Expect)
         run: |
           mkdir -p ~/.config/pmbootstrap
+          touch build.log
           
-          # 1. Config Pre-sets (Skips Logic to minimize prompts)
-          pmbootstrap config work /home/runner/.local/share/pmbootstrap
-          pmbootstrap config channel edge
-          pmbootstrap config user user
-          pmbootstrap config device xiaomi-sagit
-          pmbootstrap config ui console
+          # 生成自动化交互脚本
+          cat <<EOF > init.expect
+          set timeout 300
+          spawn pmbootstrap init
           
-          # 2. Keymap/Systemd/Other Prompts
-          # Inputs:
-          #   1. (Keymap) <Enter> for default
-          #   2. (Confirm UI Extras) <Enter> for default (no)
-          #   3. (Systemd) y <Enter>
-          #   4. (Additional Options) <Enter> for default (no)
-          #   5. (Timezone) <Enter> (default)
-          #   6. (Locale) <Enter> (default)
-          #   7. (Hostname) <Enter> (default)
-          #   8. (SSH) <Enter> (default)
+          # 处理所有可能的提问
+          expect {
+              "Channel" { send "edge\r"; exp_continue }
+              "Vendor" { send "xiaomi\r"; exp_continue }
+              "Device codename" { send "sagit\r"; exp_continue }
+              "User interface" { send "console\r"; exp_continue }
+              "Install systemd" { send "systemd\r"; exp_continue }
+              "Extra space" { send "\r"; exp_continue }
+              "Boot size" { send "\r"; exp_continue }
+              "Jobs" { send "\r"; exp_continue }
+              "Ccache size" { send "\r"; exp_continue }
+              "Sudo timer" { send "\r"; exp_continue }
+              "Change mirror" { send "\r"; exp_continue }
+              "Timezone" { send "\r"; exp_continue }
+              "Locale" { send "\r"; exp_continue }
+              "Hostname" { send "\r"; exp_continue }
+              "SSH keys" { send "\r"; exp_continue }
+              "Keymap" { send "\r"; exp_continue }
+              "Enable this package" { send "\r"; exp_continue }
+              
+              # 匹配到 Change them? (Additional options) 时回答 no (默认)
+              "Change them" { send "n\r"; exp_continue }
+
+              timeout { puts "Expect timeout!"; exit 1 }
+              eof
+          }
+          EOF
+          
+          # 执行脚本并捕获日志 (使用 set -o pipefail 确保错误不仅被记录还能传导)
+          set -o pipefail
           (
-            printf "\n\ny\n\n\n\n\n\n" | pmbootstrap init
+            chmod +x init.expect
+            expect init.expect
           ) 2>&1 | tee -a build.log
 
       - name: Build Rootfs with Docker
         run: |
+          set -o pipefail
           # --extra-packages 预装 docker,docker-compose 等
           # --size 4096 确保有 4GB 空间
           # --no-fde 关闭全盘加密
@@ -80,7 +102,8 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           # 防止冲突
           git pull --rebase
-          git add build.log
+          # 强制添加日志文件
+          git add --force build.log
           git commit -m "ci: build failure log [skip ci]"
           git push
 
