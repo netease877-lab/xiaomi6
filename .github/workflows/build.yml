@@ -108,19 +108,7 @@ jobs:
           
           # 创建 WiFi 启动脚本 (自动加载驱动)
           echo "Creating WiFi startup script..." >> build.log
-          pmbootstrap chroot -r -- sh -c 'cat > /etc/local.d/wifi-init.start << "WIFISCRIPT"
-#!/bin/sh
-# 加载 WiFi 驱动
-modprobe qcom-wcnss-pil 2>/dev/null || true
-modprobe ath10k_snoc 2>/dev/null || true
-modprobe wcn36xx 2>/dev/null || true
-
-# 启动 WiFi 服务
-sleep 2
-echo 1 > /dev/wcnss_wlan 2>/dev/null || true
-WIFISCRIPT
-chmod +x /etc/local.d/wifi-init.start
-rc-update add local default 2>/dev/null || true' 2>&1 | tee -a build.log || true
+          pmbootstrap chroot -r -- sh -c 'echo "#!/bin/sh" > /etc/local.d/wifi-init.start && echo "modprobe qcom-wcnss-pil 2>/dev/null || true" >> /etc/local.d/wifi-init.start && echo "modprobe ath10k_snoc 2>/dev/null || true" >> /etc/local.d/wifi-init.start && echo "modprobe wcn36xx 2>/dev/null || true" >> /etc/local.d/wifi-init.start && echo "sleep 2" >> /etc/local.d/wifi-init.start && echo "echo 1 > /dev/wcnss_wlan 2>/dev/null || true" >> /etc/local.d/wifi-init.start && chmod +x /etc/local.d/wifi-init.start && rc-update add local default 2>/dev/null || true' 2>&1 | tee -a build.log || true
 
       - name: Upload Build Log on Failure
         if: failure()
