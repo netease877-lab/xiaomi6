@@ -41,24 +41,28 @@ jobs:
           # 验证版本
           pmbootstrap --version
 
-      - name: Initialize pmbootstrap (Robust)
+      - name: Initialize pmbootstrap (Robust Config)
         run: |
           mkdir -p ~/.config/pmbootstrap
-          # 预先配置参数以减少交互式输入的脆弱性
+          
+          # 1. Config Pre-sets (Skips Logic to minimize prompts)
           pmbootstrap config work /home/runner/.local/share/pmbootstrap
           pmbootstrap config channel edge
           pmbootstrap config user user
+          pmbootstrap config device xiaomi-sagit
+          pmbootstrap config ui console
           
-          # 交互式初始化：补充剩余必要信息
-          # 顺序：Vendor(xiaomi) -> Device(sagit) -> Keymap(默认) -> UI(console) -> UI Extras(默认) -> Systemd(y)
-          pmbootstrap init <<EOF
-          xiaomi
-          sagit
-          
-          console
-          
-          y
-          EOF
+          # 2. Keymap/Systemd/Other Prompts
+          # Inputs:
+          #   1. (Keymap) <Enter> for default
+          #   2. (Confirm UI Extras) <Enter> for default (no)
+          #   3. (Systemd) y <Enter>
+          #   4. (Additional Options) <Enter> for default (no)
+          #   5. (Timezone) <Enter> (default)
+          #   6. (Locale) <Enter> (default)
+          #   7. (Hostname) <Enter> (default)
+          #   8. (SSH) <Enter> (default)
+          printf "\n\ny\n\n\n\n\n\n" | pmbootstrap init
 
       - name: Build Rootfs with Docker
         run: |
