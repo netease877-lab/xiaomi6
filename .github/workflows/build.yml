@@ -116,24 +116,24 @@ jobs:
           pmbootstrap chroot -r -- sh -c 'rc-update add adbd default 2>/dev/null || true' 2>&1 | tee -a build.log || true
           
           # 下载并安装完整的 ath10k WCN3990 固件 (解决 60 字节占位符问题)
-          echo "Downloading complete ath10k WCN3990 firmware..." >> build.log
+          echo "=== Downloading complete ath10k WCN3990 firmware ===" | tee -a build.log
           FIRMWARE_URL="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/ath10k/WCN3990/hw1.0/firmware-5.bin"
-          wget -q -O /tmp/firmware-5.bin "$FIRMWARE_URL" 2>&1 || echo "wget failed" >> build.log
+          wget -O /tmp/firmware-5.bin "$FIRMWARE_URL" 2>&1 | tee -a build.log || true
           FIRMWARE_SIZE=$(stat -c%s /tmp/firmware-5.bin 2>/dev/null || echo 0)
-          echo "Downloaded firmware size: $FIRMWARE_SIZE bytes" >> build.log
+          echo "Downloaded firmware size: $FIRMWARE_SIZE bytes" | tee -a build.log
           if [ "$FIRMWARE_SIZE" -gt 1000 ]; then
-            echo "Firmware downloaded successfully" >> build.log
-            # 获取 rootfs 路径
+            echo "Firmware downloaded successfully, copying to rootfs..." | tee -a build.log
+            # 使用 pmbootstrap chroot 复制固件到 rootfs (确保被打包)
+            pmbootstrap chroot -r -- mkdir -p /lib/firmware/ath10k/WCN3990/hw1.0/ 2>&1 | tee -a build.log || true
+            # 先拷贝到 chroot 内的临时位置，再移动到目标位置
             WORK_DIR=$(pmbootstrap config work)
             ROOTFS_PATH="$WORK_DIR/chroot_rootfs_xiaomi-sagit"
-            echo "ROOTFS_PATH: $ROOTFS_PATH" >> build.log
-            # 确保目录存在并复制固件
-            mkdir -p "$ROOTFS_PATH/lib/firmware/ath10k/WCN3990/hw1.0/" 2>&1 | tee -a build.log || true
-            cp /tmp/firmware-5.bin "$ROOTFS_PATH/lib/firmware/ath10k/WCN3990/hw1.0/firmware-5.bin" 2>&1 | tee -a build.log || true
-            ls -la "$ROOTFS_PATH/lib/firmware/ath10k/WCN3990/hw1.0/" >> build.log 2>&1 || true
-            echo "Firmware copied to rootfs" >> build.log
+            cp /tmp/firmware-5.bin "$ROOTFS_PATH/tmp/firmware-5.bin" 2>&1 | tee -a build.log || true
+            pmbootstrap chroot -r -- cp /tmp/firmware-5.bin /lib/firmware/ath10k/WCN3990/hw1.0/firmware-5.bin 2>&1 | tee -a build.log || true
+            pmbootstrap chroot -r -- ls -la /lib/firmware/ath10k/WCN3990/hw1.0/ 2>&1 | tee -a build.log || true
+            echo "Firmware copied to rootfs" | tee -a build.log
           else
-            echo "WARNING: Failed to download firmware or file too small ($FIRMWARE_SIZE bytes)" >> build.log
+            echo "WARNING: Failed to download firmware or file too small ($FIRMWARE_SIZE bytes)" | tee -a build.log
           fi
           
           # 创建 WiFi 启动脚本 (自动加载驱动)
