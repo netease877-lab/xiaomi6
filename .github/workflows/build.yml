@@ -73,7 +73,7 @@ jobs:
           work = /home/runner/.local/var/pmbootstrap
           hostname = mi6
           user = user
-          systemd = no
+          systemd = never
           extra_packages = docker,docker-compose,nano,htop
           is_default_channel = False
           aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports
