@@ -116,37 +116,37 @@ jobs:
             echo '# === WiFi/ADSP/MPSS Memory Fix ===' >> APKBUILD
             echo 'fix_memory_map() {' >> APKBUILD
             echo $'\tmsg "Applying FINAL MEMORY MAP fix..."' >> APKBUILD
-            echo $'\t# 动态查找 DTS 文件，防止路径错误' >> APKBUILD
-            echo $'\tlocal DTS_FILE=$(find . -name "msm8998-xiaomi-sagit.dts" | head -n 1)' >> APKBUILD
-            echo $'\tif [ -z "$DTS_FILE" ]; then' >> APKBUILD
-            echo $'\t\terror "ERROR: msm8998-xiaomi-sagit.dts NOT FOUND in $(pwd)"' >> APKBUILD
+            
+            # 根因分析：adsp_mem 和 wlan_msa_mem 定义在 msm8998.dtsi 中，而非设备特定的 .dts
+            echo $'\tlocal DTSI_FILE=$(find . -name "msm8998.dtsi" | head -n 1)' >> APKBUILD
+            echo $'\tif [ -z "$DTSI_FILE" ]; then' >> APKBUILD
+            echo $'\t\terror "ERROR: msm8998.dtsi NOT FOUND!"' >> APKBUILD
             echo $'\t\treturn 1' >> APKBUILD
             echo $'\tfi' >> APKBUILD
-            echo $'\tmsg "Found DTS file at: $DTS_FILE"' >> APKBUILD
-            echo $'\tmsg "Checking file BEFORE modification:"' >> APKBUILD
-            echo $'\tls -l "$DTS_FILE"' >> APKBUILD
-            echo $'\tmd5sum "$DTS_FILE"' >> APKBUILD
-            echo $'\tgrep "8b200000" "$DTS_FILE" || msg "WARNING: 8b200000 not found!"' >> APKBUILD
+            echo $'\tmsg "Found DTSI file at: $DTSI_FILE"' >> APKBUILD
             
-            echo $'\tmsg "Executing Memory Map Fix (Strategy: Delete & Append)..."' >> APKBUILD
-            
-            # --- 策略: 删除旧节点引用 + 追加新定义 ---
-            # 这种方法不依赖旧值的具体写法，也不会产生冲突
-            
-            # 1. 在文件开头(或 reserved-memory 之前) 删除旧引用
-            # 注意：sed 在 reserved-memory { 之前插入 delete-node 语句
-            echo $'\tsed -i "/reserved-memory {/i \\/delete-node/ &adsp_mem;\\n/delete-node/ &wlan_msa_mem;\\n" "$DTS_FILE"' >> APKBUILD
-            
-            # 2. 追加新定义
-            echo $'\t\tsed -i "/reserved-memory {/a \\' >> APKBUILD
-            echo $'\t\t\t\t\\ \\ \\ \\ \\ \\ \\ \\ adsp_mem: memory@91900000 {\\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ reg = <0x0 0x91900000 0x0 0x1e00000>;\\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ no-map;\\n\\ \\ \\ \\ \\ \\ \\ \\ };\\n\\ \\ \\ \\ \\ \\ \\ \\ wlan_msa_mem: memory@95800000 {\\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ reg = <0x0 0x95800000 0x0 0x100000>;\\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ no-map;\\n\\ \\ \\ \\ \\ \\ \\ \\ };" "$DTS_FILE"' >> APKBUILD
-            
-            # --- 验证 (检查新地址是否存在) ---
-            echo $'\tif grep -q "91900000" "$DTS_FILE"; then' >> APKBUILD
-            echo $'\t\tmsg "FINAL VERIFICATION SUCCESS: New adsp_mem definition found."' >> APKBUILD
+            # 验证原始地址存在
+            echo $'\tif grep -q "8b200000" "$DTSI_FILE"; then' >> APKBUILD
+            echo $'\t\tmsg "Original adsp_mem address (8b200000) found in DTSI. Applying fix..."' >> APKBUILD
+            echo $'\t\tsed -i "s/0x8b200000/0x91900000/g" "$DTSI_FILE"' >> APKBUILD
+            echo $'\t\tsed -i "s/memory@8b200000/memory@91900000/g" "$DTSI_FILE"' >> APKBUILD
             echo $'\telse' >> APKBUILD
-            echo $'\t\terror "FINAL VERIFICATION FAILED: Fix NOT applied! Context dump:"' >> APKBUILD
-            echo $'\t\tgrep -C 10 "reserved-memory" "$DTS_FILE" | head -n 30' >> APKBUILD
+            echo $'\t\tmsg "WARNING: 8b200000 not found in DTSI (already fixed or different version)"' >> APKBUILD
+            echo $'\tfi' >> APKBUILD
+            
+            echo $'\tif grep -q "95700000" "$DTSI_FILE"; then' >> APKBUILD
+            echo $'\t\tmsg "Original wlan_msa_mem address (95700000) found in DTSI. Applying fix..."' >> APKBUILD
+            echo $'\t\tsed -i "s/0x95700000/0x95800000/g" "$DTSI_FILE"' >> APKBUILD
+            echo $'\t\tsed -i "s/memory@95700000/memory@95800000/g" "$DTSI_FILE"' >> APKBUILD
+            echo $'\telse' >> APKBUILD
+            echo $'\t\tmsg "WARNING: 95700000 not found in DTSI"' >> APKBUILD
+            echo $'\tfi' >> APKBUILD
+            
+            # 最终验证
+            echo $'\tif grep -q "91900000" "$DTSI_FILE"; then' >> APKBUILD
+            echo $'\t\tmsg "VERIFICATION SUCCESS: New adsp_mem address (91900000) found in DTSI."' >> APKBUILD
+            echo $'\telse' >> APKBUILD
+            echo $'\t\terror "VERIFICATION FAILED: Fix NOT applied to DTSI!"' >> APKBUILD
             echo $'\t\treturn 1' >> APKBUILD
             echo $'\tfi' >> APKBUILD
             
