@@ -123,16 +123,29 @@ jobs:
             echo $'\t\treturn 1' >> APKBUILD
             echo $'\tfi' >> APKBUILD
             echo $'\tmsg "Found DTS file at: $DTS_FILE"' >> APKBUILD
-            echo $'\t' >> APKBUILD
+            echo $'\tmsg "Checking file BEFORE modification:"' >> APKBUILD
+            echo $'\tls -l "$DTS_FILE"' >> APKBUILD
+            echo $'\tmd5sum "$DTS_FILE"' >> APKBUILD
+            echo $'\tgrep "8b200000" "$DTS_FILE" || msg "WARNING: 8b200000 not found!"' >> APKBUILD
+            
+            echo $'\tmsg "Executing sed commands..."' >> APKBUILD
             echo $'\tsed -i "s/0x7000000/0x4900000/g" "$DTS_FILE"' >> APKBUILD
-            echo $'\tsed -i "s/8b200000/91900000/g" "$DTS_FILE"' >> APKBUILD
-            echo $'\tsed -i "s/95715000/95800000/g" "$DTS_FILE"' >> APKBUILD
-            echo $'\t' >> APKBUILD
+            # 尝试更宽松的匹配，处理潜在的空格或格式差异
+            echo $'\tsed -i "s/memory@8b200000/memory@91900000/" "$DTS_FILE"' >> APKBUILD
+            echo $'\tsed -i "s/0x8b200000/0x91900000/g" "$DTS_FILE"' >> APKBUILD
+            echo $'\tsed -i "s/memory@95715000/memory@95800000/" "$DTS_FILE"' >> APKBUILD
+            echo $'\tsed -i "s/0x95715000/0x95800000/" "$DTS_FILE"' >> APKBUILD
+            
+            echo $'\tmsg "Checking file AFTER modification:"' >> APKBUILD
+            echo $'\tls -l "$DTS_FILE"' >> APKBUILD
+            echo $'\tmd5sum "$DTS_FILE"' >> APKBUILD
+            
             echo $'\t# 验证修复是否生效' >> APKBUILD
             echo $'\tif grep -q "91900000" "$DTS_FILE"; then' >> APKBUILD
             echo $'\t\tmsg "VERIFICATION SUCCESS: 91900000 found in DTS."' >> APKBUILD
             echo $'\telse' >> APKBUILD
-            echo $'\t\terror "VERIFICATION FAILED: 91900000 NOT found in DTS after sed! Check file content."' >> APKBUILD
+            echo $'\t\terror "VERIFICATION FAILED: 91900000 NOT found in DTS after sed! Dumping context:"' >> APKBUILD
+            echo $'\t\tgrep -C 5 "memory@" "$DTS_FILE" | head -n 20' >> APKBUILD
             echo $'\t\treturn 1' >> APKBUILD
             echo $'\tfi' >> APKBUILD
             echo $'\tmsg "Memory map fix applied and verified"' >> APKBUILD
