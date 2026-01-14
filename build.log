@@ -5062,3 +5062,135 @@ Your version: 3.8.0
 [92mDevice[0m:  xiaomi-sagit (aarch64)
 [92mUI[0m:      console
 [92msystemd[0m: yes (default for selected UI)
+=== Step 1: Cloning pmaports ===
+Cloning into '/home/runner/.local/var/pmbootstrap/cache_git/pmaports'...
+pmaports cloned successfully
+=== Step 1.5: Patching deviceinfo for RNDIS ===
+Added RNDIS config to deviceinfo
+# Reference: <https://postmarketos.org/deviceinfo>
+# Please use double quotes only. You can source this file in shell scripts.
+
+deviceinfo_format_version="0"
+deviceinfo_name="Xiaomi Mi 6"
+deviceinfo_manufacturer="Xiaomi"
+deviceinfo_codename="xiaomi-sagit"
+deviceinfo_year="2017"
+deviceinfo_arch="aarch64"
+
+# Device related
+deviceinfo_drm="true"
+deviceinfo_chassis="handset"
+deviceinfo_external_storage="false"
+deviceinfo_screen_width="1080"
+deviceinfo_screen_height="1920"
+
+# Bootloader related
+deviceinfo_flash_method="fastboot"
+deviceinfo_kernel_cmdline="clk_ignore_unused console=tty1 modprobe.blacklist=ipa"
+deviceinfo_generate_bootimg="true"
+deviceinfo_bootimg_qcdt="false"
+deviceinfo_flash_offset_base="0x00000000"
+deviceinfo_flash_offset_kernel="0x00008000"
+deviceinfo_flash_offset_ramdisk="0x01000000"
+deviceinfo_flash_offset_second="0x00f00000"
+deviceinfo_flash_offset_tags="0x00000100"
+deviceinfo_flash_pagesize="4096"
+deviceinfo_flash_sparse="true"
+# Kernel options
+deviceinfo_dtb="qcom/msm8998-xiaomi-sagit"
+deviceinfo_append_dtb="true"
+deviceinfo_flash_kernel_on_update="true"
+
+# Initramfs
+
+# Required for devices using UFS as storage (instead of e.g. eMMC)
+deviceinfo_rootfs_image_sector_size="4096"
+deviceinfo_usb_network_function="rndis.usb0"
+=== Step 2: Generating config file ===
+Config file content:
+[pmbootstrap]
+device = xiaomi-sagit
+ui = console
+work = /home/runner/.local/var/pmbootstrap
+hostname = mi6
+user = user
+systemd = no
+extra_packages = docker,docker-compose,nano,htop
+is_default_channel = False
+aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports
+=== Step 3: Initializing work directory ===
+work directory initialized with version 8
+=== Step 4: Verifying config ===
+INFO:root:ERROR: Invalid value for 'systemd': 'no' (valid values: default, always, never)
+INFO:root:See also: <https://postmarketos.org/troubleshooting>
+DEBUG:root:Traceback (most recent call last):
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/core/config.py", line 133, in __setattr__
+    super().__setattr__(key, type_(value))
+                             ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/enum.py", line 757, in __call__
+    return cls.__new__(cls, value)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/enum.py", line 1171, in __new__
+    raise ve_exc
+ValueError: 'no' is not a valid SystemdConfig
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/__init__.py", line 65, in main
+    args = parse.arguments()
+           ^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/parse/arguments.py", line 1347, in arguments
+    pmb.helpers.args.init(args)
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/helpers/args.py", line 55, in init
+    config = pmb.config.load(args.config)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/config/file.py", line 49, in load
+    setattr(config, key, cfg["pmbootstrap"][key])
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/core/config.py", line 141, in __setattr__
+    raise ValueError(msg) from exception
+ValueError: Invalid value for 'systemd': 'no' (valid values: default, always, never)
+
+
+Run 'pmbootstrap log' for details. Alternatively you can use '--details-to-stdout' to get more output, e.g. 'pmbootstrap --details-to-stdout init'.
+
+Before you report this error, ensure that pmbootstrap is up to date.
+Find the latest version here: https://gitlab.postmarketos.org/postmarketOS/pmbootstrap/-/tags
+Your version: 3.8.0
+pmbootstrap status failed (expected if first run)
+INFO:root:ERROR: Invalid value for 'systemd': 'no' (valid values: default, always, never)
+INFO:root:See also: <https://postmarketos.org/troubleshooting>
+DEBUG:root:Traceback (most recent call last):
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/core/config.py", line 133, in __setattr__
+    super().__setattr__(key, type_(value))
+                             ^^^^^^^^^^^^
+  File "/usr/lib/python3.12/enum.py", line 757, in __call__
+    return cls.__new__(cls, value)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/enum.py", line 1171, in __new__
+    raise ve_exc
+ValueError: 'no' is not a valid SystemdConfig
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/__init__.py", line 65, in main
+    args = parse.arguments()
+           ^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/parse/arguments.py", line 1347, in arguments
+    pmb.helpers.args.init(args)
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/helpers/args.py", line 55, in init
+    config = pmb.config.load(args.config)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/config/file.py", line 49, in load
+    setattr(config, key, cfg["pmbootstrap"][key])
+  File "/home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/core/config.py", line 141, in __setattr__
+    raise ValueError(msg) from exception
+ValueError: Invalid value for 'systemd': 'no' (valid values: default, always, never)
+
+
+Run 'pmbootstrap log' for details. Alternatively you can use '--details-to-stdout' to get more output, e.g. 'pmbootstrap --details-to-stdout init'.
+
+Before you report this error, ensure that pmbootstrap is up to date.
+Find the latest version here: https://gitlab.postmarketos.org/postmarketOS/pmbootstrap/-/tags
+Your version: 3.8.0
