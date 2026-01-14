@@ -32,6 +32,26 @@ jobs:
           # 注册 aarch64 模拟支持
           sudo update-binfmts --enable qemu-aarch64 || echo "binfmt already enabled"
 
+      # ========== 缓存配置 (加速后续编译) ==========
+      - name: Cache pmbootstrap work directory
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/var/pmbootstrap/cache_git
+            ~/.local/var/pmbootstrap/packages
+            ~/.local/var/pmbootstrap/cache_distfiles
+          key: pmbootstrap-${{ runner.os }}-${{ hashFiles('**/APKBUILD') }}
+          restore-keys: |
+            pmbootstrap-${{ runner.os }}-
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            ccache-${{ runner.os }}-
+
       - name: Install pmbootstrap from Source (Correct Domain)
         run: |
           # 修复：使用官方新域名 gitlab.postmarketos.org
@@ -105,22 +125,38 @@ jobs:
           
           cd "$KERNEL_PKG_DIR"
           
-          # 3. 稳健修改 APKBUILD (注入 sed 命令到现有 prepare 函数)
-          # 在 default_prepare 之后插入修复逻辑，保留原有的 .config 复制操作
-          sed -i '/default_prepare/a \
-              msg "Applying FINAL MEMORY MAP fix..." \
-              # 1. MPSS: 缩小到 73MB (避让 ADSP) \
-              sed -i "s/0x7000000/0x4900000/g" arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts \
-              # 2. ADSP: 移动到真实地址 0x91900000 \
-              sed -i "s/8b200000/91900000/g" arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts \
-              # 3. WLAN: 移动到 0x95800000 (避让 GPU) \
-              sed -i "s/95715000/95800000/g" arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts \
-              # 4. WLAN: 添加 memory-region 关联 \
-              sed -i "/status = \\"okay\\";/a \\\\tmemory-region = <\&wlan_msa_mem>;" arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts' APKBUILD
+          # 3. 稳健修改 APKBUILD
+          # 使用 heredoc 追加一个独立的修复函数，然后让 prepare() 调用它
+          # 注意：<<- 允许结束标记有前导 Tab
+          cat >> APKBUILD <<-'PATCH_EOF'
+	
+	# === WiFi/ADSP/MPSS Memory Fix ===
+	fix_memory_map() {
+		msg "Applying FINAL MEMORY MAP fix based on firmware analysis..."
+		local DTS_FILE="arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts"
+		
+		# 1. MPSS: 缩小到 73MB (0x4900000) 以避让 ADSP
+		sed -i 's/0x7000000/0x4900000/g' "$DTS_FILE"
+		
+		# 2. ADSP: 移动到真实固件地址 0x91900000
+		sed -i 's/8b200000/91900000/g' "$DTS_FILE"
+		
+		# 3. WLAN: 移动到 0x95800000 以避让 GPU
+		sed -i 's/95715000/95800000/g' "$DTS_FILE"
+		
+		# 4. WLAN: 添加 memory-region 属性
+		sed -i '/status = "okay";/a\	memory-region = <\&wlan_msa_mem>;' "$DTS_FILE"
+		
+		msg "Memory map fix applied successfully"
+	}
+	PATCH_EOF
           
-          # 更新版本号
-          sed -i 's/pkgrel=3/pkgrel=7/' APKBUILD
-          echo "APKBUILD modified. New pkgrel=7." >> "$BUILD_LOG"
+          # 在 prepare() 函数中调用 fix_memory_map (在 default_prepare 之后)
+          sed -i '/default_prepare/a\	fix_memory_map' APKBUILD
+          
+          # 更新版本号强制重新编译
+          sed -i 's/pkgrel=3/pkgrel=8/' APKBUILD
+          echo "APKBUILD modified. New pkgrel=8." >> "$BUILD_LOG"
           
           # 4. 更新 checksum 并强制编译内核
           echo "=== Step 6: Rebuilding Kernel ===" >> "$BUILD_LOG"
