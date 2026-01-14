@@ -105,26 +105,16 @@ jobs:
           
           cd "$KERNEL_PKG_DIR"
           
-          # 3. 稳健修改 APKBUILD (使用 sed 注入 prepare 函数)
-          # 防止重复添加
-          sed -i '/prepare() {/,/}/d' APKBUILD
-          
-          # 追加新的 prepare 函数，覆盖默认逻辑
-          cat <<'EOF' >> APKBUILD
-
-          prepare() {
-              default_prepare
-              msg "Applying WiFi memory fix via sed..."
-              # 1. 替换内存地址 (95715000 -> 95700000)
-              sed -i 's/95715000/95700000/g' arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts
-              # 2. 添加 memory-region 属性
-              sed -i '/status = "okay";/a \ \tmemory-region = <\&wlan_msa_mem>;' arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts
-          }
-          EOF
+          # 3. 稳健修改 APKBUILD (注入 sed 命令到现有 prepare 函数)
+          # 在 default_prepare 之后插入修复逻辑，保留原有的 .config 复制操作
+          sed -i '/default_prepare/a \
+              msg "Applying WiFi memory fix via sed..." \
+              sed -i "s/95715000/95700000/g" arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts \
+              sed -i "/status = \\"okay\\";/a \\\\tmemory-region = <\&wlan_msa_mem>;" arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts' APKBUILD
           
           # 更新版本号
-          sed -i 's/pkgrel=3/pkgrel=5/' APKBUILD
-          echo "APKBUILD modified with sed fix. New pkgrel=5." >> "$BUILD_LOG"
+          sed -i 's/pkgrel=3/pkgrel=6/' APKBUILD
+          echo "APKBUILD modified. New pkgrel=6." >> "$BUILD_LOG"
           
           # 4. 更新 checksum 并强制编译内核
           echo "=== Step 6: Rebuilding Kernel ===" >> "$BUILD_LOG"
