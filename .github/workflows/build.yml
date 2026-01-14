@@ -55,6 +55,13 @@ jobs:
           git clone --depth=1 https://gitlab.postmarketos.org/postmarketOS/pmaports.git \
               ~/.local/var/pmbootstrap/cache_git/pmaports >> build.log 2>&1
           echo "pmaports cloned successfully" >> build.log
+          
+          # 1.5 修改 deviceinfo 添加 RNDIS USB 网络支持 (Windows 10 兼容)
+          echo "=== Step 1.5: Patching deviceinfo for RNDIS ===" >> build.log
+          DEVICEINFO_PATH=~/.local/var/pmbootstrap/cache_git/pmaports/device/testing/device-xiaomi-sagit/deviceinfo
+          echo 'deviceinfo_usb_network_function="rndis.usb0"' >> "$DEVICEINFO_PATH"
+          echo "Added RNDIS config to deviceinfo" >> build.log
+          cat "$DEVICEINFO_PATH" >> build.log
 
           # 2. 直接生成完整配置文件 (无需 init 交互)
           # 根据 pmb/core/config.py 源码，配置文件为 INI 格式
@@ -92,19 +99,19 @@ jobs:
           #   - docker,docker-compose,nano,htop: 用户需求
           #   - firmware-xiaomi-sagit: Qualcomm WiFi/蓝牙固件
           #   - pd-mapper,tqftpserv,qrtr,rmtfs: 主线内核 WiFi 所需服务
+          #   - android-tools: 包含 adbd (ADB 守护进程)
           # UI: fbkeyboard (Framebuffer 虚拟键盘，极致轻量)
           # --password: 用户密码
           # --android-recovery-zip: 生成 TWRP 可直接刷入的 zip 包
           pmbootstrap install \
-            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs \
+            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs,android-tools \
             --password zhoutong \
             --android-recovery-zip \
             2>&1 | tee -a build.log
           
-          # 配置 USB 网络使用 RNDIS (兼容 Windows 10)
-          # 使用 -r 参数确保写入 rootfs 而不是 native chroot
-          echo "Configuring USB network to use RNDIS for Windows 10 compatibility..." >> build.log
-          pmbootstrap chroot -r -- sh -c 'mkdir -p /etc/deviceinfo.d && echo "deviceinfo_usb_network_function=rndis.usb0" > /etc/deviceinfo.d/usb_rndis.conf' 2>&1 | tee -a build.log || true
+          # 启用 adbd 服务 (ADB 守护进程)
+          echo "Enabling adbd service..." >> build.log
+          pmbootstrap chroot -r -- sh -c 'rc-update add adbd default 2>/dev/null || true' 2>&1 | tee -a build.log || true
           
           # 创建 WiFi 启动脚本 (自动加载驱动)
           echo "Creating WiFi startup script..." >> build.log
