@@ -128,11 +128,8 @@ jobs:
           pmbootstrap checksum linux-postmarketos-qcom-msm8998 2>&1 | tee -a "$BUILD_LOG"
           
           echo "Running build --force..."
-          if ! pmbootstrap build linux-postmarketos-qcom-msm8998 --force 2>&1 | tee -a "$BUILD_LOG"; then
-              echo "Build FAILED! Dumping internal log details:" | tee -a "$BUILD_LOG"
-              cat ~/.local/var/pmbootstrap/log.txt | tee -a "$BUILD_LOG"
-              exit 1
-          fi
+          # 使用 --details-to-stdout 确保所有日志直接输出到控制台
+          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 --force 2>&1 | tee -a "$BUILD_LOG"
           
           echo "Kernel rebuild complete" >> "$BUILD_LOG"
 
