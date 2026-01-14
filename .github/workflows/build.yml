@@ -106,7 +106,7 @@ jobs:
           # --password: 用户密码
           # --android-recovery-zip: 生成 TWRP 可直接刷入的 zip 包
           pmbootstrap install \
-            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs,msm-modem,msm-modem-openrc,ofono,android-tools \
+            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,linux-firmware-ath10k,pd-mapper,tqftpserv,qrtr,rmtfs,msm-modem,msm-modem-openrc,ofono,android-tools \
             --password zhoutong \
             --android-recovery-zip \
             2>&1 | tee -a build.log
