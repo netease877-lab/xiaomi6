@@ -18,7 +18,6 @@ jobs:
       - name: System Environment Setup
         run: |
           sudo apt-get update
-          # 安装构建所需的系统工具以及 binfmt-support, expect
           sudo apt-get install -y \
             python3 \
             git \
@@ -28,11 +27,9 @@ jobs:
             binfmt-support \
             wget \
             expect
-          
-          # 注册 aarch64 模拟支持
           sudo update-binfmts --enable qemu-aarch64 || echo "binfmt already enabled"
 
-      # ========== 缓存配置 (加速后续编译) ==========
+      # ========== 优化后的缓存配置 ==========
       - name: Cache pmbootstrap work directory
         uses: actions/cache@v4
         with:
@@ -40,29 +37,17 @@ jobs:
             /home/runner/.local/var/pmbootstrap/cache_git
             /home/runner/.local/var/pmbootstrap/packages
             /home/runner/.local/var/pmbootstrap/cache_distfiles
-          key: pmbootstrap-${{ runner.os }}-sagit-${{ github.run_number }}
+          # 使用 APKBUILD 的 hash 作为 key，只要内核配置没变，缓存就有效
+          key: pmbootstrap-v2-${{ runner.os }}-${{ hashFiles('**/APKBUILD') }}
           restore-keys: |
-            pmbootstrap-${{ runner.os }}-sagit-
+            pmbootstrap-v2-${{ runner.os }}-
 
-      - name: Cache ccache
-        uses: actions/cache@v4
-        with:
-          path: /home/runner/.ccache
-          key: ccache-${{ runner.os }}-${{ github.sha }}
-          restore-keys: |
-            ccache-${{ runner.os }}-
-
-      - name: Install pmbootstrap from Source (Correct Domain)
+      - name: Install pmbootstrap from Source
         run: |
-          # 修复：使用官方新域名 gitlab.postmarketos.org
           git clone --depth 1 https://gitlab.postmarketos.org/postmarketOS/pmbootstrap.git
-          
-          # 设置软链接
           PMB_PATH=$(pwd)/pmbootstrap/pmbootstrap.py
           chmod +x $PMB_PATH
           sudo ln -sf $PMB_PATH /usr/local/bin/pmbootstrap
-          
-          # 验证版本
           pmbootstrap --version
 
       - name: Initialize pmbootstrap (Direct Config)
@@ -70,7 +55,6 @@ jobs:
           mkdir -p ~/.config ~/.local/var/pmbootstrap/cache_git
           touch build.log
 
-          # 1. 克隆或更新 pmaports (兼容缓存恢复场景)
           echo "=== Step 1: Setting up pmaports ===" >> build.log
           PMAPORTS_DIR=~/.local/var/pmbootstrap/cache_git/pmaports
           if [ -d "$PMAPORTS_DIR" ]; then
@@ -82,17 +66,12 @@ jobs:
             git clone --depth=1 https://gitlab.postmarketos.org/postmarketOS/pmaports.git \
                 "$PMAPORTS_DIR" >> build.log 2>&1
           fi
-          echo "pmaports ready" >> build.log
           
-          # 1.5 修改 deviceinfo 添加 RNDIS USB 网络支持 (Windows 10 兼容)
           echo "=== Step 1.5: Patching deviceinfo for RNDIS ===" >> build.log
-          DEVICEINFO_PATH=~/.local/var/pmbootstrap/cache_git/pmaports/device/testing/device-xiaomi-sagit/deviceinfo
-          echo 'deviceinfo_usb_network_function="rndis.usb0"' >> "$DEVICEINFO_PATH"
-          echo "Added RNDIS config to deviceinfo" >> build.log
-          cat "$DEVICEINFO_PATH" >> build.log
-
-          # 2. 直接生成完整配置文件 (无需 init 交互)
-          # 根据 pmb/core/config.py 源码，配置文件为 INI 格式
+          DEVICEINFO_PATH="$PMAPORTS_DIR/device/testing/device-xiaomi-sagit/deviceinfo"
+          # 避免重复添加
+          grep -q "rndis.usb0" "$DEVICEINFO_PATH" || echo 'deviceinfo_usb_network_function="rndis.usb0"' >> "$DEVICEINFO_PATH"
+          
           echo "=== Step 2: Generating config file ===" >> build.log
           cat <<EOF > ~/.config/pmbootstrap_v3.cfg
           [pmbootstrap]
@@ -107,141 +86,64 @@ jobs:
           aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports
           EOF
 
-          echo "Config file content:" >> build.log
-          cat ~/.config/pmbootstrap_v3.cfg >> build.log
-
-          # 3. 初始化工作目录结构 (work_version = 8，来自 pmb/config/__init__.py)
-          echo "=== Step 3: Initializing work directory ===" >> build.log
-          mkdir -p ~/.local/var/pmbootstrap
           echo "8" > ~/.local/var/pmbootstrap/version
-          echo "work directory initialized with version 8" >> build.log
-
-          # 4. 验证配置是否被正确读取
-          echo "=== Step 4: Verifying config ===" >> build.log
-          pmbootstrap status >> build.log 2>&1 || echo "pmbootstrap status failed (expected if first run)" >> build.log
 
       - name: Patch and Rebuild Kernel
         run: |
-          # 0. 定义日志路径 (绝对路径)
           BUILD_LOG="$GITHUB_WORKSPACE/build.log"
-          
-          # 1. 定义 pmbootstrap 路径
           PMAPORTS=~/.local/var/pmbootstrap/cache_git/pmaports
           KERNEL_PKG_DIR="$PMAPORTS/device/testing/linux-postmarketos-qcom-msm8998"
           
-          echo "=== Step 5: Patching Kernel ===" >> "$BUILD_LOG"
-          
           cd "$KERNEL_PKG_DIR"
           
-          # 3. 稳健修改 APKBUILD - 使用 $'...' 语法确保 Tab 正确输出
-          echo '' >> APKBUILD
-          echo '# === WiFi/ADSP/MPSS Memory Fix ===' >> APKBUILD
-          echo 'fix_memory_map() {' >> APKBUILD
-          echo $'\tmsg "Applying FINAL MEMORY MAP fix..."' >> APKBUILD
-          echo $'\tlocal DTS_FILE="arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts"' >> APKBUILD
-          echo $'\tsed -i "s/0x7000000/0x4900000/g" "$DTS_FILE"' >> APKBUILD
-          echo $'\tsed -i "s/8b200000/91900000/g" "$DTS_FILE"' >> APKBUILD
-          echo $'\tsed -i "s/95715000/95800000/g" "$DTS_FILE"' >> APKBUILD
-          echo $'\tmsg "Memory map fix applied"' >> APKBUILD
-          echo '}' >> APKBUILD
+          # 检查是否已经补丁过，防止重复注入
+          if ! grep -q "fix_memory_map" APKBUILD; then
+            echo '' >> APKBUILD
+            echo '# === WiFi/ADSP/MPSS Memory Fix ===' >> APKBUILD
+            echo 'fix_memory_map() {' >> APKBUILD
+            echo $'\tmsg "Applying FINAL MEMORY MAP fix..."' >> APKBUILD
+            echo $'\tlocal DTS_FILE="arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts"' >> APKBUILD
+            echo $'\tsed -i "s/0x7000000/0x4900000/g" "$DTS_FILE"' >> APKBUILD
+            echo $'\tsed -i "s/8b200000/91900000/g" "$DTS_FILE"' >> APKBUILD
+            echo $'\tsed -i "s/95715000/95800000/g" "$DTS_FILE"' >> APKBUILD
+            echo $'\tmsg "Memory map fix applied"' >> APKBUILD
+            echo '}' >> APKBUILD
+            sed -i '/default_prepare/a\	fix_memory_map' APKBUILD
+          fi
           
-          # 在 prepare() 函数中调用 fix_memory_map (在 default_prepare 之后)
-          sed -i '/default_prepare/a\	fix_memory_map' APKBUILD
+          # 使用正则匹配任意 pkgrel 值
+          sed -i 's/pkgrel=[0-9]*/pkgrel=10/' APKBUILD
           
-          # 更新版本号强制重新编译
-          sed -i 's/pkgrel=3/pkgrel=9/' APKBUILD
-          echo "APKBUILD modified. New pkgrel=9." >> "$BUILD_LOG"
-          
-          # 4. 更新 checksum 并强制编译内核
-          echo "=== Step 6: Rebuilding Kernel ===" >> "$BUILD_LOG"
-          
-          # 必须切回 workspace 才能正确执行 pmbootstrap (或者确保 PATH 正确)
-          # 其实 pmbootstrap 可以在任何地方运行，只要 init 过了。
-          # 但为了保险，我们使用 tee 直接输出到控制台和文件
-          
-          echo "Running checksum..."
           pmbootstrap checksum linux-postmarketos-qcom-msm8998 2>&1 | tee -a "$BUILD_LOG"
-          
-          echo "Running build --force..."
-          # 使用 --details-to-stdout 确保所有日志直接输出到控制台
-          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 --force 2>&1 | tee -a "$BUILD_LOG"
-          
-          echo "Kernel rebuild complete" >> "$BUILD_LOG"
+          # 去掉 --force，pmbootstrap 会自动检查是否需要重新编译
+          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 2>&1 | tee -a "$BUILD_LOG"
 
       - name: Build Rootfs with Docker (TWRP Zip)
         run: |
           set -o pipefail
-          # --add: 预装包
-          #   - docker,docker-compose,nano,htop: 用户需求
-          #   - firmware-xiaomi-sagit: Qualcomm WiFi/蓝牙固件
-          #   - pd-mapper,tqftpserv,qrtr,rmtfs: 主线内核 WiFi 所需服务
-          #   - msm-modem,msm-modem-openrc: 调制解调器支持 (WiFi 依赖 MSS)
-          #   - ofono: 电话/调制解调器管理
-          #   - android-tools: 包含 adbd (ADB 守护进程)
-          # UI: console (纯命令行，通过 SSH 访问)
-          # --password: 用户密码
-          # --android-recovery-zip: 生成 TWRP 可直接刷入的 zip 包
           pmbootstrap install \
             --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs,msm-modem,ofono,android-tools \
             --password zhoutong \
             --android-recovery-zip \
             2>&1 | tee -a build.log
           
-          # 启用 adbd 服务 (ADB 守护进程)
-          echo "Enabling adbd service..." >> build.log
-          pmbootstrap chroot -r -- sh -c 'rc-update add adbd default 2>/dev/null || true' 2>&1 | tee -a build.log || true
-          
-          # 禁用 sleep-inhibitor 服务 (在此设备上不工作，避免启动时报错)
-          echo "Disabling sleep-inhibitor service..." >> build.log
-          pmbootstrap chroot -r -- sh -c 'rc-update del sleep-inhibitor default 2>/dev/null || true' 2>&1 | tee -a build.log || true
-          
-          # 下载并安装完整的 ath10k WCN3990 固件 (解决 60 字节占位符问题)
-          echo "=== Downloading complete ath10k WCN3990 firmware ===" | tee -a build.log
+          # 注入固件
           FIRMWARE_URL="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/ath10k/WCN3990/hw1.0/firmware-5.bin"
-          wget -O /tmp/firmware-5.bin "$FIRMWARE_URL" 2>&1 | tee -a build.log || true
-          FIRMWARE_SIZE=$(stat -c%s /tmp/firmware-5.bin 2>/dev/null || echo 0)
-          echo "Downloaded firmware size: $FIRMWARE_SIZE bytes" | tee -a build.log
-          if [ "$FIRMWARE_SIZE" -gt 1000 ]; then
-            echo "Firmware downloaded successfully, copying to rootfs..." | tee -a build.log
-            # 使用 pmbootstrap chroot 复制固件到 rootfs (确保被打包)
-            pmbootstrap chroot -r -- mkdir -p /lib/firmware/ath10k/WCN3990/hw1.0/ 2>&1 | tee -a build.log || true
-            # 先拷贝到 chroot 内的临时位置，再移动到目标位置
-            WORK_DIR=$(pmbootstrap config work)
-            ROOTFS_PATH="$WORK_DIR/chroot_rootfs_xiaomi-sagit"
-            cp /tmp/firmware-5.bin "$ROOTFS_PATH/tmp/firmware-5.bin" 2>&1 | tee -a build.log || true
-            pmbootstrap chroot -r -- cp /tmp/firmware-5.bin /lib/firmware/ath10k/WCN3990/hw1.0/firmware-5.bin 2>&1 | tee -a build.log || true
-            pmbootstrap chroot -r -- ls -la /lib/firmware/ath10k/WCN3990/hw1.0/ 2>&1 | tee -a build.log || true
-            echo "Firmware copied to rootfs" | tee -a build.log
-          else
-            echo "WARNING: Failed to download firmware or file too small ($FIRMWARE_SIZE bytes)" | tee -a build.log
-          fi
+          wget -O /tmp/firmware-5.bin "$FIRMWARE_URL" || true
           
-          # 创建 WiFi 启动脚本 (自动加载驱动)
-          echo "Creating WiFi startup script..." >> build.log
-          pmbootstrap chroot -r -- sh -c 'echo "#!/bin/sh" > /etc/local.d/wifi-init.start && echo "modprobe qcom-wcnss-pil 2>/dev/null || true" >> /etc/local.d/wifi-init.start && echo "modprobe ath10k_snoc 2>/dev/null || true" >> /etc/local.d/wifi-init.start && echo "modprobe wcn36xx 2>/dev/null || true" >> /etc/local.d/wifi-init.start && echo "sleep 2" >> /etc/local.d/wifi-init.start && echo "echo 1 > /dev/wcnss_wlan 2>/dev/null || true" >> /etc/local.d/wifi-init.start && chmod +x /etc/local.d/wifi-init.start && rc-update add local default 2>/dev/null || true' 2>&1 | tee -a build.log || true
-
-      - name: Upload Build Log on Failure
-        if: failure()
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          pmbootstrap chroot -r -- mkdir -p /lib/firmware/ath10k/WCN3990/hw1.0/
+          WORK_DIR=$(pmbootstrap config work)
+          cp /tmp/firmware-5.bin "$WORK_DIR/chroot_rootfs_xiaomi-sagit/tmp/" || true
+          pmbootstrap chroot -r -- cp /tmp/firmware-5.bin /lib/firmware/ath10k/WCN3990/hw1.0/firmware-5.bin || true
           
-          # 1. 先提交本地修改 (解决 unstaged changes 错误)
-          git add --force build.log
-          git commit -m "ci: build failure log [skip ci]"
-          
-          # 2. 再拉取远程更新 (rebase)
-          git pull --rebase
-          
-          # 3. 推送
-          git push
+          # 服务启用
+          pmbootstrap chroot -r -- rc-update add adbd default || true
+          pmbootstrap chroot -r -- rc-update del sleep-inhibitor default || true
 
       - name: Export and Compress Images
         run: |
-          # 导出镜像
           pmbootstrap export
           mkdir -p output
-          # 兼容导出文件
           cp -r /tmp/postmarketOS-export/* output/
 
       - name: Upload Build Result
@@ -255,3 +157,25 @@ jobs:
         with:
           name: Mi6-Boot-Image-Fixed
           path: output/boot.img
+
+      # ========== 核心修复：准备缓存阶段 ==========
+      - name: Prepare Cache Permissions
+        if: always()
+        run: |
+          echo "=== Cleaning up and fixing permissions for cache ==="
+          # 1. 卸载所有还在挂载的目录 (pmbootstrap 有时会残留挂载)
+          sudo pmbootstrap shutdown || true
+          # 2. 修改工作目录所有权，让 runner 用户可以打包它
+          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap || true
+          # 3. 删除巨大的 chroot 目录以节省空间
+          find /home/runner/.local/var/pmbootstrap -maxdepth 1 -name "chroot_*" -type d -exec sudo rm -rf {} + || true
+
+      - name: Upload Build Log on Failure
+        if: failure()
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add --force build.log
+          git commit -m "ci: build failure log [skip ci]"
+          git pull --rebase
+          git push
