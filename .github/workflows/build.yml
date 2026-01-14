@@ -42,6 +42,20 @@ jobs:
           restore-keys: |
             pmbootstrap-v2-${{ runner.os }}-
 
+      # ========== 修复缓存恢复后的权限问题 ==========
+      - name: Fix Restored Cache Permissions
+        run: |
+          echo "=== Fixing permissions for restored cache ==="
+          # 如果缓存恢复了 packages 目录，需要确保 pmbootstrap 可以写入
+          if [ -d /home/runner/.local/var/pmbootstrap/packages ]; then
+            sudo chmod -R 777 /home/runner/.local/var/pmbootstrap/packages
+            echo "Fixed packages directory permissions"
+          fi
+          if [ -d /home/runner/.local/var/pmbootstrap/cache_git ]; then
+            sudo chmod -R 777 /home/runner/.local/var/pmbootstrap/cache_git
+            echo "Fixed cache_git directory permissions"
+          fi
+
       - name: Install pmbootstrap from Source
         run: |
           git clone --depth 1 https://gitlab.postmarketos.org/postmarketOS/pmbootstrap.git
