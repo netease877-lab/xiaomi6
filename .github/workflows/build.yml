@@ -102,7 +102,7 @@ jobs:
           #   - msm-modem,msm-modem-openrc: 调制解调器支持 (WiFi 依赖 MSS)
           #   - ofono: 电话/调制解调器管理
           #   - android-tools: 包含 adbd (ADB 守护进程)
-          # UI: fbkeyboard (Framebuffer 虚拟键盘，极致轻量)
+          # UI: console (纯命令行，通过 SSH 访问)
           # --password: 用户密码
           # --android-recovery-zip: 生成 TWRP 可直接刷入的 zip 包
           pmbootstrap install \
@@ -118,16 +118,22 @@ jobs:
           # 下载并安装完整的 ath10k WCN3990 固件 (解决 60 字节占位符问题)
           echo "Downloading complete ath10k WCN3990 firmware..." >> build.log
           FIRMWARE_URL="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/ath10k/WCN3990/hw1.0/firmware-5.bin"
-          wget -O /tmp/firmware-5.bin "$FIRMWARE_URL" 2>&1 | tee -a build.log || true
-          if [ -f /tmp/firmware-5.bin ] && [ $(stat -c%s /tmp/firmware-5.bin) -gt 1000 ]; then
-            echo "Firmware downloaded successfully, size: $(stat -c%s /tmp/firmware-5.bin) bytes" >> build.log
-            pmbootstrap chroot -r -- mkdir -p /lib/firmware/ath10k/WCN3990/hw1.0/ 2>&1 | tee -a build.log || true
-            # 复制固件到 rootfs
-            ROOTFS_PATH=$(pmbootstrap config work)/chroot_rootfs_xiaomi-sagit
+          wget -q -O /tmp/firmware-5.bin "$FIRMWARE_URL" 2>&1 || echo "wget failed" >> build.log
+          FIRMWARE_SIZE=$(stat -c%s /tmp/firmware-5.bin 2>/dev/null || echo 0)
+          echo "Downloaded firmware size: $FIRMWARE_SIZE bytes" >> build.log
+          if [ "$FIRMWARE_SIZE" -gt 1000 ]; then
+            echo "Firmware downloaded successfully" >> build.log
+            # 获取 rootfs 路径
+            WORK_DIR=$(pmbootstrap config work)
+            ROOTFS_PATH="$WORK_DIR/chroot_rootfs_xiaomi-sagit"
+            echo "ROOTFS_PATH: $ROOTFS_PATH" >> build.log
+            # 确保目录存在并复制固件
+            mkdir -p "$ROOTFS_PATH/lib/firmware/ath10k/WCN3990/hw1.0/" 2>&1 | tee -a build.log || true
             cp /tmp/firmware-5.bin "$ROOTFS_PATH/lib/firmware/ath10k/WCN3990/hw1.0/firmware-5.bin" 2>&1 | tee -a build.log || true
+            ls -la "$ROOTFS_PATH/lib/firmware/ath10k/WCN3990/hw1.0/" >> build.log 2>&1 || true
             echo "Firmware copied to rootfs" >> build.log
           else
-            echo "WARNING: Failed to download firmware or file too small" >> build.log
+            echo "WARNING: Failed to download firmware or file too small ($FIRMWARE_SIZE bytes)" >> build.log
           fi
           
           # 创建 WiFi 启动脚本 (自动加载驱动)
