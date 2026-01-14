@@ -69,7 +69,7 @@ jobs:
           cat <<EOF > ~/.config/pmbootstrap_v3.cfg
           [pmbootstrap]
           device = xiaomi-sagit
-          ui = fbkeyboard
+          ui = console
           work = /home/runner/.local/var/pmbootstrap
           hostname = mi6
           user = user
