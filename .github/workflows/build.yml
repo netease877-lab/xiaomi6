@@ -187,13 +187,13 @@ jobs:
             sed -i '/default_prepare/a\	fix_memory_map' APKBUILD
           fi
           
-          # 使用正则匹配任意 pkgrel 值
-          sed -i 's/pkgrel=[0-9]*/pkgrel=10/' APKBUILD
+          # 使用正则匹配任意 pkgrel 值，设置为更高的版本号强制重新编译
+          sed -i 's/pkgrel=[0-9]*/pkgrel=20/' APKBUILD
           
           pmbootstrap checksum linux-postmarketos-qcom-msm8998 2>&1 | tee -a "$BUILD_LOG"
           
-          # 使用 --ccache 参数显式启用 ccache（pmbootstrap 会自动挂载到 chroot 内）
-          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 --ccache 2>&1 | tee -a "$BUILD_LOG"
+          # 使用 --force 强制重新编译，确保 fix_memory_map 被执行
+          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 --force --ccache 2>&1 | tee -a "$BUILD_LOG"
           
           # 构建后显示 ccache 统计
           echo "=== ccache stats after kernel build ==="
