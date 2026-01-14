@@ -125,38 +125,25 @@ jobs:
           
           cd "$KERNEL_PKG_DIR"
           
-          # 3. 稳健修改 APKBUILD
-          # 使用 heredoc 追加一个独立的修复函数，然后让 prepare() 调用它
-          # 注意：<<- 允许结束标记有前导 Tab
-          cat >> APKBUILD <<-'PATCH_EOF'
-	
-	# === WiFi/ADSP/MPSS Memory Fix ===
-	fix_memory_map() {
-		msg "Applying FINAL MEMORY MAP fix based on firmware analysis..."
-		local DTS_FILE="arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts"
-		
-		# 1. MPSS: 缩小到 73MB (0x4900000) 以避让 ADSP
-		sed -i 's/0x7000000/0x4900000/g' "$DTS_FILE"
-		
-		# 2. ADSP: 移动到真实固件地址 0x91900000
-		sed -i 's/8b200000/91900000/g' "$DTS_FILE"
-		
-		# 3. WLAN: 移动到 0x95800000 以避让 GPU
-		sed -i 's/95715000/95800000/g' "$DTS_FILE"
-		
-		# 4. WLAN: 添加 memory-region 属性
-		sed -i '/status = "okay";/a\	memory-region = <\&wlan_msa_mem>;' "$DTS_FILE"
-		
-		msg "Memory map fix applied successfully"
-	}
-	PATCH_EOF
+          # 3. 稳健修改 APKBUILD - 使用 echo 逐行追加避免 heredoc 缩进问题
+          echo '' >> APKBUILD
+          echo '# === WiFi/ADSP/MPSS Memory Fix ===' >> APKBUILD
+          echo 'fix_memory_map() {' >> APKBUILD
+          echo '	msg "Applying FINAL MEMORY MAP fix based on firmware analysis..."' >> APKBUILD
+          echo '	local DTS_FILE="arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts"' >> APKBUILD
+          echo '	sed -i "s/0x7000000/0x4900000/g" "$DTS_FILE"' >> APKBUILD
+          echo '	sed -i "s/8b200000/91900000/g" "$DTS_FILE"' >> APKBUILD
+          echo '	sed -i "s/95715000/95800000/g" "$DTS_FILE"' >> APKBUILD
+          echo '	sed -i "/status = \"okay\";/a\\	memory-region = <\\&wlan_msa_mem>;" "$DTS_FILE"' >> APKBUILD
+          echo '	msg "Memory map fix applied successfully"' >> APKBUILD
+          echo '}' >> APKBUILD
           
           # 在 prepare() 函数中调用 fix_memory_map (在 default_prepare 之后)
           sed -i '/default_prepare/a\	fix_memory_map' APKBUILD
           
           # 更新版本号强制重新编译
-          sed -i 's/pkgrel=3/pkgrel=8/' APKBUILD
-          echo "APKBUILD modified. New pkgrel=8." >> "$BUILD_LOG"
+          sed -i 's/pkgrel=3/pkgrel=9/' APKBUILD
+          echo "APKBUILD modified. New pkgrel=9." >> "$BUILD_LOG"
           
           # 4. 更新 checksum 并强制编译内核
           echo "=== Step 6: Rebuilding Kernel ===" >> "$BUILD_LOG"
