@@ -10296,3 +10296,425 @@ OK: 580.9 MiB in 84 packages
 [13:17:40] [91mERROR:[0m Couldn't build aarch64/linux-postmarketos-qcom-msm8998-6.0-r10.apk![0m
 
 Run 'pmbootstrap log' for details.
+=== Step 1: Setting up pmaports ===
+Cloning pmaports...
+Cloning into '/home/runner/.local/var/pmbootstrap/cache_git/pmaports'...
+=== Step 1.5: Patching deviceinfo for RNDIS ===
+=== Step 2: Generating config file ===
+[13:31:57] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[13:31:58] Update package index for x86_64 (4 file(s))[0m
+[13:31:59] Download http://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/apk-tools-static-3.0.3-r2.apk[0m
+[13:31:59] (native) Creating chroot[0m
+[13:32:01] (native) install abuild apk-tools build-base ccache git pigz[0m
+[13:32:03] (native) generate checksums for linux-postmarketos-qcom-msm8998[0m
+[13:32:08] [94mNOTE:[0m chroot is still active (use 'pmbootstrap shutdown' as necessary)[0m
+[13:32:08] [92mDONE![0m[0m
+[13:32:09] $ pmbootstrap /usr/local/bin/pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998[0m
+[13:32:09] Pmbootstrap v3.8.0 (Python 3.12.3 (main, Nov  6 2025, 13:44:16) [GCC 13.3.0])[0m
+[13:32:09] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[13:32:09] % cd /home/runner/.local/var/pmbootstrap/cache_git/pmaports; git remote -v[0m
+[13:32:09] % cd /home/runner/.local/var/pmbootstrap/cache_git/pmaports; git show origin/master:channels.cfg[0m
+[13:32:09] Attempting to build: linux-postmarketos-qcom-msm8998[0m
+[13:32:09] APKINDEX outdated (file does not exist yet): http://mirror.postmarketos.org/postmarketos/master/aarch64/APKINDEX.tar.gz[0m
+[13:32:09] APKINDEX outdated (file does not exist yet): http://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/APKINDEX.tar.gz[0m
+[13:32:09] APKINDEX outdated (file does not exist yet): http://dl-cdn.alpinelinux.org/alpine/edge/community/aarch64/APKINDEX.tar.gz[0m
+[13:32:09] APKINDEX outdated (file does not exist yet): http://dl-cdn.alpinelinux.org/alpine/edge/testing/aarch64/APKINDEX.tar.gz[0m
+[13:32:09] Update package index for aarch64 (4 file(s))[0m
+[13:32:09] Download http://mirror.postmarketos.org/postmarketos/master/aarch64/APKINDEX.tar.gz[0m
+[13:32:09] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/cache_apk_aarch64[0m
+[13:32:09] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_2133489a116f2a4aa3cb24bfb99e043d59160ca5cc7fead69e7c3f2240547e0e /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.bdd0d494.tar.gz[0m
+[13:32:09] Download http://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/APKINDEX.tar.gz[0m
+[13:32:10] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_40cefd388a6f179766303318562db37c94a7e2d75b4d33074c8beaeac080064f /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.066df28d.tar.gz[0m
+[13:32:10] Download http://dl-cdn.alpinelinux.org/alpine/edge/community/aarch64/APKINDEX.tar.gz[0m
+[13:32:10] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_6e80a381677679c0e83714d2dc6c418e0e0c96a146d9b57fa03839d1b9f5bd40 /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.b53994b4.tar.gz[0m
+[13:32:10] Download http://dl-cdn.alpinelinux.org/alpine/edge/testing/aarch64/APKINDEX.tar.gz[0m
+[13:32:10] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_d6ab3af2c088593f2c66b1286307b98f45cec060b38de2384f33bc9072659c06 /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.30e6f5af.tar.gz[0m
+[13:32:10] aarch64/linux-postmarketos-qcom-msm8998: Generating dependency tree[0m
+[13:32:10] Build is necessary for package 'linux-postmarketos-qcom-msm8998': binary package out of date (binary: 6.0-r3, local pmaports: 6.0-r10)[0m
+[13:32:12] postmarketos-installkernel: picked provider(s) with highest priority 100: postmarketos-installkernel[0m
+[13:32:12] openssl-dev: picked provider(s) with highest priority 100: openssl-dev[0m
+[13:32:12] Building [94m1[0m package[0m
+[13:32:12]    [94m*[0m edge/linux-postmarketos-qcom-msm8998[0m
+[13:32:12] [93m=> (1/1)[0m [94medge/linux-postmarketos-qcom-msm8998[0m: Installing dependencies[0m
+[13:32:12] Initializing x86_64 buildroot[0m
+[13:32:12] (native) generate abuild keys[0m
+[13:32:12] (native) % busybox su pmos -c PACKAGER='pmos <pmos@local>' HOME=/home/pmos abuild-keygen -n -q -a ;[0m
+writing RSA key
+[13:32:12] (native) % cp mnt/pmbootstrap/abuild-config/pmos@local-69679adc.rsa.pub /etc/apk/keys/[0m
+[13:32:12] (native) % sed -i -e s/^CLEANUP=.*/CLEANUP=''/ /etc/abuild.conf[0m
+[13:32:12] (native) % sed -i -e s/^ERROR_CLEANUP=.*/ERROR_CLEANUP=''/ /etc/abuild.conf[0m
+[13:32:12] (native) % sed -i $ a\export JOBS=4 /etc/abuild.conf[0m
+[13:32:12] (native) % busybox su pmos -c HOME=/home/pmos ccache --max-size 5G ;[0m
+Set cache size limit to 5.0 GB
+[13:32:12] Attempting to build: g++-aarch64, gcc-aarch64, abuild, ccache-cross-symlinks[0m
+[13:32:12] x86_64/g++-aarch64: Generating dependency tree[0m
+[13:32:13] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[13:32:13] x86_64/so:libgmp.so.10: marked for build[0m
+[13:32:13] x86_64/so:libisl.so.23: marked for build[0m
+[13:32:13] x86_64/so:libmpc.so.3: marked for build[0m
+[13:32:13] x86_64/so:libmpfr.so.6: marked for build[0m
+[13:32:13] x86_64/so:libz.so.1: marked for build[0m
+[13:32:13] x86_64/binutils-aarch64: marked for build[0m
+[13:32:13] x86_64/mpc1: marked for build[0m
+[13:32:13] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[13:32:13] x86_64/so:libgcc_s.so.1: marked for build[0m
+[13:32:13] x86_64/so:libgmp.so.10: marked for build[0m
+[13:32:13] x86_64/so:libisl.so.23: marked for build[0m
+[13:32:13] x86_64/so:libmpc.so.3: marked for build[0m
+[13:32:13] x86_64/so:libmpfr.so.6: marked for build[0m
+[13:32:13] x86_64/so:libstdc++.so.6: marked for build[0m
+[13:32:13] x86_64/so:libz.so.1: marked for build[0m
+[13:32:13] x86_64/gcc-aarch64: Generating dependency tree[0m
+[13:32:13] x86_64/binutils-aarch64: marked for build[0m
+[13:32:13] x86_64/bison: marked for build[0m
+[13:32:13] x86_64/flex: marked for build[0m
+[13:32:13] x86_64/g++: marked for build[0m
+[13:32:13] x86_64/gawk: marked for build[0m
+[13:32:13] x86_64/gcc: marked for build[0m
+[13:32:13] x86_64/gmp-dev: marked for build[0m
+[13:32:13] x86_64/isl-dev: marked for build[0m
+[13:32:13] x86_64/linux-headers: marked for build[0m
+[13:32:13] x86_64/mpc1: marked for build[0m
+[13:32:13] x86_64/mpc1-dev: marked for build[0m
+[13:32:13] x86_64/mpfr-dev: marked for build[0m
+[13:32:13] x86_64/musl-dev-aarch64: marked for build[0m
+[13:32:13] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[13:32:13] x86_64/so:libgcc_s.so.1: marked for build[0m
+[13:32:13] x86_64/so:libgmp.so.10: marked for build[0m
+[13:32:13] x86_64/so:libisl.so.23: marked for build[0m
+[13:32:13] x86_64/so:libmpc.so.3: marked for build[0m
+[13:32:13] x86_64/so:libmpfr.so.6: marked for build[0m
+[13:32:13] x86_64/so:libstdc++.so.6: marked for build[0m
+[13:32:13] x86_64/so:libz.so.1: marked for build[0m
+[13:32:13] x86_64/texinfo: marked for build[0m
+[13:32:13] x86_64/zip: marked for build[0m
+[13:32:13] x86_64/zlib-dev: marked for build[0m
+[13:32:13] x86_64/libstdc++-dev$_target: marked for build[0m
+[13:32:13] x86_64/gcc$_target: marked for build[0m
+[13:32:13] x86_64/musl-dev: marked for build[0m
+[13:32:13] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[13:32:13] x86_64/so:libgmp.so.10: marked for build[0m
+[13:32:13] x86_64/so:libisl.so.23: marked for build[0m
+[13:32:13] x86_64/so:libmpc.so.3: marked for build[0m
+[13:32:13] x86_64/so:libmpfr.so.6: marked for build[0m
+[13:32:13] x86_64/so:libz.so.1: marked for build[0m
+[13:32:13] x86_64/binutils-aarch64: marked for build[0m
+[13:32:13] x86_64/mpc1: marked for build[0m
+[13:32:13] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[13:32:13] x86_64/so:libgcc_s.so.1: marked for build[0m
+[13:32:13] x86_64/so:libgmp.so.10: marked for build[0m
+[13:32:13] x86_64/so:libisl.so.23: marked for build[0m
+[13:32:13] x86_64/so:libmpc.so.3: marked for build[0m
+[13:32:13] x86_64/so:libmpfr.so.6: marked for build[0m
+[13:32:13] x86_64/so:libstdc++.so.6: marked for build[0m
+[13:32:13] x86_64/so:libz.so.1: marked for build[0m
+[13:32:13] x86_64/ccache-cross-symlinks: Generating dependency tree[0m
+[13:32:13] fakeroot: picked provider(s) with highest priority 100: fakeroot[0m
+[13:32:13] /bin/sh: picked provider(s) with highest priority 100: busybox-binsh[0m
+[13:32:13] openssl: picked provider(s) with highest priority 100: openssl[0m
+[13:32:13] libcrypto3: picked provider(s) with highest priority 100: libcrypto3[0m
+[13:32:13] libssl3: picked provider(s) with highest priority 100: libssl3[0m
+[13:32:13] (native) install ccache-cross-symlinks abuild gcc-aarch64 g++-aarch64[0m
+[13:32:13] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/tmp[0m
+[13:32:13] % sudo rm -f /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:32:13] % sudo mkfifo /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:32:13] % sudo cat /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:32:13] % sudo sh -c exec 3>/home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo; /home/runner/.local/var/pmbootstrap/apk.static --progress-fd 3 --no-progress --root /home/runner/.local/var/pmbootstrap/chroot_native --arch x86_64 --cache-dir /home/runner/.local/var/pmbootstrap/cache_apk_x86_64 --repository /home/runner/.local/var/pmbootstrap/packages/edge --repository /home/runner/.local/var/pmbootstrap/packages/edge add --no-interactive g++-aarch64 gcc-aarch64 abuild ccache-cross-symlinks ;[0m
+[13:32:13] New background process: pid=3349, output=background[0m
+WARNING: opening /home/runner/.local/var/pmbootstrap/packages/edge/x86_64/APKINDEX.tar.gz: No such file or directory
+(1/5) Installing ccache-cross-symlinks (3-r3)
+(2/5) Installing libstdc++-dev-aarch64 (15.2.0-r2)
+(3/5) Installing binutils-aarch64 (2.45.1-r1)
+(4/5) Installing gcc-aarch64 (15.2.0-r2)
+(5/5) Installing g++-aarch64 (15.2.0-r2)
+Executing busybox-1.37.0-r31.trigger
+OK: 529.8 MiB in 66 packages
+[13:32:18] postmarketos-installkernel: picked provider(s) with highest priority 100: postmarketos-installkernel[0m
+[13:32:18] openssl-dev: picked provider(s) with highest priority 100: openssl-dev[0m
+[13:32:18] /bin/sh: picked provider(s) with highest priority 100: busybox-binsh[0m
+[13:32:18] libssl3: picked provider(s) with highest priority 100: libssl3[0m
+[13:32:18] libcrypto3: picked provider(s) with highest priority 100: libcrypto3[0m
+[13:32:18] (native) install perl bison xz openssl-dev postmarketos-installkernel bash findutils flex linux-headers[0m
+[13:32:18] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/tmp[0m
+[13:32:18] % sudo rm -f /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:32:18] % sudo mkfifo /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:32:18] % sudo cat /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:32:18] % sudo sh -c exec 3>/home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo; /home/runner/.local/var/pmbootstrap/apk.static --progress-fd 3 --no-progress --root /home/runner/.local/var/pmbootstrap/chroot_native --arch x86_64 --cache-dir /home/runner/.local/var/pmbootstrap/cache_apk_x86_64 --repository /home/runner/.local/var/pmbootstrap/packages/edge --repository /home/runner/.local/var/pmbootstrap/packages/edge add --no-interactive perl bison xz openssl-dev postmarketos-installkernel bash findutils flex linux-headers ;[0m
+[13:32:18] New background process: pid=3365, output=background[0m
+WARNING: opening /home/runner/.local/var/pmbootstrap/packages/edge/x86_64/APKINDEX.tar.gz: No such file or directory
+( 1/18) Installing ncurses-terminfo-base (6.6_p20251231-r0)
+( 2/18) Installing libncursesw (6.6_p20251231-r0)
+( 3/18) Installing readline (8.3.3-r0)
+( 4/18) Installing bash (5.3.3-r1)
+  Executing bash-5.3.3-r1.post-install
+( 5/18) Installing m4 (1.4.20-r0)
+( 6/18) Installing bison (3.8.2-r2)
+( 7/18) Installing findutils (4.10.0-r0)
+( 8/18) Installing flex (2.6.4-r7)
+( 9/18) Installing linux-headers (6.18.5-r0)
+(10/18) Installing openssl-dev (3.5.4-r0)
+(11/18) Installing libbz2 (1.0.8-r6)
+(12/18) Installing perl (5.42.0-r0)
+(13/18) Installing perl-error (0.17030-r0)
+(14/18) Installing perl-git (2.52.0-r0)
+(15/18) Installing git-perl (2.52.0-r0)
+(16/18) Installing postmarketos-installkernel (0.1-r3)
+(17/18) Installing xz-libs (5.8.1-r0)
+(18/18) Installing xz (5.8.1-r0)
+Executing busybox-1.37.0-r31.trigger
+OK: 580.9 MiB in 84 packages
+[13:32:19] [93m=>[0m [94medge/linux-postmarketos-qcom-msm8998[0m: Building package (cross compiling: cross-native)[0m
+[13:32:19] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/packages/edge[0m
+[13:32:19] % sudo chown -R 12345:12345 /home/runner/.local/var/pmbootstrap/packages[0m
+[13:32:19] (native) % mkdir -p /home/pmos/packages; rm -f /home/pmos/packages/pmos; ln -sf /mnt/pmbootstrap/packages/edge /home/pmos/packages/pmos[0m
+[13:32:19] % sudo rm -rf /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build[0m
+[13:32:19] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build[0m
+[13:32:19] % sudo cp -rL /home/runner/.local/var/pmbootstrap/cache_git/pmaports/device/testing/linux-postmarketos-qcom-msm8998/APKBUILD /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build/APKBUILD[0m
+[13:32:19] % sudo cp -rL /home/runner/.local/var/pmbootstrap/cache_git/pmaports/device/testing/linux-postmarketos-qcom-msm8998/config-postmarketos-qcom-msm8998.aarch64 /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build/config-postmarketos-qcom-msm8998.aarch64[0m
+[13:32:19] % sudo sh -c cat /home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/data/abuild_overrides.sh >> /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build/APKBUILD[0m
+[13:32:19] (native) % chown -R pmos:pmos /home/pmos/build[0m
+[13:32:19] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/chroot_native/mnt/pmaports[0m
+[13:32:19] % sudo mount --bind /home/runner/.local/var/pmbootstrap/cache_git/pmaports /home/runner/.local/var/pmbootstrap/chroot_native/mnt/pmaports[0m
+[13:32:19] (native) % busybox su pmos -c HOME=/home/pmos mkdir -p /home/pmos/build ;[0m
+[13:32:19] (native) % busybox su pmos -c HOME=/home/pmos ln -sf /mnt/pmaports/.git /home/pmos/build/.git ;[0m
+[13:32:19] (native) % cd /home/pmos/build; busybox su pmos -c SUDO_APK='abuild-apk --no-progress' CROSS_COMPILE=aarch64-alpine-linux-musl- CC=aarch64-alpine-linux-musl-gcc CARCH=aarch64 RUSTC_WRAPPER=/usr/bin/sccache GOCACHE=/home/pmos/.cache/go-build HOME=/home/pmos abuild -d -D postmarketOS ;[0m
+>>> linux-postmarketos-qcom-msm8998: Building pmos/linux-postmarketos-qcom-msm8998 6.0-r10 (using abuild 3.16.0-r0) started Wed, 14 Jan 2026 13:32:19 +0000
+>>> linux-postmarketos-qcom-msm8998: Validating /home/pmos/build/APKBUILD...
+>>> WARNING: linux-postmarketos-qcom-msm8998: No maintainer
+>>> linux-postmarketos-qcom-msm8998: Cleaning up srcdir
+>>> linux-postmarketos-qcom-msm8998: Cleaning up pkgdir
+>>> linux-postmarketos-qcom-msm8998: Cleaning up tmpdir
+>>> linux-postmarketos-qcom-msm8998: Fetching https://gitlab.com/msm8998-mainline/linux/-/archive/90169e6e9fee29fae14aeac0a905246be5ce6304/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz
+/var/cache/distfiles/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz: OK
+/home/pmos/build/config-postmarketos-qcom-msm8998.aarch64: OK
+>>> linux-postmarketos-qcom-msm8998: Fetching https://gitlab.com/msm8998-mainline/linux/-/archive/90169e6e9fee29fae14aeac0a905246be5ce6304/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz
+/var/cache/distfiles/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz: OK
+/home/pmos/build/config-postmarketos-qcom-msm8998.aarch64: OK
+>>> linux-postmarketos-qcom-msm8998: Unpacking /var/cache/distfiles/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz...
+>>> linux-postmarketos-qcom-msm8998: Applying FINAL MEMORY MAP fix...
+>>> linux-postmarketos-qcom-msm8998: Found DTS file at: ./arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts
+>>> linux-postmarketos-qcom-msm8998: Checking file BEFORE modification:
+-rw-r--r--    1 pmos     pmos         18241 Oct  9  2022 ./arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts
+8c8da4c602ea58be18951f28fe9b2b11  ./arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts
+>>> linux-postmarketos-qcom-msm8998: WARNING: 8b200000 not found!
+>>> linux-postmarketos-qcom-msm8998: Executing Memory Map Fix (Strategy: Replace OR Append)...
+>>> linux-postmarketos-qcom-msm8998: WARNING: Replacement failed (target not found). Attempting APPEND strategy...
+>>> linux-postmarketos-qcom-msm8998: Inserted new memory nodes into reserved-memory.
+>>> linux-postmarketos-qcom-msm8998: FINAL VERIFICATION SUCCESS: 91900000 found in DTS.
+>>> linux-postmarketos-qcom-msm8998: Memory map fix applied and verified
+: "  SYNC    include/config/auto.conf"
+make -f ./Makefile syncconfig
+make -f ./scripts/Makefile.build obj=scripts/basic
+make -f ./scripts/Makefile.build obj=scripts/kconfig syncconfig
+scripts/kconfig/conf -s --syncconfig Kconfig
+make -f ./scripts/Makefile.build obj=scripts/basic
+make -f ./scripts/Makefile.asm-generic obj=arch/arm64/include/generated/uapi/asm \
+generic=include/uapi/asm-generic
+./scripts/remove-stale-files
+make -f ./scripts/Makefile.build obj=scripts/dtc
+set -e; mkdir -p include/config/; trap "rm -f include/config/.kernel.release.tmp" EXIT; { echo "6.0.0$(sh ./scripts/setlocalversion .)"; } > include/config/.kernel.release.tmp; if [ ! -r include/config/kernel.release ] || ! cmp -s include/config/kernel.release include/config/.kernel.release.tmp; then : '  UPD     include/config/kernel.release'; mv -f include/config/.kernel.release.tmp include/config/kernel.release; fi
+make -f ./scripts/Makefile.asm-generic obj=arch/arm64/include/generated/asm \
+generic=include/asm-generic
+set -e; mkdir -p include/generated/uapi/linux/; trap "rm -f include/generated/uapi/linux/.version.h.tmp" EXIT; { 	if [ 0 -gt 255 ]; then echo \#define LINUX_VERSION_CODE 393471; else echo \#define LINUX_VERSION_CODE 393216; fi; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + ((c) > 255 ? 255 : (c)))'; echo \#define LINUX_VERSION_MAJOR 6; echo \#define LINUX_VERSION_PATCHLEVEL 0; echo \#define LINUX_VERSION_SUBLEVEL 0; } > include/generated/uapi/linux/.version.h.tmp; if [ ! -r include/generated/uapi/linux/version.h ] || ! cmp -s include/generated/uapi/linux/version.h include/generated/uapi/linux/.version.h.tmp; then : '  UPD     include/generated/uapi/linux/version.h'; mv -f include/generated/uapi/linux/.version.h.tmp include/generated/uapi/linux/version.h; fi
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.utsrelease.h.tmp" EXIT; { 	if [ `echo -n "6.0.0" | wc -c ` -gt 64 ]; then echo '"6.0.0" exceeds 64 characters' >&2; exit 1; fi; echo \#define UTS_RELEASE \"6.0.0\"; } > include/generated/.utsrelease.h.tmp; if [ ! -r include/generated/utsrelease.h ] || ! cmp -s include/generated/utsrelease.h include/generated/.utsrelease.h.tmp; then : '  UPD     include/generated/utsrelease.h'; mv -f include/generated/.utsrelease.h.tmp include/generated/utsrelease.h; fi
+make -f ./scripts/Makefile.build obj=scripts
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts
+make -f ./scripts/Makefile.build obj=scripts/genksyms \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=scripts/selinux \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=scripts/selinux/genheaders \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/actions \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/allwinner \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/altera \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/amazon \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/amd \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/amlogic \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/apm \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/apple \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/arm \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/bitmain \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/broadcom \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/broadcom/bcm4908 \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/broadcom/bcmbca \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/broadcom/northstar2 \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/broadcom/stingray \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/cavium \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/exynos \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/freescale \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/hisilicon \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/intel \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/lg \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/marvell \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/mediatek \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/microchip \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/nuvoton \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=scripts/selinux/mdp \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/nvidia \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/qcom \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/realtek \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/renesas \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/rockchip \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/socionext \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/sprd \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/synaptics \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/tesla \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/ti \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/toshiba \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/xilinx \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/tools kapi
+make -f ./scripts/Makefile.build obj=scripts/mod
+set -e; mkdir -p scripts/mod/; trap "rm -f scripts/mod/.devicetable-offsets.h.tmp" EXIT; { 	 echo "#ifndef __DEVICETABLE_OFFSETS_H__"; echo "#define __DEVICETABLE_OFFSETS_H__"; echo "/*"; echo " * DO NOT MODIFY."; echo " *"; echo " * This file was generated by Kbuild"; echo " */"; echo ""; sed -ne 	's:^[[:space:]]*\.ascii[[:space:]]*"\(.*\)".*:\1:; /^->/{s:->#\(.*\):/* \1 */:; s:^->\([^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}' < scripts/mod/devicetable-offsets.s; echo ""; echo "#endif"; } > scripts/mod/.devicetable-offsets.h.tmp; if [ ! -r scripts/mod/devicetable-offsets.h ] || ! cmp -s scripts/mod/devicetable-offsets.h scripts/mod/.devicetable-offsets.h.tmp; then : '  UPD     scripts/mod/devicetable-offsets.h'; mv -f scripts/mod/.devicetable-offsets.h.tmp scripts/mod/devicetable-offsets.h; fi
+arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts:45.35-48.11: ERROR (duplicate_label): /reserved-memory/memory@91900000: Duplicate label 'adsp_mem' on /reserved-memory/memory@91900000 and /reserved-memory/memory@8b200000
+arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts:49.39-52.11: ERROR (duplicate_label): /reserved-memory/memory@95800000: Duplicate label 'wlan_msa_mem' on /reserved-memory/memory@95800000 and /reserved-memory/memory@95700000
+ERROR: Input tree has errors, aborting (use -f to force output)
+make[2]: *** [scripts/Makefile.lib:384: arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dtb] Error 2
+make[2]: *** Waiting for unfinished jobs....
+make[1]: *** [scripts/Makefile.build:465: arch/arm64/boot/dts/qcom] Error 2
+make: *** [Makefile:1384: dtbs] Error 2
+make: *** Waiting for unfinished jobs....
+make -f ./scripts/Makefile.build obj=.
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.timeconst.h.tmp" EXIT; { echo 1000 | bc -q kernel/time/timeconst.bc; } > include/generated/.timeconst.h.tmp; if [ ! -r include/generated/timeconst.h ] || ! cmp -s include/generated/timeconst.h include/generated/.timeconst.h.tmp; then : '  UPD     include/generated/timeconst.h'; mv -f include/generated/.timeconst.h.tmp include/generated/timeconst.h; fi
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.bounds.h.tmp" EXIT; { 	 echo "#ifndef __LINUX_BOUNDS_H__"; echo "#define __LINUX_BOUNDS_H__"; echo "/*"; echo " * DO NOT MODIFY."; echo " *"; echo " * This file was generated by Kbuild"; echo " */"; echo ""; sed -ne 	's:^[[:space:]]*\.ascii[[:space:]]*"\(.*\)".*:\1:; /^->/{s:->#\(.*\):/* \1 */:; s:^->\([^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}' < kernel/bounds.s; echo ""; echo "#endif"; } > include/generated/.bounds.h.tmp; if [ ! -r include/generated/bounds.h ] || ! cmp -s include/generated/bounds.h include/generated/.bounds.h.tmp; then : '  UPD     include/generated/bounds.h'; mv -f include/generated/.bounds.h.tmp include/generated/bounds.h; fi
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.asm-offsets.h.tmp" EXIT; { 	 echo "#ifndef __ASM_OFFSETS_H__"; echo "#define __ASM_OFFSETS_H__"; echo "/*"; echo " * DO NOT MODIFY."; echo " *"; echo " * This file was generated by Kbuild"; echo " */"; echo ""; sed -ne 	's:^[[:space:]]*\.ascii[[:space:]]*"\(.*\)".*:\1:; /^->/{s:->#\(.*\):/* \1 */:; s:^->\([^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}' < arch/arm64/kernel/asm-offsets.s; echo ""; echo "#endif"; } > include/generated/.asm-offsets.h.tmp; if [ ! -r include/generated/asm-offsets.h ] || ! cmp -s include/generated/asm-offsets.h include/generated/.asm-offsets.h.tmp; then : '  UPD     include/generated/asm-offsets.h'; mv -f include/generated/.asm-offsets.h.tmp include/generated/asm-offsets.h; fi
+>>> ERROR: linux-postmarketos-qcom-msm8998: build failed
+[13:32:40] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[13:32:40] [94mNOTE:[0m The failed command's output is above the ^^^ line in the log file: /home/runner/.local/var/pmbootstrap/log.txt[0m
+[13:32:40] [91mERROR:[0m Couldn't build aarch64/linux-postmarketos-qcom-msm8998-6.0-r10.apk![0m
+[13:32:40] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[13:32:41] [92m*** (1/3) PREPARE NATIVE CHROOT ***[0m
+[13:32:41] (native) install cryptsetup util-linux parted[0m
+[13:32:42] [92m*** (2/3) CREATE DEVICE ROOTFS ("xiaomi-sagit") ***[0m
+[13:32:43] (native) install qemu-aarch64[0m
+[13:32:44] (rootfs_xiaomi-sagit) Creating chroot[0m
+[13:32:48] Building [94m1[0m package[0m
+[13:32:48]    [94m*[0m edge/linux-postmarketos-qcom-msm8998[0m
+[13:32:48] [93m=> (1/1)[0m [94medge/linux-postmarketos-qcom-msm8998[0m: Installing dependencies[0m
+[13:32:49] (native) install ccache-cross-symlinks abuild gcc-aarch64 g++-aarch64[0m
+[13:32:49] (native) install findutils perl linux-headers openssl-dev bison postmarketos-installkernel flex bash xz[0m
+[13:32:50] [93m=>[0m [94medge/linux-postmarketos-qcom-msm8998[0m: Building package (cross compiling: cross-native)[0m
+[13:33:54] [94mNOTE:[0m The failed command's output is above the ^^^ line in the log file: /home/runner/.local/var/pmbootstrap/log.txt[0m
+[13:33:54] [91mERROR:[0m Couldn't build aarch64/linux-postmarketos-qcom-msm8998-6.0-r10.apk![0m
+
+Run 'pmbootstrap log' for details.
