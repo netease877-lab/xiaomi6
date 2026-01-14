@@ -115,6 +115,10 @@ jobs:
           echo "Enabling adbd service..." >> build.log
           pmbootstrap chroot -r -- sh -c 'rc-update add adbd default 2>/dev/null || true' 2>&1 | tee -a build.log || true
           
+          # 禁用 sleep-inhibitor 服务 (在此设备上不工作，避免启动时报错)
+          echo "Disabling sleep-inhibitor service..." >> build.log
+          pmbootstrap chroot -r -- sh -c 'rc-update del sleep-inhibitor default 2>/dev/null || true' 2>&1 | tee -a build.log || true
+          
           # 下载并安装完整的 ath10k WCN3990 固件 (解决 60 字节占位符问题)
           echo "=== Downloading complete ath10k WCN3990 firmware ===" | tee -a build.log
           FIRMWARE_URL="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/ath10k/WCN3990/hw1.0/firmware-5.bin"
