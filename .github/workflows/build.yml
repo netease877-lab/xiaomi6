@@ -94,27 +94,43 @@ jobs:
 
       - name: Patch and Rebuild Kernel
         run: |
-          # 1. 定义路径
+          # 0. 定义日志路径 (绝对路径)
+          BUILD_LOG="$GITHUB_WORKSPACE/build.log"
+          
+          # 1. 定义 pmbootstrap 路径
           PMAPORTS=~/.local/var/pmbootstrap/cache_git/pmaports
           KERNEL_PKG_DIR="$PMAPORTS/device/testing/linux-postmarketos-qcom-msm8998"
           
-          echo "=== Step 5: Patching Kernel ===" >> build.log
+          echo "=== Step 5: Patching Kernel ===" >> "$BUILD_LOG"
           
-          # 2. 复制补丁
-          cp fix-wifi-memory.patch "$KERNEL_PKG_DIR/"
+          # 2. 复制补丁 (使用绝对路径)
+          cp "$GITHUB_WORKSPACE/fix-wifi-memory.patch" "$KERNEL_PKG_DIR/"
           
-          # 3. 修改 APKBUILD：添加补丁到 source，增加 pkgrel 以确保优先安装
+          # 3. 修改 APKBUILD
           cd "$KERNEL_PKG_DIR"
-          sed -i '/source="/a \        fix-wifi-memory.patch' APKBUILD
-          sed -i 's/pkgrel=3/pkgrel=4/' APKBUILD
-          
-          echo "APKBUILD modified. New pkgrel=4." >> ../../../../../build.log
+          # 检查是否已经添加过 (防止重试时重复添加)
+          if ! grep -q "fix-wifi-memory.patch" APKBUILD; then
+            sed -i '/source="/a \        fix-wifi-memory.patch' APKBUILD
+            sed -i 's/pkgrel=3/pkgrel=4/' APKBUILD
+            echo "APKBUILD modified. New pkgrel=4." >> "$BUILD_LOG"
+          else
+            echo "Patch already present in APKBUILD." >> "$BUILD_LOG"
+          fi
           
           # 4. 更新 checksum 并强制编译内核
-          echo "=== Step 6: Rebuilding Kernel ===" >> ../../../../../build.log
-          pmbootstrap checksum linux-postmarketos-qcom-msm8998 >> ../../../../../build.log 2>&1
-          pmbootstrap build linux-postmarketos-qcom-msm8998 --force >> ../../../../../build.log 2>&1
-          echo "Kernel rebuild complete" >> ../../../../../build.log
+          echo "=== Step 6: Rebuilding Kernel ===" >> "$BUILD_LOG"
+          
+          # 必须切回 workspace 才能正确执行 pmbootstrap (或者确保 PATH 正确)
+          # 其实 pmbootstrap 可以在任何地方运行，只要 init 过了。
+          # 但为了保险，我们使用 tee 直接输出到控制台和文件
+          
+          echo "Running checksum..."
+          pmbootstrap checksum linux-postmarketos-qcom-msm8998 2>&1 | tee -a "$BUILD_LOG"
+          
+          echo "Running build --force..."
+          pmbootstrap build linux-postmarketos-qcom-msm8998 --force 2>&1 | tee -a "$BUILD_LOG"
+          
+          echo "Kernel rebuild complete" >> "$BUILD_LOG"
 
       - name: Build Rootfs with Docker (TWRP Zip)
         run: |
