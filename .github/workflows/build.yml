@@ -115,6 +115,21 @@ jobs:
           echo "Enabling adbd service..." >> build.log
           pmbootstrap chroot -r -- sh -c 'rc-update add adbd default 2>/dev/null || true' 2>&1 | tee -a build.log || true
           
+          # 下载并安装完整的 ath10k WCN3990 固件 (解决 60 字节占位符问题)
+          echo "Downloading complete ath10k WCN3990 firmware..." >> build.log
+          FIRMWARE_URL="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/ath10k/WCN3990/hw1.0/firmware-5.bin"
+          wget -O /tmp/firmware-5.bin "$FIRMWARE_URL" 2>&1 | tee -a build.log || true
+          if [ -f /tmp/firmware-5.bin ] && [ $(stat -c%s /tmp/firmware-5.bin) -gt 1000 ]; then
+            echo "Firmware downloaded successfully, size: $(stat -c%s /tmp/firmware-5.bin) bytes" >> build.log
+            pmbootstrap chroot -r -- mkdir -p /lib/firmware/ath10k/WCN3990/hw1.0/ 2>&1 | tee -a build.log || true
+            # 复制固件到 rootfs
+            ROOTFS_PATH=$(pmbootstrap config work)/chroot_rootfs_xiaomi-sagit
+            cp /tmp/firmware-5.bin "$ROOTFS_PATH/lib/firmware/ath10k/WCN3990/hw1.0/firmware-5.bin" 2>&1 | tee -a build.log || true
+            echo "Firmware copied to rootfs" >> build.log
+          else
+            echo "WARNING: Failed to download firmware or file too small" >> build.log
+          fi
+          
           # 创建 WiFi 启动脚本 (自动加载驱动)
           echo "Creating WiFi startup script..." >> build.log
           pmbootstrap chroot -r -- sh -c 'echo "#!/bin/sh" > /etc/local.d/wifi-init.start && echo "modprobe qcom-wcnss-pil 2>/dev/null || true" >> /etc/local.d/wifi-init.start && echo "modprobe ath10k_snoc 2>/dev/null || true" >> /etc/local.d/wifi-init.start && echo "modprobe wcn36xx 2>/dev/null || true" >> /etc/local.d/wifi-init.start && echo "sleep 2" >> /etc/local.d/wifi-init.start && echo "echo 1 > /dev/wcnss_wlan 2>/dev/null || true" >> /etc/local.d/wifi-init.start && chmod +x /etc/local.d/wifi-init.start && rc-update add local default 2>/dev/null || true' 2>&1 | tee -a build.log || true
