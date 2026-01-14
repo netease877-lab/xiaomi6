@@ -128,26 +128,44 @@ jobs:
             echo $'\tmd5sum "$DTS_FILE"' >> APKBUILD
             echo $'\tgrep "8b200000" "$DTS_FILE" || msg "WARNING: 8b200000 not found!"' >> APKBUILD
             
-            echo $'\tmsg "Executing sed commands..."' >> APKBUILD
+            echo $'\tmsg "Executing Memory Map Fix (Strategy: Replace OR Append)..."' >> APKBUILD
+            
+            # --- 策略 1: 尝试替换 (针对已有旧定义的 DTS) ---
             echo $'\tsed -i "s/0x7000000/0x4900000/g" "$DTS_FILE"' >> APKBUILD
-            # 尝试更宽松的匹配，处理潜在的空格或格式差异
             echo $'\tsed -i "s/memory@8b200000/memory@91900000/" "$DTS_FILE"' >> APKBUILD
             echo $'\tsed -i "s/0x8b200000/0x91900000/g" "$DTS_FILE"' >> APKBUILD
             echo $'\tsed -i "s/memory@95715000/memory@95800000/" "$DTS_FILE"' >> APKBUILD
             echo $'\tsed -i "s/0x95715000/0x95800000/" "$DTS_FILE"' >> APKBUILD
             
-            echo $'\tmsg "Checking file AFTER modification:"' >> APKBUILD
-            echo $'\tls -l "$DTS_FILE"' >> APKBUILD
-            echo $'\tmd5sum "$DTS_FILE"' >> APKBUILD
-            
-            echo $'\t# 验证修复是否生效' >> APKBUILD
+            # --- 验证策略 1 结果 ---
             echo $'\tif grep -q "91900000" "$DTS_FILE"; then' >> APKBUILD
-            echo $'\t\tmsg "VERIFICATION SUCCESS: 91900000 found in DTS."' >> APKBUILD
+            echo $'\t\tmsg "SUCCESS: Memory map updated via REPLACEMENT."' >> APKBUILD
             echo $'\telse' >> APKBUILD
-            echo $'\t\terror "VERIFICATION FAILED: 91900000 NOT found in DTS after sed! Dumping context:"' >> APKBUILD
-            echo $'\t\tgrep -C 5 "memory@" "$DTS_FILE" | head -n 20' >> APKBUILD
+            echo $'\t\tmsg "WARNING: Replacement failed (target not found). Attempting APPEND strategy..."' >> APKBUILD
+            
+            # --- 策略 2: 追加定义 (针对缺少定义的 DTS) ---
+            # 检查是否有 reserved-memory 节点
+            echo $'\t\tif grep -q "reserved-memory {" "$DTS_FILE"; then' >> APKBUILD
+            # 使用 sed 在 reserved-memory { 后面插入新节点
+            # 注意: 使用 ANSI-C quoting 处理换行
+            echo $'\t\t\tsed -i "/reserved-memory {/a \\' >> APKBUILD
+            echo $'\t\t\t\t\\ \\ \\ \\ \\ \\ \\ \\ adsp_mem: memory@91900000 {\\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ reg = <0x0 0x91900000 0x0 0x1e00000>;\\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ no-map;\\n\\ \\ \\ \\ \\ \\ \\ \\ };\\n\\ \\ \\ \\ \\ \\ \\ \\ wlan_msa_mem: memory@95800000 {\\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ reg = <0x0 0x95800000 0x0 0x100000>;\\n\\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ \\ no-map;\\n\\ \\ \\ \\ \\ \\ \\ \\ };" "$DTS_FILE"' >> APKBUILD
+            echo $'\t\t\tmsg "Inserted new memory nodes into reserved-memory."' >> APKBUILD
+            echo $'\t\telse' >> APKBUILD
+            echo $'\t\t\terror "CRTICAL ERROR: reserved-memory node NOT FOUND! Cannot append."' >> APKBUILD
+            echo $'\t\t\treturn 1' >> APKBUILD
+            echo $'\t\tfi' >> APKBUILD
+            echo $'\tfi' >> APKBUILD
+            
+            # --- 最终验证 (必须通过) ---
+            echo $'\tif grep -q "91900000" "$DTS_FILE"; then' >> APKBUILD
+            echo $'\t\tmsg "FINAL VERIFICATION SUCCESS: 91900000 found in DTS."' >> APKBUILD
+            echo $'\telse' >> APKBUILD
+            echo $'\t\terror "FINAL VERIFICATION FAILED: Fix NOT applied! Context dump:"' >> APKBUILD
+            echo $'\t\tgrep -C 10 "reserved-memory" "$DTS_FILE" | head -n 30' >> APKBUILD
             echo $'\t\treturn 1' >> APKBUILD
             echo $'\tfi' >> APKBUILD
+            
             echo $'\tmsg "Memory map fix applied and verified"' >> APKBUILD
             echo '}' >> APKBUILD
             sed -i '/default_prepare/a\	fix_memory_map' APKBUILD
