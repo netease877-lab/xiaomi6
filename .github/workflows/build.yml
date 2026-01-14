@@ -143,7 +143,7 @@ jobs:
           cd "$KERNEL_PKG_DIR"
           
           # 检查是否已经补丁过，防止重复注入
-            if ! grep -q "fix_memory_map" APKBUILD; then
+          if ! grep -q "fix_memory_map" APKBUILD; then
             echo '' >> APKBUILD
             echo '# === WiFi/ADSP/MPSS Memory Fix ===' >> APKBUILD
             echo 'fix_memory_map() {' >> APKBUILD
