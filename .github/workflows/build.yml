@@ -99,12 +99,14 @@ jobs:
           #   - docker,docker-compose,nano,htop: 用户需求
           #   - firmware-xiaomi-sagit: Qualcomm WiFi/蓝牙固件
           #   - pd-mapper,tqftpserv,qrtr,rmtfs: 主线内核 WiFi 所需服务
+          #   - msm-modem,msm-modem-openrc: 调制解调器支持 (WiFi 依赖 MSS)
+          #   - ofono: 电话/调制解调器管理
           #   - android-tools: 包含 adbd (ADB 守护进程)
           # UI: fbkeyboard (Framebuffer 虚拟键盘，极致轻量)
           # --password: 用户密码
           # --android-recovery-zip: 生成 TWRP 可直接刷入的 zip 包
           pmbootstrap install \
-            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs,android-tools \
+            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs,msm-modem,msm-modem-openrc,ofono,android-tools \
             --password zhoutong \
             --android-recovery-zip \
             2>&1 | tee -a build.log
