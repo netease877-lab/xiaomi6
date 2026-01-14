@@ -108,13 +108,19 @@ jobs:
           # 3. 稳健修改 APKBUILD (注入 sed 命令到现有 prepare 函数)
           # 在 default_prepare 之后插入修复逻辑，保留原有的 .config 复制操作
           sed -i '/default_prepare/a \
-              msg "Applying WiFi memory fix via sed..." \
-              sed -i "s/95715000/95700000/g" arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts \
+              msg "Applying FINAL MEMORY MAP fix..." \
+              # 1. MPSS: 缩小到 73MB (避让 ADSP) \
+              sed -i "s/0x7000000/0x4900000/g" arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts \
+              # 2. ADSP: 移动到真实地址 0x91900000 \
+              sed -i "s/8b200000/91900000/g" arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts \
+              # 3. WLAN: 移动到 0x95800000 (避让 GPU) \
+              sed -i "s/95715000/95800000/g" arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts \
+              # 4. WLAN: 添加 memory-region 关联 \
               sed -i "/status = \\"okay\\";/a \\\\tmemory-region = <\&wlan_msa_mem>;" arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts' APKBUILD
           
           # 更新版本号
-          sed -i 's/pkgrel=3/pkgrel=6/' APKBUILD
-          echo "APKBUILD modified. New pkgrel=6." >> "$BUILD_LOG"
+          sed -i 's/pkgrel=3/pkgrel=7/' APKBUILD
+          echo "APKBUILD modified. New pkgrel=7." >> "$BUILD_LOG"
           
           # 4. 更新 checksum 并强制编译内核
           echo "=== Step 6: Rebuilding Kernel ===" >> "$BUILD_LOG"
