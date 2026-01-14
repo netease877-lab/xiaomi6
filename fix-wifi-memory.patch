@@ -37,9 +37,7 @@ index 548c823..e1a2b3c 100644
  };
  
  &wifi {
- 	status = "okay";
- 	vdd-0.8-cx-mx-supply = <&vreg_l1a_0p875>;
- 	vdd-1.8-xo-supply = <&vreg_l7a_1p8>;
+@@ -42,5 +67,5 @@
  	vdd-1.3-rfa-supply = <&vreg_l12a_1p225>;
  	vdd-3.3-ch0-supply = <&vreg_l25a_3p125>;
 -	qcom,snoc-host-cap-8bit-quirk;
