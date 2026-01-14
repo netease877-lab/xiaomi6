@@ -73,7 +73,7 @@ jobs:
           work = /home/runner/.local/var/pmbootstrap
           hostname = mi6
           user = user
-          systemd = default
+          systemd = no
           extra_packages = docker,docker-compose,nano,htop
           is_default_channel = False
           aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports
@@ -106,7 +106,7 @@ jobs:
           # --password: 用户密码
           # --android-recovery-zip: 生成 TWRP 可直接刷入的 zip 包
           pmbootstrap install \
-            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs,msm-modem,msm-modem-openrc,ofono,android-tools \
+            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs,msm-modem,ofono,android-tools \
             --password zhoutong \
             --android-recovery-zip \
             2>&1 | tee -a build.log
