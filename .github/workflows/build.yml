@@ -37,17 +37,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            ~/.local/var/pmbootstrap/cache_git
-            ~/.local/var/pmbootstrap/packages
-            ~/.local/var/pmbootstrap/cache_distfiles
-          key: pmbootstrap-${{ runner.os }}-${{ hashFiles('**/APKBUILD') }}
+            /home/runner/.local/var/pmbootstrap/cache_git
+            /home/runner/.local/var/pmbootstrap/packages
+            /home/runner/.local/var/pmbootstrap/cache_distfiles
+          key: pmbootstrap-${{ runner.os }}-sagit-${{ github.run_number }}
           restore-keys: |
-            pmbootstrap-${{ runner.os }}-
+            pmbootstrap-${{ runner.os }}-sagit-
 
       - name: Cache ccache
         uses: actions/cache@v4
         with:
-          path: ~/.ccache
+          path: /home/runner/.ccache
           key: ccache-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             ccache-${{ runner.os }}-
@@ -70,11 +70,19 @@ jobs:
           mkdir -p ~/.config ~/.local/var/pmbootstrap/cache_git
           touch build.log
 
-          # 1. 克隆 pmaports (master 分支，包含 edge 设备)
-          echo "=== Step 1: Cloning pmaports ===" >> build.log
-          git clone --depth=1 https://gitlab.postmarketos.org/postmarketOS/pmaports.git \
-              ~/.local/var/pmbootstrap/cache_git/pmaports >> build.log 2>&1
-          echo "pmaports cloned successfully" >> build.log
+          # 1. 克隆或更新 pmaports (兼容缓存恢复场景)
+          echo "=== Step 1: Setting up pmaports ===" >> build.log
+          PMAPORTS_DIR=~/.local/var/pmbootstrap/cache_git/pmaports
+          if [ -d "$PMAPORTS_DIR" ]; then
+            echo "pmaports exists (from cache), updating..." >> build.log
+            cd "$PMAPORTS_DIR" && git pull --rebase >> build.log 2>&1 || true
+            cd -
+          else
+            echo "Cloning pmaports..." >> build.log
+            git clone --depth=1 https://gitlab.postmarketos.org/postmarketOS/pmaports.git \
+                "$PMAPORTS_DIR" >> build.log 2>&1
+          fi
+          echo "pmaports ready" >> build.log
           
           # 1.5 修改 deviceinfo 添加 RNDIS USB 网络支持 (Windows 10 兼容)
           echo "=== Step 1.5: Patching deviceinfo for RNDIS ===" >> build.log
@@ -134,7 +142,7 @@ jobs:
           echo '	sed -i "s/0x7000000/0x4900000/g" "$DTS_FILE"' >> APKBUILD
           echo '	sed -i "s/8b200000/91900000/g" "$DTS_FILE"' >> APKBUILD
           echo '	sed -i "s/95715000/95800000/g" "$DTS_FILE"' >> APKBUILD
-          echo '	sed -i "/status = \"okay\";/a\\	memory-region = <\\&wlan_msa_mem>;" "$DTS_FILE"' >> APKBUILD
+          echo '	# 注意: memory-region 属性由驱动动态处理，不需要手动添加' >> APKBUILD
           echo '	msg "Memory map fix applied successfully"' >> APKBUILD
           echo '}' >> APKBUILD
           
