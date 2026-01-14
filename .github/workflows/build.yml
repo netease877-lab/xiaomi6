@@ -26,10 +26,18 @@ jobs:
             qemu-user-static \
             binfmt-support \
             wget \
-            expect
+            expect \
+            ccache
           sudo update-binfmts --enable qemu-aarch64 || echo "binfmt already enabled"
 
-      # ========== 优化后的缓存配置 ==========
+      # 获取 pmaports 最新提交 Hash 用于缓存控制
+      - name: Get pmaports Hash
+        id: get-hash
+        run: |
+          HASH=$(git ls-remote https://gitlab.postmarketos.org/postmarketOS/pmaports.git main | awk '{print $1}')
+          echo "pmaports_hash=$HASH" >> $GITHUB_OUTPUT
+
+      # ========== 优化后的 pmbootstrap 缓存 ==========
       - name: Cache pmbootstrap work directory
         uses: actions/cache@v4
         with:
@@ -37,10 +45,32 @@ jobs:
             /home/runner/.local/var/pmbootstrap/cache_git
             /home/runner/.local/var/pmbootstrap/packages
             /home/runner/.local/var/pmbootstrap/cache_distfiles
-          # 使用 APKBUILD 的 hash 作为 key，只要内核配置没变，缓存就有效
-          key: pmbootstrap-v2-${{ runner.os }}-${{ hashFiles('**/APKBUILD') }}
+          # 使用 pmaports 的 hash 作为 key，确保代码更新时能部分重用
+          # v5: 强制清理之前被污染的缓存
+          key: pmb-v5-${{ runner.os }}-${{ steps.get-hash.outputs.pmaports_hash }}
           restore-keys: |
-            pmbootstrap-v2-${{ runner.os }}-
+            pmb-v5-${{ runner.os }}-
+
+      # ========== ccache 编译缓存 ==========
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.cache/ccache
+          # 加入周数，每周自动清理旧缓存，避免达到 10GB 限制
+          key: ccache-v2-${{ runner.os }}-sagit-week${{ github.run_number }}
+          restore-keys: |
+            ccache-v2-${{ runner.os }}-sagit-week
+            ccache-v2-${{ runner.os }}-sagit
+            ccache-v2-${{ runner.os }}-
+
+      - name: Setup ccache
+        run: |
+          mkdir -p /home/runner/.cache/ccache
+          ccache --set-config=max_size=2G
+          ccache --set-config=compression=true
+          # 显示 ccache 统计
+          echo "=== ccache stats before build ==="
+          ccache -s
 
       # ========== 修复缓存恢复后的权限问题 ==========
       - name: Fix Restored Cache Permissions
@@ -87,6 +117,7 @@ jobs:
           grep -q "rndis.usb0" "$DEVICEINFO_PATH" || echo 'deviceinfo_usb_network_function="rndis.usb0"' >> "$DEVICEINFO_PATH"
           
           echo "=== Step 2: Generating config file ===" >> build.log
+          # 关键：在配置文件中指定 ccache 路径，pmbootstrap 会将其挂载到 chroot 内
           cat <<EOF > ~/.config/pmbootstrap_v3.cfg
           [pmbootstrap]
           device = xiaomi-sagit
@@ -98,6 +129,7 @@ jobs:
           extra_packages = docker,docker-compose,nano,htop
           is_default_channel = False
           aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports
+          ccache = /home/runner/.cache/ccache
           EOF
 
           echo "8" > ~/.local/var/pmbootstrap/version
@@ -159,8 +191,13 @@ jobs:
           sed -i 's/pkgrel=[0-9]*/pkgrel=10/' APKBUILD
           
           pmbootstrap checksum linux-postmarketos-qcom-msm8998 2>&1 | tee -a "$BUILD_LOG"
-          # 去掉 --force，pmbootstrap 会自动检查是否需要重新编译
-          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 2>&1 | tee -a "$BUILD_LOG"
+          
+          # 使用 --ccache 参数显式启用 ccache（pmbootstrap 会自动挂载到 chroot 内）
+          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 --ccache 2>&1 | tee -a "$BUILD_LOG"
+          
+          # 构建后显示 ccache 统计
+          echo "=== ccache stats after kernel build ==="
+          ccache -s
 
       - name: Build Rootfs with Docker (TWRP Zip)
         run: |
@@ -211,7 +248,9 @@ jobs:
           sudo pmbootstrap shutdown || true
           # 2. 修改工作目录所有权，让 runner 用户可以打包它
           sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap || true
-          # 3. 删除巨大的 chroot 目录以节省空间
+          # 3. 修改 ccache 目录权限
+          sudo chown -R runner:runner /home/runner/.cache/ccache || true
+          # 4. 删除巨大的 chroot 目录以节省空间
           find /home/runner/.local/var/pmbootstrap -maxdepth 1 -name "chroot_*" -type d -exec sudo rm -rf {} + || true
 
       - name: Upload Build Log on Failure
