@@ -148,20 +148,35 @@ jobs:
             echo '# === WiFi/ADSP/MPSS Memory Fix ===' >> APKBUILD
             echo 'fix_memory_map() {' >> APKBUILD
             echo $'\tmsg "========== MEMORY MAP FIX START =========="' >> APKBUILD
-            echo $'\tmsg "Current directory: $(pwd)"' >> APKBUILD
-            echo $'\tmsg "Listing DTS/DTSI files:"' >> APKBUILD
-            echo $'\tfind . -name "*.dts*" -path "*qcom*" | head -20' >> APKBUILD
+            echo $'\tmsg "Initial directory: $(pwd)"' >> APKBUILD
+            echo $'\tls -la' >> APKBUILD
+            
+            # 关键：进入解压后的内核源码目录
+            echo $'\t# 进入解压后的内核源码目录（通常是 linux-* 或 src/linux-*）' >> APKBUILD
+            echo $'\tif [ -d "linux-"* ]; then' >> APKBUILD
+            echo $'\t\tcd linux-*/' >> APKBUILD
+            echo $'\t\tmsg "Changed to kernel source dir: $(pwd)"' >> APKBUILD
+            echo $'\telif [ -d "src/linux-"* ]; then' >> APKBUILD
+            echo $'\t\tcd src/linux-*/' >> APKBUILD
+            echo $'\t\tmsg "Changed to kernel source dir: $(pwd)"' >> APKBUILD
+            echo $'\telse' >> APKBUILD
+            echo $'\t\tmsg "WARNING: Could not find linux-* directory, staying in $(pwd)"' >> APKBUILD
+            echo $'\tfi' >> APKBUILD
+            
+            echo $'\tmsg "Listing DTS/DTSI files in qcom:"' >> APKBUILD
+            echo $'\tfind . -name "*.dts*" -path "*qcom*" 2>/dev/null | head -20' >> APKBUILD
             
             # 查找 DTSI 文件
-            echo $'\tlocal DTSI_FILE=$(find . -name "msm8998.dtsi" | head -n 1)' >> APKBUILD
-            echo $'\tmsg "DTSI_FILE variable: $DTSI_FILE"' >> APKBUILD
+            echo $'\tlocal DTSI_FILE=$(find . -name "msm8998.dtsi" 2>/dev/null | head -n 1)' >> APKBUILD
+            echo $'\tmsg "DTSI_FILE found: $DTSI_FILE"' >> APKBUILD
             echo $'\tif [ -z "$DTSI_FILE" ]; then' >> APKBUILD
-            echo $'\t\terror "ERROR: msm8998.dtsi NOT FOUND! Trying alternative search..."' >> APKBUILD
-            echo $'\t\tfind . -name "*.dtsi" | grep -i msm8998' >> APKBUILD
+            echo $'\t\terror "ERROR: msm8998.dtsi NOT FOUND!"' >> APKBUILD
+            echo $'\t\tmsg "All dtsi files:"' >> APKBUILD
+            echo $'\t\tfind . -name "*.dtsi" 2>/dev/null | head -30' >> APKBUILD
             echo $'\t\treturn 1' >> APKBUILD
             echo $'\tfi' >> APKBUILD
             echo $'\tmsg "Found DTSI file at: $DTSI_FILE"' >> APKBUILD
-            echo $'\tmsg "File size: $(wc -c < $DTSI_FILE) bytes"' >> APKBUILD
+            echo $'\tmsg "File size: $(wc -c < \"$DTSI_FILE\") bytes"' >> APKBUILD
             
             # 调试：显示 DTSI 中包含 adsp_mem 的行
             echo $'\tmsg "Lines containing adsp_mem in DTSI:"' >> APKBUILD
@@ -264,12 +279,37 @@ jobs:
           echo "=== Cleaning up and fixing permissions for cache ==="
           # 1. 卸载所有还在挂载的目录 (pmbootstrap 有时会残留挂载)
           sudo pmbootstrap shutdown || true
-          # 2. 修改工作目录所有权，让 runner 用户可以打包它
-          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap || true
-          # 3. 修改 ccache 目录权限
-          sudo chown -R runner:runner /home/runner/.cache/ccache || true
+          
+          # 2. 显示缓存目录的实际内容和大小（调试）
+          echo "=== Cache directories before cleanup ==="
+          echo "cache_git:"
+          du -sh /home/runner/.local/var/pmbootstrap/cache_git 2>/dev/null || echo "Not found"
+          ls -la /home/runner/.local/var/pmbootstrap/cache_git 2>/dev/null | head -10 || true
+          echo "packages:"
+          du -sh /home/runner/.local/var/pmbootstrap/packages 2>/dev/null || echo "Not found"
+          ls -la /home/runner/.local/var/pmbootstrap/packages 2>/dev/null | head -10 || true
+          echo "cache_distfiles:"
+          du -sh /home/runner/.local/var/pmbootstrap/cache_distfiles 2>/dev/null || echo "Not found"
+          echo "ccache:"
+          du -sh /home/runner/.cache/ccache 2>/dev/null || echo "Not found"
+          
+          # 3. 修改工作目录所有权，让 runner 用户可以打包它
+          echo "=== Fixing ownership ==="
+          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap 2>&1 | tail -5 || true
+          sudo chown -R runner:runner /home/runner/.cache/ccache 2>&1 | tail -5 || true
+          
           # 4. 删除巨大的 chroot 目录以节省空间
+          echo "=== Removing chroot directories ==="
           find /home/runner/.local/var/pmbootstrap -maxdepth 1 -name "chroot_*" -type d -exec sudo rm -rf {} + || true
+          
+          # 5. 最终检查缓存目录
+          echo "=== Cache directories after cleanup ==="
+          echo "cache_git size:"
+          du -sh /home/runner/.local/var/pmbootstrap/cache_git 2>/dev/null || echo "Not found"
+          echo "packages size:"
+          du -sh /home/runner/.local/var/pmbootstrap/packages 2>/dev/null || echo "Not found"
+          echo "Total pmbootstrap size:"
+          du -sh /home/runner/.local/var/pmbootstrap 2>/dev/null || echo "Not found"
 
       # 无论成功还是失败都上传日志
       - name: Upload Build Log
