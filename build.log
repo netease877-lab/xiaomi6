@@ -6616,3 +6616,3228 @@ Kernel rebuild complete
 [07:08:37] [91mERROR:[0m Couldn't build aarch64/linux-postmarketos-qcom-msm8998-6.0-r5.apk![0m
 
 Run 'pmbootstrap log' for details.
+=== Step 1: Setting up pmaports ===
+pmaports exists (from cache), updating...
+pmaports ready
+=== Step 1.5: Patching deviceinfo for RNDIS ===
+Added RNDIS config to deviceinfo
+# Reference: <https://postmarketos.org/deviceinfo>
+# Please use double quotes only. You can source this file in shell scripts.
+
+deviceinfo_format_version="0"
+deviceinfo_name="Xiaomi Mi 6"
+deviceinfo_manufacturer="Xiaomi"
+deviceinfo_codename="xiaomi-sagit"
+deviceinfo_year="2017"
+deviceinfo_arch="aarch64"
+
+# Device related
+deviceinfo_drm="true"
+deviceinfo_chassis="handset"
+deviceinfo_external_storage="false"
+deviceinfo_screen_width="1080"
+deviceinfo_screen_height="1920"
+
+# Bootloader related
+deviceinfo_flash_method="fastboot"
+deviceinfo_kernel_cmdline="clk_ignore_unused console=tty1 modprobe.blacklist=ipa"
+deviceinfo_generate_bootimg="true"
+deviceinfo_bootimg_qcdt="false"
+deviceinfo_flash_offset_base="0x00000000"
+deviceinfo_flash_offset_kernel="0x00008000"
+deviceinfo_flash_offset_ramdisk="0x01000000"
+deviceinfo_flash_offset_second="0x00f00000"
+deviceinfo_flash_offset_tags="0x00000100"
+deviceinfo_flash_pagesize="4096"
+deviceinfo_flash_sparse="true"
+# Kernel options
+deviceinfo_dtb="qcom/msm8998-xiaomi-sagit"
+deviceinfo_append_dtb="true"
+deviceinfo_flash_kernel_on_update="true"
+
+# Initramfs
+
+# Required for devices using UFS as storage (instead of e.g. eMMC)
+deviceinfo_rootfs_image_sector_size="4096"
+deviceinfo_usb_network_function="rndis.usb0"
+deviceinfo_usb_network_function="rndis.usb0"
+=== Step 2: Generating config file ===
+Config file content:
+[pmbootstrap]
+device = xiaomi-sagit
+ui = console
+work = /home/runner/.local/var/pmbootstrap
+hostname = mi6
+user = user
+systemd = never
+extra_packages = docker,docker-compose,nano,htop
+is_default_channel = False
+aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports
+=== Step 3: Initializing work directory ===
+work directory initialized with version 8
+=== Step 4: Verifying config ===
+[11:02:00] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[92mChannel[0m: edge (pmaports: master, dirty)
+[92mDevice[0m:  xiaomi-sagit (aarch64)
+[92mUI[0m:      console
+[92msystemd[0m: no ('never' selected in 'pmbootstrap init')
+=== Step 5: Patching Kernel ===
+APKBUILD modified. New pkgrel=9.
+=== Step 6: Rebuilding Kernel ===
+[11:02:01] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[11:02:01] Update package index for x86_64 (4 file(s))[0m
+[11:02:02] Download http://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/apk-tools-static-3.0.3-r2.apk[0m
+[11:02:02] (native) Creating chroot[0m
+[11:02:04] (native) install abuild apk-tools build-base ccache git pigz[0m
+[11:02:07] (native) generate checksums for linux-postmarketos-qcom-msm8998[0m
+[11:02:08] [94mNOTE:[0m chroot is still active (use 'pmbootstrap shutdown' as necessary)[0m
+[11:02:08] [92mDONE![0m[0m
+[11:02:08] $ pmbootstrap /usr/local/bin/pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 --force[0m
+[11:02:08] Pmbootstrap v3.8.0 (Python 3.12.3 (main, Nov  6 2025, 13:44:16) [GCC 13.3.0])[0m
+[11:02:08] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[11:02:08] % cd /home/runner/.local/var/pmbootstrap/cache_git/pmaports; git remote -v[0m
+[11:02:08] % cd /home/runner/.local/var/pmbootstrap/cache_git/pmaports; git show origin/master:channels.cfg[0m
+[11:02:08] Attempting to build: linux-postmarketos-qcom-msm8998[0m
+[11:02:08] APKINDEX outdated (file does not exist yet): http://mirror.postmarketos.org/postmarketos/master/aarch64/APKINDEX.tar.gz[0m
+[11:02:08] APKINDEX outdated (file does not exist yet): http://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/APKINDEX.tar.gz[0m
+[11:02:08] APKINDEX outdated (file does not exist yet): http://dl-cdn.alpinelinux.org/alpine/edge/community/aarch64/APKINDEX.tar.gz[0m
+[11:02:08] APKINDEX outdated (file does not exist yet): http://dl-cdn.alpinelinux.org/alpine/edge/testing/aarch64/APKINDEX.tar.gz[0m
+[11:02:08] Update package index for aarch64 (4 file(s))[0m
+[11:02:08] Download http://mirror.postmarketos.org/postmarketos/master/aarch64/APKINDEX.tar.gz[0m
+[11:02:09] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/cache_apk_aarch64[0m
+[11:02:09] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_2133489a116f2a4aa3cb24bfb99e043d59160ca5cc7fead69e7c3f2240547e0e /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.bdd0d494.tar.gz[0m
+[11:02:09] Download http://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/APKINDEX.tar.gz[0m
+[11:02:09] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_40cefd388a6f179766303318562db37c94a7e2d75b4d33074c8beaeac080064f /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.066df28d.tar.gz[0m
+[11:02:09] Download http://dl-cdn.alpinelinux.org/alpine/edge/community/aarch64/APKINDEX.tar.gz[0m
+[11:02:09] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_6e80a381677679c0e83714d2dc6c418e0e0c96a146d9b57fa03839d1b9f5bd40 /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.b53994b4.tar.gz[0m
+[11:02:09] Download http://dl-cdn.alpinelinux.org/alpine/edge/testing/aarch64/APKINDEX.tar.gz[0m
+[11:02:09] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_d6ab3af2c088593f2c66b1286307b98f45cec060b38de2384f33bc9072659c06 /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.30e6f5af.tar.gz[0m
+[11:02:09] aarch64/linux-postmarketos-qcom-msm8998: Generating dependency tree[0m
+[11:02:11] postmarketos-installkernel: picked provider(s) with highest priority 100: postmarketos-installkernel[0m
+[11:02:11] openssl-dev: picked provider(s) with highest priority 100: openssl-dev[0m
+[11:02:11] Building [94m1[0m package[0m
+[11:02:11]    [94m*[0m edge/linux-postmarketos-qcom-msm8998[0m
+[11:02:11] [93m=> (1/1)[0m [94medge/linux-postmarketos-qcom-msm8998[0m: Installing dependencies[0m
+[11:02:11] Initializing x86_64 buildroot[0m
+[11:02:11] (native) generate abuild keys[0m
+[11:02:11] (native) % busybox su pmos -c PACKAGER='pmos <pmos@local>' HOME=/home/pmos abuild-keygen -n -q -a ;[0m
+writing RSA key
+[11:02:13] (native) % cp mnt/pmbootstrap/abuild-config/pmos@local-696777b3.rsa.pub /etc/apk/keys/[0m
+[11:02:13] (native) % sed -i -e s/^CLEANUP=.*/CLEANUP=''/ /etc/abuild.conf[0m
+[11:02:13] (native) % sed -i -e s/^ERROR_CLEANUP=.*/ERROR_CLEANUP=''/ /etc/abuild.conf[0m
+[11:02:13] (native) % sed -i $ a\export JOBS=4 /etc/abuild.conf[0m
+[11:02:13] (native) % busybox su pmos -c HOME=/home/pmos ccache --max-size 5G ;[0m
+Set cache size limit to 5.0 GB
+[11:02:13] Attempting to build: g++-aarch64, gcc-aarch64, abuild, ccache-cross-symlinks[0m
+[11:02:13] x86_64/g++-aarch64: Generating dependency tree[0m
+[11:02:13] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[11:02:13] x86_64/so:libgmp.so.10: marked for build[0m
+[11:02:13] x86_64/so:libisl.so.23: marked for build[0m
+[11:02:13] x86_64/so:libmpc.so.3: marked for build[0m
+[11:02:13] x86_64/so:libmpfr.so.6: marked for build[0m
+[11:02:13] x86_64/so:libz.so.1: marked for build[0m
+[11:02:13] x86_64/binutils-aarch64: marked for build[0m
+[11:02:13] x86_64/mpc1: marked for build[0m
+[11:02:13] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[11:02:13] x86_64/so:libgcc_s.so.1: marked for build[0m
+[11:02:13] x86_64/so:libgmp.so.10: marked for build[0m
+[11:02:13] x86_64/so:libisl.so.23: marked for build[0m
+[11:02:13] x86_64/so:libmpc.so.3: marked for build[0m
+[11:02:13] x86_64/so:libmpfr.so.6: marked for build[0m
+[11:02:13] x86_64/so:libstdc++.so.6: marked for build[0m
+[11:02:13] x86_64/so:libz.so.1: marked for build[0m
+[11:02:13] x86_64/gcc-aarch64: Generating dependency tree[0m
+[11:02:13] x86_64/binutils-aarch64: marked for build[0m
+[11:02:13] x86_64/bison: marked for build[0m
+[11:02:13] x86_64/flex: marked for build[0m
+[11:02:13] x86_64/g++: marked for build[0m
+[11:02:13] x86_64/gawk: marked for build[0m
+[11:02:13] x86_64/gcc: marked for build[0m
+[11:02:13] x86_64/gmp-dev: marked for build[0m
+[11:02:13] x86_64/isl-dev: marked for build[0m
+[11:02:13] x86_64/linux-headers: marked for build[0m
+[11:02:13] x86_64/mpc1: marked for build[0m
+[11:02:13] x86_64/mpc1-dev: marked for build[0m
+[11:02:13] x86_64/mpfr-dev: marked for build[0m
+[11:02:13] x86_64/musl-dev-aarch64: marked for build[0m
+[11:02:13] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[11:02:13] x86_64/so:libgcc_s.so.1: marked for build[0m
+[11:02:13] x86_64/so:libgmp.so.10: marked for build[0m
+[11:02:13] x86_64/so:libisl.so.23: marked for build[0m
+[11:02:13] x86_64/so:libmpc.so.3: marked for build[0m
+[11:02:13] x86_64/so:libmpfr.so.6: marked for build[0m
+[11:02:13] x86_64/so:libstdc++.so.6: marked for build[0m
+[11:02:13] x86_64/so:libz.so.1: marked for build[0m
+[11:02:13] x86_64/texinfo: marked for build[0m
+[11:02:13] x86_64/zip: marked for build[0m
+[11:02:13] x86_64/zlib-dev: marked for build[0m
+[11:02:13] x86_64/libstdc++-dev$_target: marked for build[0m
+[11:02:13] x86_64/gcc$_target: marked for build[0m
+[11:02:13] x86_64/musl-dev: marked for build[0m
+[11:02:13] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[11:02:13] x86_64/so:libgmp.so.10: marked for build[0m
+[11:02:13] x86_64/so:libisl.so.23: marked for build[0m
+[11:02:13] x86_64/so:libmpc.so.3: marked for build[0m
+[11:02:13] x86_64/so:libmpfr.so.6: marked for build[0m
+[11:02:13] x86_64/so:libz.so.1: marked for build[0m
+[11:02:13] x86_64/binutils-aarch64: marked for build[0m
+[11:02:13] x86_64/mpc1: marked for build[0m
+[11:02:13] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[11:02:13] x86_64/so:libgcc_s.so.1: marked for build[0m
+[11:02:13] x86_64/so:libgmp.so.10: marked for build[0m
+[11:02:13] x86_64/so:libisl.so.23: marked for build[0m
+[11:02:13] x86_64/so:libmpc.so.3: marked for build[0m
+[11:02:13] x86_64/so:libmpfr.so.6: marked for build[0m
+[11:02:13] x86_64/so:libstdc++.so.6: marked for build[0m
+[11:02:13] x86_64/so:libz.so.1: marked for build[0m
+[11:02:13] x86_64/ccache-cross-symlinks: Generating dependency tree[0m
+[11:02:13] /bin/sh: picked provider(s) with highest priority 100: busybox-binsh[0m
+[11:02:13] fakeroot: picked provider(s) with highest priority 100: fakeroot[0m
+[11:02:13] openssl: picked provider(s) with highest priority 100: openssl[0m
+[11:02:13] libssl3: picked provider(s) with highest priority 100: libssl3[0m
+[11:02:13] libcrypto3: picked provider(s) with highest priority 100: libcrypto3[0m
+[11:02:13] (native) install ccache-cross-symlinks abuild gcc-aarch64 g++-aarch64[0m
+[11:02:13] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/tmp[0m
+[11:02:13] % sudo rm -f /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[11:02:13] % sudo mkfifo /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[11:02:13] % sudo cat /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[11:02:13] % sudo sh -c exec 3>/home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo; /home/runner/.local/var/pmbootstrap/apk.static --progress-fd 3 --no-progress --root /home/runner/.local/var/pmbootstrap/chroot_native --arch x86_64 --cache-dir /home/runner/.local/var/pmbootstrap/cache_apk_x86_64 --repository /home/runner/.local/var/pmbootstrap/packages/edge --repository /home/runner/.local/var/pmbootstrap/packages/edge add --no-interactive g++-aarch64 gcc-aarch64 abuild ccache-cross-symlinks ;[0m
+[11:02:13] New background process: pid=3381, output=background[0m
+WARNING: opening /home/runner/.local/var/pmbootstrap/packages/edge/x86_64/APKINDEX.tar.gz: No such file or directory
+(1/5) Installing ccache-cross-symlinks (3-r3)
+(2/5) Installing libstdc++-dev-aarch64 (15.2.0-r2)
+(3/5) Installing binutils-aarch64 (2.45.1-r1)
+(4/5) Installing gcc-aarch64 (15.2.0-r2)
+(5/5) Installing g++-aarch64 (15.2.0-r2)
+Executing busybox-1.37.0-r31.trigger
+OK: 529.8 MiB in 66 packages
+[11:02:18] openssl-dev: picked provider(s) with highest priority 100: openssl-dev[0m
+[11:02:18] libssl3: picked provider(s) with highest priority 100: libssl3[0m
+[11:02:18] libcrypto3: picked provider(s) with highest priority 100: libcrypto3[0m
+[11:02:18] postmarketos-installkernel: picked provider(s) with highest priority 100: postmarketos-installkernel[0m
+[11:02:18] /bin/sh: picked provider(s) with highest priority 100: busybox-binsh[0m
+[11:02:18] (native) install openssl-dev perl bison bash linux-headers xz findutils flex postmarketos-installkernel[0m
+[11:02:18] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/tmp[0m
+[11:02:18] % sudo rm -f /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[11:02:18] % sudo mkfifo /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[11:02:18] % sudo cat /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[11:02:18] % sudo sh -c exec 3>/home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo; /home/runner/.local/var/pmbootstrap/apk.static --progress-fd 3 --no-progress --root /home/runner/.local/var/pmbootstrap/chroot_native --arch x86_64 --cache-dir /home/runner/.local/var/pmbootstrap/cache_apk_x86_64 --repository /home/runner/.local/var/pmbootstrap/packages/edge --repository /home/runner/.local/var/pmbootstrap/packages/edge add --no-interactive openssl-dev perl bison bash linux-headers xz findutils flex postmarketos-installkernel ;[0m
+[11:02:18] New background process: pid=3395, output=background[0m
+WARNING: opening /home/runner/.local/var/pmbootstrap/packages/edge/x86_64/APKINDEX.tar.gz: No such file or directory
+( 1/18) Installing ncurses-terminfo-base (6.6_p20251231-r0)
+( 2/18) Installing libncursesw (6.6_p20251231-r0)
+( 3/18) Installing readline (8.3.3-r0)
+( 4/18) Installing bash (5.3.3-r1)
+  Executing bash-5.3.3-r1.post-install
+( 5/18) Installing m4 (1.4.20-r0)
+( 6/18) Installing bison (3.8.2-r2)
+( 7/18) Installing findutils (4.10.0-r0)
+( 8/18) Installing flex (2.6.4-r7)
+( 9/18) Installing linux-headers (6.18.5-r0)
+(10/18) Installing openssl-dev (3.5.4-r0)
+(11/18) Installing libbz2 (1.0.8-r6)
+(12/18) Installing perl (5.42.0-r0)
+(13/18) Installing perl-error (0.17030-r0)
+(14/18) Installing perl-git (2.52.0-r0)
+(15/18) Installing git-perl (2.52.0-r0)
+(16/18) Installing postmarketos-installkernel (0.1-r3)
+(17/18) Installing xz-libs (5.8.1-r0)
+(18/18) Installing xz (5.8.1-r0)
+Executing busybox-1.37.0-r31.trigger
+OK: 580.9 MiB in 84 packages
+[11:02:19] [93m=>[0m [94medge/linux-postmarketos-qcom-msm8998[0m: Building package (cross compiling: cross-native)[0m
+[11:02:19] (native) % mkdir -p /home/pmos/packages; rm -f /home/pmos/packages/pmos; ln -sf /mnt/pmbootstrap/packages/edge /home/pmos/packages/pmos[0m
+[11:02:19] % sudo rm -rf /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build[0m
+[11:02:19] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build[0m
+[11:02:19] % sudo cp -rL /home/runner/.local/var/pmbootstrap/cache_git/pmaports/device/testing/linux-postmarketos-qcom-msm8998/APKBUILD /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build/APKBUILD[0m
+[11:02:19] % sudo cp -rL /home/runner/.local/var/pmbootstrap/cache_git/pmaports/device/testing/linux-postmarketos-qcom-msm8998/config-postmarketos-qcom-msm8998.aarch64 /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build/config-postmarketos-qcom-msm8998.aarch64[0m
+[11:02:19] % sudo sh -c cat /home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/data/abuild_overrides.sh >> /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build/APKBUILD[0m
+[11:02:19] (native) % chown -R pmos:pmos /home/pmos/build[0m
+[11:02:19] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/chroot_native/mnt/pmaports[0m
+[11:02:19] % sudo mount --bind /home/runner/.local/var/pmbootstrap/cache_git/pmaports /home/runner/.local/var/pmbootstrap/chroot_native/mnt/pmaports[0m
+[11:02:19] (native) % busybox su pmos -c HOME=/home/pmos mkdir -p /home/pmos/build ;[0m
+[11:02:19] (native) % busybox su pmos -c HOME=/home/pmos ln -sf /mnt/pmaports/.git /home/pmos/build/.git ;[0m
+[11:02:19] (native) % cd /home/pmos/build; busybox su pmos -c SUDO_APK='abuild-apk --no-progress' CROSS_COMPILE=aarch64-alpine-linux-musl- CC=aarch64-alpine-linux-musl-gcc CARCH=aarch64 RUSTC_WRAPPER=/usr/bin/sccache GOCACHE=/home/pmos/.cache/go-build HOME=/home/pmos abuild -d -D postmarketOS -f ;[0m
+>>> linux-postmarketos-qcom-msm8998: Building pmos/linux-postmarketos-qcom-msm8998 6.0-r9 (using abuild 3.16.0-r0) started Wed, 14 Jan 2026 11:02:19 +0000
+>>> linux-postmarketos-qcom-msm8998: Validating /home/pmos/build/APKBUILD...
+>>> WARNING: linux-postmarketos-qcom-msm8998: No maintainer
+>>> linux-postmarketos-qcom-msm8998: Cleaning up srcdir
+>>> linux-postmarketos-qcom-msm8998: Cleaning up pkgdir
+>>> linux-postmarketos-qcom-msm8998: Cleaning up tmpdir
+>>> linux-postmarketos-qcom-msm8998: Fetching https://gitlab.com/msm8998-mainline/linux/-/archive/90169e6e9fee29fae14aeac0a905246be5ce6304/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz
+/var/cache/distfiles/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz: OK
+/home/pmos/build/config-postmarketos-qcom-msm8998.aarch64: OK
+>>> linux-postmarketos-qcom-msm8998: Fetching https://gitlab.com/msm8998-mainline/linux/-/archive/90169e6e9fee29fae14aeac0a905246be5ce6304/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz
+/var/cache/distfiles/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz: OK
+/home/pmos/build/config-postmarketos-qcom-msm8998.aarch64: OK
+>>> linux-postmarketos-qcom-msm8998: Unpacking /var/cache/distfiles/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz...
+>>> linux-postmarketos-qcom-msm8998: Applying FINAL MEMORY MAP fix...
+>>> linux-postmarketos-qcom-msm8998: Memory map fix applied
+>>> linux-postmarketos-qcom-msm8998: Applying FINAL MEMORY MAP fix...
+>>> linux-postmarketos-qcom-msm8998: Memory map fix applied
+: "  SYNC    include/config/auto.conf"
+make -f ./Makefile syncconfig
+make -f ./scripts/Makefile.build obj=scripts/basic
+make -f ./scripts/Makefile.build obj=scripts/kconfig syncconfig
+scripts/kconfig/conf -s --syncconfig Kconfig
+make -f ./scripts/Makefile.build obj=scripts/basic
+make -f ./scripts/Makefile.asm-generic obj=arch/arm64/include/generated/uapi/asm \
+generic=include/uapi/asm-generic
+./scripts/remove-stale-files
+make -f ./scripts/Makefile.build obj=scripts/dtc
+set -e; mkdir -p include/config/; trap "rm -f include/config/.kernel.release.tmp" EXIT; { echo "6.0.0$(sh ./scripts/setlocalversion .)"; } > include/config/.kernel.release.tmp; if [ ! -r include/config/kernel.release ] || ! cmp -s include/config/kernel.release include/config/.kernel.release.tmp; then : '  UPD     include/config/kernel.release'; mv -f include/config/.kernel.release.tmp include/config/kernel.release; fi
+make -f ./scripts/Makefile.asm-generic obj=arch/arm64/include/generated/asm \
+generic=include/asm-generic
+set -e; mkdir -p include/generated/uapi/linux/; trap "rm -f include/generated/uapi/linux/.version.h.tmp" EXIT; { 	if [ 0 -gt 255 ]; then echo \#define LINUX_VERSION_CODE 393471; else echo \#define LINUX_VERSION_CODE 393216; fi; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + ((c) > 255 ? 255 : (c)))'; echo \#define LINUX_VERSION_MAJOR 6; echo \#define LINUX_VERSION_PATCHLEVEL 0; echo \#define LINUX_VERSION_SUBLEVEL 0; } > include/generated/uapi/linux/.version.h.tmp; if [ ! -r include/generated/uapi/linux/version.h ] || ! cmp -s include/generated/uapi/linux/version.h include/generated/uapi/linux/.version.h.tmp; then : '  UPD     include/generated/uapi/linux/version.h'; mv -f include/generated/uapi/linux/.version.h.tmp include/generated/uapi/linux/version.h; fi
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.utsrelease.h.tmp" EXIT; { 	if [ `echo -n "6.0.0" | wc -c ` -gt 64 ]; then echo '"6.0.0" exceeds 64 characters' >&2; exit 1; fi; echo \#define UTS_RELEASE \"6.0.0\"; } > include/generated/.utsrelease.h.tmp; if [ ! -r include/generated/utsrelease.h ] || ! cmp -s include/generated/utsrelease.h include/generated/.utsrelease.h.tmp; then : '  UPD     include/generated/utsrelease.h'; mv -f include/generated/.utsrelease.h.tmp include/generated/utsrelease.h; fi
+make -f ./scripts/Makefile.build obj=scripts
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts
+make -f ./scripts/Makefile.build obj=scripts/genksyms \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=scripts/selinux \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=scripts/selinux/genheaders \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/actions \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/allwinner \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/altera \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/amazon \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/amd \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/amlogic \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/apm \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/apple \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/arm \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/bitmain \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/broadcom \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/broadcom/bcm4908 \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/broadcom/bcmbca \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/broadcom/northstar2 \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/broadcom/stingray \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/cavium \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/exynos \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/freescale \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/hisilicon \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/intel \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/lg \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/marvell \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/mediatek \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/microchip \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/nuvoton \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/nvidia \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/qcom \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=scripts/selinux/mdp \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/realtek \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/renesas \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/rockchip \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/socionext \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/sprd \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/synaptics \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/tesla \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/ti \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/toshiba \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/boot/dts/xilinx \
+ \
+need-builtin= \
+need-modorder=
+make -f ./scripts/Makefile.build obj=arch/arm64/tools kapi
+make -f ./scripts/Makefile.build obj=scripts/mod
+set -e; mkdir -p scripts/mod/; trap "rm -f scripts/mod/.devicetable-offsets.h.tmp" EXIT; { 	 echo "#ifndef __DEVICETABLE_OFFSETS_H__"; echo "#define __DEVICETABLE_OFFSETS_H__"; echo "/*"; echo " * DO NOT MODIFY."; echo " *"; echo " * This file was generated by Kbuild"; echo " */"; echo ""; sed -ne 	's:^[[:space:]]*\.ascii[[:space:]]*"\(.*\)".*:\1:; /^->/{s:->#\(.*\):/* \1 */:; s:^->\([^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}' < scripts/mod/devicetable-offsets.s; echo ""; echo "#endif"; } > scripts/mod/.devicetable-offsets.h.tmp; if [ ! -r scripts/mod/devicetable-offsets.h ] || ! cmp -s scripts/mod/devicetable-offsets.h scripts/mod/.devicetable-offsets.h.tmp; then : '  UPD     scripts/mod/devicetable-offsets.h'; mv -f scripts/mod/.devicetable-offsets.h.tmp scripts/mod/devicetable-offsets.h; fi
+make -f ./scripts/Makefile.build obj=.
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.timeconst.h.tmp" EXIT; { echo 1000 | bc -q kernel/time/timeconst.bc; } > include/generated/.timeconst.h.tmp; if [ ! -r include/generated/timeconst.h ] || ! cmp -s include/generated/timeconst.h include/generated/.timeconst.h.tmp; then : '  UPD     include/generated/timeconst.h'; mv -f include/generated/.timeconst.h.tmp include/generated/timeconst.h; fi
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.bounds.h.tmp" EXIT; { 	 echo "#ifndef __LINUX_BOUNDS_H__"; echo "#define __LINUX_BOUNDS_H__"; echo "/*"; echo " * DO NOT MODIFY."; echo " *"; echo " * This file was generated by Kbuild"; echo " */"; echo ""; sed -ne 	's:^[[:space:]]*\.ascii[[:space:]]*"\(.*\)".*:\1:; /^->/{s:->#\(.*\):/* \1 */:; s:^->\([^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}' < kernel/bounds.s; echo ""; echo "#endif"; } > include/generated/.bounds.h.tmp; if [ ! -r include/generated/bounds.h ] || ! cmp -s include/generated/bounds.h include/generated/.bounds.h.tmp; then : '  UPD     include/generated/bounds.h'; mv -f include/generated/.bounds.h.tmp include/generated/bounds.h; fi
+set -e; mkdir -p include/generated/; trap "rm -f include/generated/.asm-offsets.h.tmp" EXIT; { 	 echo "#ifndef __ASM_OFFSETS_H__"; echo "#define __ASM_OFFSETS_H__"; echo "/*"; echo " * DO NOT MODIFY."; echo " *"; echo " * This file was generated by Kbuild"; echo " */"; echo ""; sed -ne 	's:^[[:space:]]*\.ascii[[:space:]]*"\(.*\)".*:\1:; /^->/{s:->#\(.*\):/* \1 */:; s:^->\([^ ]*\) [\$#]*\([^ ]*\) \(.*\):#define \1 \2 /* \3 */:; s:->::; p;}' < arch/arm64/kernel/asm-offsets.s; echo ""; echo "#endif"; } > include/generated/.asm-offsets.h.tmp; if [ ! -r include/generated/asm-offsets.h ] || ! cmp -s include/generated/asm-offsets.h include/generated/.asm-offsets.h.tmp; then : '  UPD     include/generated/asm-offsets.h'; mv -f include/generated/.asm-offsets.h.tmp include/generated/asm-offsets.h; fi
+make -f ./scripts/Makefile.build obj=arch/arm64/kernel/vdso \
+include/generated/vdso-offsets.h arch/arm64/kernel/vdso/vdso.so
+make -f ./scripts/Makefile.build obj=init \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=usr \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=arch/arm64 \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=arch/arm64/kernel \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=arch/arm64/kernel/probes \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/sched \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=arch/arm64/mm \
+ \
+need-builtin=1 \
+need-modorder=1
+In file included from ././include/linux/compiler_types.h:95,
+                 from <command-line>:
+In function 'wake_affine_weight',
+    inlined from 'wake_affine' at kernel/sched/fair.c:6114:12,
+    inlined from 'select_task_rq_fair' at kernel/sched/fair.c:7050:15:
+./include/asm-generic/percpu.h:21:44: warning: array subscript 8 is above array bounds of 'long unsigned int[8]' [-Warray-bounds=]
+   21 | #define per_cpu_offset(x) (__per_cpu_offset[x])
+./include/linux/compiler-gcc.h:35:33: note: in definition of macro 'RELOC_HIDE'
+   35 |         (typeof(ptr)) (__ptr + (off));                                  \
+      |                                 ^~~
+./include/linux/percpu-defs.h:236:9: note: in expansion of macro 'SHIFT_PERCPU_PTR'
+  236 |         SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)));                 \
+      |         ^~~~~~~~~~~~~~~~
+./include/linux/percpu-defs.h:236:33: note: in expansion of macro 'per_cpu_offset'
+  236 |         SHIFT_PERCPU_PTR((ptr), per_cpu_offset((cpu)));                 \
+      |                                 ^~~~~~~~~~~~~~
+./include/linux/percpu-defs.h:269:35: note: in expansion of macro 'per_cpu_ptr'
+  269 | #define per_cpu(var, cpu)       (*per_cpu_ptr(&(var), cpu))
+      |                                   ^~~~~~~~~~~
+kernel/sched/sched.h:1404:35: note: in expansion of macro 'per_cpu'
+ 1404 | #define cpu_rq(cpu)             (&per_cpu(runqueues, (cpu)))
+      |                                   ^~~~~~~
+kernel/sched/fair.c:6069:34: note: in expansion of macro 'cpu_rq'
+ 6069 |         this_eff_load = cpu_load(cpu_rq(this_cpu));
+      |                                  ^~~~~~
+In file included from ./arch/arm64/include/asm/percpu.h:249,
+                 from ./include/linux/irqflags.h:17,
+                 from ./include/linux/rcupdate.h:26,
+                 from ./include/linux/rculist.h:11,
+                 from ./include/linux/pid.h:5,
+                 from ./include/linux/sched.h:14,
+                 from ./include/linux/ratelimit.h:6,
+                 from ./include/linux/dev_printk.h:16,
+                 from ./include/linux/device.h:15,
+                 from ./include/linux/energy_model.h:5,
+                 from kernel/sched/fair.c:23:
+./include/asm-generic/percpu.h: In function 'select_task_rq_fair':
+./include/asm-generic/percpu.h:19:22: note: while referencing '__per_cpu_offset'
+   19 | extern unsigned long __per_cpu_offset[NR_CPUS];
+      |                      ^~~~~~~~~~~~~~~~
+In file included from ./arch/arm64/include/asm/thread_info.h:17,
+                 from ./include/linux/thread_info.h:60,
+                 from ./arch/arm64/include/asm/preempt.h:6,
+                 from ./include/linux/preempt.h:78,
+                 from ./include/linux/smp.h:110,
+                 from ./include/linux/lockdep.h:14,
+                 from ./include/linux/mutex.h:17,
+                 from ./include/linux/kernfs.h:11,
+                 from ./include/linux/sysfs.h:16,
+                 from ./include/linux/kobject.h:20,
+                 from ./include/linux/of.h:17,
+                 from ./include/linux/irqdomain.h:35,
+                 from ./include/linux/acpi.h:13,
+                 from arch/arm64/kernel/setup.c:9:
+In function 'request_standard_resources',
+    inlined from 'setup_arch' at arch/arm64/kernel/setup.c:350:2:
+arch/arm64/kernel/setup.c:225:56: warning: array subscript -1 is outside array bounds of 'char[]' [-Warray-bounds=]
+  225 |         kernel_code.end     = __pa_symbol(__init_begin - 1);
+./arch/arm64/include/asm/memory.h:278:35: note: in definition of macro '__kimg_to_phys'
+  278 | #define __kimg_to_phys(addr)    ((addr) - kimage_voffset)
+      |                                   ^~~~
+./arch/arm64/include/asm/memory.h:292:33: note: in expansion of macro '__pa_symbol_nodebug'
+  292 | #define __phys_addr_symbol(x)   __pa_symbol_nodebug(x)
+      |                                 ^~~~~~~~~~~~~~~~~~~
+./arch/arm64/include/asm/memory.h:325:33: note: in expansion of macro '__phys_addr_symbol'
+  325 | #define __pa_symbol(x)          __phys_addr_symbol(RELOC_HIDE((unsigned long)(x), 0))
+      |                                 ^~~~~~~~~~~~~~~~~~
+./arch/arm64/include/asm/memory.h:325:52: note: in expansion of macro 'RELOC_HIDE'
+  325 | #define __pa_symbol(x)          __phys_addr_symbol(RELOC_HIDE((unsigned long)(x), 0))
+      |                                                    ^~~~~~~~~~
+arch/arm64/kernel/setup.c:225:31: note: in expansion of macro '__pa_symbol'
+  225 |         kernel_code.end     = __pa_symbol(__init_begin - 1);
+      |                               ^~~~~~~~~~~
+In file included from ./include/linux/pid_namespace.h:7,
+                 from ./include/linux/ptrace.h:10,
+                 from ./include/linux/elfcore.h:11,
+                 from ./include/linux/crash_core.h:6,
+                 from ./include/linux/kexec.h:18,
+                 from arch/arm64/kernel/setup.c:20:
+./include/linux/mm.h: In function 'setup_arch':
+./include/linux/mm.h:2457:21: note: at offset -1 into object '__init_begin' of size [0, 9223372036854775807]
+ 2457 |         extern char __init_begin[], __init_end[];
+      |                     ^~~~~~~~~~~~
+In function 'request_standard_resources',
+    inlined from 'setup_arch' at arch/arm64/kernel/setup.c:350:2:
+arch/arm64/kernel/setup.c:227:48: warning: array subscript -1 is outside array bounds of 'char[]' [-Warray-bounds=]
+  227 |         kernel_data.end     = __pa_symbol(_end - 1);
+./arch/arm64/include/asm/memory.h:278:35: note: in definition of macro '__kimg_to_phys'
+  278 | #define __kimg_to_phys(addr)    ((addr) - kimage_voffset)
+      |                                   ^~~~
+./arch/arm64/include/asm/memory.h:292:33: note: in expansion of macro '__pa_symbol_nodebug'
+  292 | #define __phys_addr_symbol(x)   __pa_symbol_nodebug(x)
+      |                                 ^~~~~~~~~~~~~~~~~~~
+./arch/arm64/include/asm/memory.h:325:33: note: in expansion of macro '__phys_addr_symbol'
+  325 | #define __pa_symbol(x)          __phys_addr_symbol(RELOC_HIDE((unsigned long)(x), 0))
+      |                                 ^~~~~~~~~~~~~~~~~~
+./arch/arm64/include/asm/memory.h:325:52: note: in expansion of macro 'RELOC_HIDE'
+  325 | #define __pa_symbol(x)          __phys_addr_symbol(RELOC_HIDE((unsigned long)(x), 0))
+      |                                                    ^~~~~~~~~~
+arch/arm64/kernel/setup.c:227:31: note: in expansion of macro '__pa_symbol'
+  227 |         kernel_data.end     = __pa_symbol(_end - 1);
+      |                               ^~~~~~~~~~~
+In file included from ./arch/arm64/include/asm/sections.h:8,
+                 from ./arch/arm64/include/asm/virt.h:62,
+                 from ./arch/arm64/include/asm/hw_breakpoint.h:11,
+                 from ./arch/arm64/include/asm/processor.h:39,
+                 from ./include/linux/mutex.h:19:
+./include/asm-generic/sections.h: In function 'setup_arch':
+./include/asm-generic/sections.h:41:13: note: at offset -1 into object '_end' of size [0, 9223372036854775807]
+   41 | extern char _end[];
+      |             ^~~~
+make -f ./scripts/Makefile.build obj=certs \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=mm \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/locking \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=arch/arm64/net \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=arch/arm64/crypto \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/power \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/printk \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/irq \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/rcu \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/notify \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/notify/dnotify \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/notify/inotify \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/notify/fanotify \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=ipc \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/livepatch \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/dma \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/iomap \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/quota \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/entry \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/module \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/time \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/proc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/kernfs \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/sysfs \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=security \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=security/keys \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/configfs \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/futex \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=security/selinux \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/cgroup \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/devpts \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/ext4 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/bpf \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=security/integrity \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=crypto \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=crypto/asymmetric_keys \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=block \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=block/partitions \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/jbd2 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/ramfs \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/hugetlbfs \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/fat \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=kernel/events \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/exportfs \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/nls \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/unicode \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/debugfs \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/f2fs \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/squashfs \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=io_uring \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/irqchip \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/bus \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/bus/mhi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/bus/mhi/host \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/bus/mhi/ep \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/fuse \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/allwinner \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/amlogic \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/broadcom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/cadence \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/freescale \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/hisilicon \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/ingenic \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/intel \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/lantiq \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/marvell \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/mediatek \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/microchip \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/motorola \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/mscc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/qualcomm \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/ralink \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/renesas \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/rockchip \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/samsung \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/socionext \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/st \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/tegra \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/ti \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/phy/xilinx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/actions \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/bcm \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/cirrus \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/freescale \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/mediatek \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/mvebu \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/nomadik \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/nuvoton \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/qcom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=fs/overlayfs \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/sprd \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/sunplus \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pinctrl/ti \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpio \
+ \
+need-builtin=1 \
+need-modorder=1
+set -e; mkdir -p kernel/; trap "rm -f kernel/.config_data.tmp" EXIT; { cat .config; } > kernel/.config_data.tmp; if [ ! -r kernel/config_data ] || ! cmp -s kernel/config_data kernel/.config_data.tmp; then : '  UPD     kernel/config_data'; mv -f kernel/.config_data.tmp kernel/config_data; fi
+make -f ./scripts/Makefile.build obj=drivers/pwm \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pci \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pci/controller \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pci/controller/dwc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pci/controller/mobiveil \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pci/switch \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/core \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/video \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/video/console \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/video/backlight \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/video/fbdev \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/video/fbdev/core \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/i2c \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/i2c/other \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=net/core \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/drivers \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/drivers/opl3 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/drivers/opl4 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/drivers/mpu401 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/drivers/vx \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/drivers/pcsp \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa/ad1816a \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa/ad1848 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa/cs423x \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa/es1688 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa/galaxy \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa/gus \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa/msnd \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa/opti9xx \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa/sb \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa/wavefront \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/isa/wss \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/ac97 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/ali5451 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/asihpi \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/au88x0 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/aw2 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/ctxfi \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/ca0106 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/cs46xx \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/cs5535audio \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/lola \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/lx6464es \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/echoaudio \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/emu10k1 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/hda \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/ice1712 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/korg1212 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/mixart \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/nm256 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/oxygen \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/pcxhr \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/riptide \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/rme9652 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/trident \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/ymfpci \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pci/vx222 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/ppc \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/arm \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/sh \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/synth \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/usb \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/usb/misc \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/usb/usx2y \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/usb/caiaq \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/usb/6fire \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/usb/hiface \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/usb/bcd2000 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/firewire \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/sparc \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/spi \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/parisc \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pcmcia \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pcmcia/vx \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/pcmcia/pdaudiocf \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/mips \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/codecs \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/video/fbdev/omap \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/video/fbdev/omap2 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/video/fbdev/omap2/omapfb \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/video/fbdev/omap2/omapfb/dss \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/video/fbdev/omap2/omapfb/displays \
+ \
+need-builtin=1 \
+need-modorder=1
+sound/soc/codecs/lpass-rx-macro.c: In function 'rx_macro_enable_interp_clk.isra':
+sound/soc/codecs/lpass-rx-macro.c:2548:35: warning: array subscript 3 is above array bounds of 'int[3]' [-Warray-bounds=]
+ 2548 |                 rx->main_clk_users[interp_idx]++;
+      |                 ~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+sound/soc/codecs/lpass-rx-macro.c:595:13: note: while referencing 'main_clk_users'
+  595 |         int main_clk_users[INTERP_MAX];
+      |             ^~~~~~~~~~~~~~
+sound/soc/codecs/lpass-rx-macro.c:2548:35: warning: array subscript 3 is above array bounds of 'int[3]' [-Warray-bounds=]
+ 2548 |                 rx->main_clk_users[interp_idx]++;
+      |                 ~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~
+sound/soc/codecs/lpass-rx-macro.c:595:13: note: while referencing 'main_clk_users'
+  595 |         int main_clk_users[INTERP_MAX];
+      |             ^~~~~~~~~~~~~~
+make -f ./scripts/Makefile.build obj=drivers/idle \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/char/ipmi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/amba \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/generic \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/adi \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/amd \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/atmel \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/au1x \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/bcm \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/cirrus \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/dwc \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/fsl \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/hisilicon \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/jz4740 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/img \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/intel \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/intel/common \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/intel/boards \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/mediatek \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/meson \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/mxs \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/kirkwood \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/pxa \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/qcom \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/qcom/qdsp6 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/actions \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/analogbits \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/bcm \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/imgtec \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/imx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/ingenic \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/mediatek \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/microchip \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/mstar \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/mvebu \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/qcom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/ralink \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/renesas \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/socfpga \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/sprd \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/sunxi-ng \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/ti \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/versatile \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clk/xilinx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/rockchip \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/samsung \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/sh \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/sof \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/spear \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/sprd \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/sti \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/stm \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/sunxi \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/tegra \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/ti \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/uniphier \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/ux500 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/xilinx \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/soc/xtensa \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/dma \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/dma/idxd \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/dma/mediatek \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/dma/qcom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/dma/ti \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/dma/xilinx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/apple \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/aspeed \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/bcm \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/bcm/bcm63xx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/fsl \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/fujitsu \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/imx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/ixp4xx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/mediatek \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/microchip \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/pxa \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/amlogic \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/qcom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=virt \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=virt/lib \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/ethernet \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/atmel \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/hda \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/x86 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/xen \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=sound/virtio \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/802 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/virtio \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/sched \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/regulator \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/renesas \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/rockchip \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/sunxi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/ti \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soc/xilinx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=arch/arm64/lib \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=net/netlink \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=lib \
+single-build= \
+need-builtin=1 need-modorder=1
+make -f ./scripts/Makefile.build obj=lib/math \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=lib/crypto \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=scripts scripts/module.lds
+make -f ./scripts/Makefile.build obj=drivers/reset \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/reset/hisilicon \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=lib/zlib_inflate \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/tty \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/tty/vt \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/bpf \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/tty/serial \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/tty/serdev \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/ethtool \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/netfilter \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/netfilter/ipvs \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=lib/lz4 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/tty/ipwireless \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=lib/zstd \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=lib/xz \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=lib/mpi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/char \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/char/agp \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iommu \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iommu/amd \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iommu/intel \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iommu/arm \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iommu/arm/arm-smmu \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iommu/arm/arm-smmu-v3 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/host1x \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/arm \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/display \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=lib/fonts \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/vga \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/rcar-du \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/ipv4 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/ipv4/netfilter \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/omapdrm \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/tilcdc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/imx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/i2c \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/panel \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/bridge \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/bridge/analogix \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/bridge/cadence \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/bridge/imx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/bridge/synopsys \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/hisilicon \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/mxsfb \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/tiny \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/xlnx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/gud \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/solomon \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/scheduler \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/gpu/drm/msm \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/unix \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/base \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/base/power \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/base/firmware_loader \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/base/firmware_loader/builtin \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/base/regmap \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/base/test \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/block \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/block/zram \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/ipv6 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/ipv6/netfilter \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/packet \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/8021q \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/misc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/misc/eeprom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/misc/cb710 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/misc/ti-st \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/misc/lis3lv02d \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/misc/cardreader \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/mfd \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/wireless \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/nfc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/nfc/nxp-nci \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/dma-buf \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/cxl \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/cxl/core \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/l3mdev \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/llc \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/bridge \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/bridge/netfilter \
+ \
+need-builtin= \
+need-modorder=1
+(echo '#include "reg.h"'; \
+  echo 'const u8 shipped_regdb_certs[] = {'; \
+  echo | cat - net/wireless/certs/sforshee.hex ; \
+  echo '};'; \
+  echo 'unsigned int shipped_regdb_certs_len = sizeof(shipped_regdb_certs);'; \
+ ) > net/wireless/shipped-certs.c
+make -f ./scripts/Makefile.build obj=net/bluetooth \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/bluetooth/rfcomm \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/bluetooth/bnep \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/bluetooth/hidp \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/mac80211 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/macintosh \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/rfkill \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/scsi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/nfc \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/nfc/nci \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=net/qrtr \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/nvme \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/nvme/host \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/nvme/target \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/spmi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/phy \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/mdio \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/pcs \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/ethernet \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/ethernet/qualcomm \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/ethernet/qualcomm/emac \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/ethernet/qualcomm/rmnet \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firewire \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/wireless \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/wireless/ath \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/wireless/ath/ath10k \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/usb \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/cdrom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/ipvlan \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/vxlan \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/auxdisplay \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb/common \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb/core \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/net/ipa \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/input \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/input/keyboard \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb/phy \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb/dwc3 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/input/touchscreen \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/input/misc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/input/rmi4 \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb/storage \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb/misc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb/gadget \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb/gadget/udc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb/gadget/function \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb/gadget/legacy \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/rtc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/usb/roles \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/i2c \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/i2c/algos \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/i2c/busses \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/i3c \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/i2c/muxes \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/i2c \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/tuners \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/rc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/rc/keymaps \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/common \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/common/b2c2 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/common/saa7146 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/common/siano \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/common/v4l2-tpg \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/common/videobuf2 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/allegro-dvt \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/amlogic \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/amlogic/meson-ge2d \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/amphion \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/aspeed \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/atmel \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/cadence \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/chips-media \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/intel \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/marvell \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/mediatek \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/mediatek/jpeg \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/mediatek/mdp \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/mediatek/vcodec \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/mediatek/vpu \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/nvidia \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/nvidia/tegra-vde \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/nxp \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/nxp/imx-jpeg \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/qcom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/qcom/camss \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/qcom/venus \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/ttpci \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/b2c2 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/pluto2 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/dm1105 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/pt1 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/pt3 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/mantis \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/ngene \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/ddbridge \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/saa7146 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/smipcie \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/netup_unidvb \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/intel \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/pci/intel/ipu3 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/renesas \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/renesas/rcar-vin \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/renesas/vsp1 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/rockchip \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/rockchip/rga \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/rockchip/rkisp1 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pps \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pps/clients \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/pps/generators \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/ptp \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/power \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/power/reset \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/thermal \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/thermal/broadcom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/thermal/samsung \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/thermal/intel \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/thermal/st \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/thermal/qcom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/power/supply \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/thermal/tegra \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/samsung \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/samsung/exynos-gsc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/samsung/exynos4-is \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/samsung/s3c-camif \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/samsung/s5p-g2d \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/samsung/s5p-jpeg \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/samsung/s5p-mfc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/usb \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/usb/b2c2 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/usb/dvb-usb \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/usb/dvb-usb-v2 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/usb/s2255 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/usb/siano \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/usb/ttusb-budget \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/usb/ttusb-dec \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/usb/zr364xx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/md \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/md/persistent-data \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/st \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/st/sti/bdisp \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/st/sti/c8sectpfe \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/st/sti/delta \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/st/sti/hva \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/st/stm32 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/mmc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/mmc/siano \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/opp \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/sunxi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/sunxi/sun4i-csi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/sunxi/sun6i-csi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/sunxi/sun6i-mipi-csi2 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/sunxi/sun8i-a83t-mipi-csi2 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/sunxi/sun8i-di \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/sunxi/sun8i-rotate \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/ti \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/ti/am437x \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/ti/cal \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/ti/vpe \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/ti/davinci \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/ti/omap \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/ti/omap3isp \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/via \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/platform/xilinx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/firewire \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/spi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/test-drivers \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/mc \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/v4l2-core \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/media/radio \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/cpufreq \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/cpuidle \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/cpuidle/governors \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/mmc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/mmc/core \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/mmc/host \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/ufs \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/ufs/core \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/ufs/host \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/leds \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/leds/trigger \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/leds/blink \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/leds/simple \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware/arm_ffa \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware/arm_scmi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware/broadcom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware/cirrus \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware/meson \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware/efi \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware/imx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware/psci \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware/smccc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware/tegra \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/leds/flash \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/firmware/xilinx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/crypto \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/crypto/xilinx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/crypto/hisilicon \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/crypto/keembay \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/leds/rgb \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/clocksource \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/hid \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/hid/usbhid \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/of \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/staging \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/staging/media \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/staging/iio \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/staging/iio/accel \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/staging/iio/adc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/staging/iio/addac \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/staging/iio/cdc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/staging/iio/frequency \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/staging/iio/impedance-analyzer \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/staging/iio/meter \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/staging/iio/resolver \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/platform \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/mailbox \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/hwspinlock \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/remoteproc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/rpmsg \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/devfreq \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/extcon \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/accel \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/adc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/addac \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/perf \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/afe \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/amplifiers \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/buffer \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/cdc \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/chemical \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/common \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/common/cros_ec_sensors \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/common/hid-sensors \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/common/ms_sensors \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/common/scmi_sensors \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/common/ssp_sensors \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/common/st_sensors \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/dac \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/dummy \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/gyro \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/filter \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/frequency \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/health \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/humidity \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/imu \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/imu/bmi160 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/imu/inv_icm42600 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/imu/inv_mpu6050 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/imu/st_lsm6dsx \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/imu/st_lsm9ds0 \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/light \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/magnetometer \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/multiplexer \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/orientation \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/position \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/potentiometer \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/potentiostat \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/pressure \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/proximity \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/resolver \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/temperature \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/test \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/iio/trigger \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/hwtracing/intel_th \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/android \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/nvmem \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/interconnect \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/interconnect/qcom \
+ \
+need-builtin=1 \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/slimbus \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/bluetooth \
+ \
+need-builtin= \
+need-modorder=1
+make -f ./scripts/Makefile.build obj=drivers/soundwire \
+ \
+need-builtin= \
+need-modorder=1
+sh ./scripts/modules-check.sh modules.order
+make -f ./scripts/Makefile.modpost
+make -f ./scripts/Makefile.build obj=arch/arm64/boot arch/arm64/boot/Image
+make -f ./scripts/Makefile.build obj=arch/arm64/boot arch/arm64/boot/Image.gz
+make -f ./scripts/Makefile.modfinal
+>>> linux-postmarketos-qcom-msm8998: Entering fakeroot...
+>>> linux-postmarketos-qcom-msm8998*: Running postcheck for linux-postmarketos-qcom-msm8998
+>>> WARNING: linux-postmarketos-qcom-msm8998*: Packages must not put anything under /lib, use /usr/lib instead
+>>> linux-postmarketos-qcom-msm8998*: Preparing package linux-postmarketos-qcom-msm8998...
+>>> WARNING: linux-postmarketos-qcom-msm8998*: No arch specific binaries found so arch should probably be set to "noarch"
+>>> linux-postmarketos-qcom-msm8998*: Tracing dependencies...
+>>> linux-postmarketos-qcom-msm8998*: Package size: 23.5 MB
+>>> linux-postmarketos-qcom-msm8998*: Compressing data...
+>>> linux-postmarketos-qcom-msm8998*: Create checksum...
+>>> linux-postmarketos-qcom-msm8998*: Create linux-postmarketos-qcom-msm8998-6.0-r9.apk
+/usr/bin/abuild: line 1862: can't create /home/pmos/packages//pmos/aarch64/linux-postmarketos-qcom-msm8998-6.0-r9.apk: Permission denied
+>>> ERROR: linux-postmarketos-qcom-msm8998*: create_apks failed
+>>> ERROR: linux-postmarketos-qcom-msm8998: rootpkg failed
+[11:35:37] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[11:35:37] [94mNOTE:[0m The failed command's output is above the ^^^ line in the log file: /home/runner/.local/var/pmbootstrap/log.txt[0m
+[11:35:37] [91mERROR:[0m Couldn't build aarch64/linux-postmarketos-qcom-msm8998-6.0-r9.apk![0m
+Kernel rebuild complete
+[11:35:38] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[11:35:38] [92m*** (1/3) PREPARE NATIVE CHROOT ***[0m
+[11:35:39] (native) install cryptsetup util-linux parted[0m
+[11:35:40] [92m*** (2/3) CREATE DEVICE ROOTFS ("xiaomi-sagit") ***[0m
+[11:35:41] (native) install qemu-aarch64[0m
+[11:35:42] (rootfs_xiaomi-sagit) Creating chroot[0m
+[11:35:47] (rootfs_xiaomi-sagit) install postmarketos-base device-xiaomi-sagit postmarketos-ui-console device-xiaomi-sagit-nonfree-firmware docker docker-compose nano htop docker docker-compose nano htop firmware-xiaomi-sagit pd-mapper tqftpserv qrtr rmtfs msm-modem ofono android-tools postmarketos-base-nofde doas doas-sudo-shim font-droid font-droid-nonlatin font-twemoji lang[0m
+[11:36:22] [94mNOTE:[0m The failed command's output is above the ^^^ line in the log file: /home/runner/.local/var/pmbootstrap/log.txt[0m
+[11:36:22] [91mERROR:[0m Command failed (exit code 99): % sudo /home/runner/.local/var/pmbootstrap/apk.static --no-progress --root /home/runner/.local/var/pmbootstrap/chroot_rootfs_xiaomi-sagit --arch aarch64 --cache-dir /home/runner/.local/var/pmbootstrap/cache_apk_aarch64 --repository /home/runner/.local/var/pmbootstrap/packages/edge --repository /home/runner/.local/var/pmbootstrap/packages/edge add --no-interactive -u --virtual .pmbootstrap /home/runner/.local/var/pmbootstrap/packages/edge/aarch64/linux-postmarketos-qcom-msm8998-6.0-r9.apk[0m
+[11:36:22] See also: <https://postmarketos.org/troubleshooting>[0m
+
+Run 'pmbootstrap log' for details.
+
+Before you report this error, ensure that pmbootstrap is up to date.
+Find the latest version here: https://gitlab.postmarketos.org/postmarketOS/pmbootstrap/-/tags
+Your version: 3.8.0
+[92mChannel[0m: edge (pmaports: master, dirty)
+[92mDevice[0m:  xiaomi-sagit (aarch64)
+[92mUI[0m:      console
+[92msystemd[0m: no ('never' selected in 'pmbootstrap init')
