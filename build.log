@@ -10059,3 +10059,240 @@ OK: 580.9 MiB in 84 packages
 [13:05:29] [91mERROR:[0m Couldn't build aarch64/linux-postmarketos-qcom-msm8998-6.0-r10.apk![0m
 
 Run 'pmbootstrap log' for details.
+=== Step 1: Setting up pmaports ===
+Cloning pmaports...
+Cloning into '/home/runner/.local/var/pmbootstrap/cache_git/pmaports'...
+=== Step 1.5: Patching deviceinfo for RNDIS ===
+=== Step 2: Generating config file ===
+[13:16:51] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[13:16:52] Update package index for x86_64 (4 file(s))[0m
+[13:16:53] Download http://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/apk-tools-static-3.0.3-r2.apk[0m
+[13:16:54] (native) Creating chroot[0m
+[13:16:56] (native) install abuild apk-tools build-base ccache git pigz[0m
+[13:16:59] (native) generate checksums for linux-postmarketos-qcom-msm8998[0m
+[13:17:02] [94mNOTE:[0m chroot is still active (use 'pmbootstrap shutdown' as necessary)[0m
+[13:17:02] [92mDONE![0m[0m
+[13:17:02] $ pmbootstrap /usr/local/bin/pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998[0m
+[13:17:02] Pmbootstrap v3.8.0 (Python 3.12.3 (main, Nov  6 2025, 13:44:16) [GCC 13.3.0])[0m
+[13:17:02] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[13:17:02] % cd /home/runner/.local/var/pmbootstrap/cache_git/pmaports; git remote -v[0m
+[13:17:02] % cd /home/runner/.local/var/pmbootstrap/cache_git/pmaports; git show origin/master:channels.cfg[0m
+[13:17:02] Attempting to build: linux-postmarketos-qcom-msm8998[0m
+[13:17:03] APKINDEX outdated (file does not exist yet): http://mirror.postmarketos.org/postmarketos/master/aarch64/APKINDEX.tar.gz[0m
+[13:17:03] APKINDEX outdated (file does not exist yet): http://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/APKINDEX.tar.gz[0m
+[13:17:03] APKINDEX outdated (file does not exist yet): http://dl-cdn.alpinelinux.org/alpine/edge/community/aarch64/APKINDEX.tar.gz[0m
+[13:17:03] APKINDEX outdated (file does not exist yet): http://dl-cdn.alpinelinux.org/alpine/edge/testing/aarch64/APKINDEX.tar.gz[0m
+[13:17:03] Update package index for aarch64 (4 file(s))[0m
+[13:17:03] Download http://mirror.postmarketos.org/postmarketos/master/aarch64/APKINDEX.tar.gz[0m
+[13:17:03] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/cache_apk_aarch64[0m
+[13:17:03] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_2133489a116f2a4aa3cb24bfb99e043d59160ca5cc7fead69e7c3f2240547e0e /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.bdd0d494.tar.gz[0m
+[13:17:03] Download http://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/APKINDEX.tar.gz[0m
+[13:17:03] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_40cefd388a6f179766303318562db37c94a7e2d75b4d33074c8beaeac080064f /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.066df28d.tar.gz[0m
+[13:17:03] Download http://dl-cdn.alpinelinux.org/alpine/edge/community/aarch64/APKINDEX.tar.gz[0m
+[13:17:04] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_6e80a381677679c0e83714d2dc6c418e0e0c96a146d9b57fa03839d1b9f5bd40 /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.b53994b4.tar.gz[0m
+[13:17:04] Download http://dl-cdn.alpinelinux.org/alpine/edge/testing/aarch64/APKINDEX.tar.gz[0m
+[13:17:04] % sudo cp /home/runner/.local/var/pmbootstrap/cache_http/APKINDEX_d6ab3af2c088593f2c66b1286307b98f45cec060b38de2384f33bc9072659c06 /home/runner/.local/var/pmbootstrap/cache_apk_aarch64/APKINDEX.30e6f5af.tar.gz[0m
+[13:17:04] aarch64/linux-postmarketos-qcom-msm8998: Generating dependency tree[0m
+[13:17:04] Build is necessary for package 'linux-postmarketos-qcom-msm8998': binary package out of date (binary: 6.0-r3, local pmaports: 6.0-r10)[0m
+[13:17:06] postmarketos-installkernel: picked provider(s) with highest priority 100: postmarketos-installkernel[0m
+[13:17:06] openssl-dev: picked provider(s) with highest priority 100: openssl-dev[0m
+[13:17:06] Building [94m1[0m package[0m
+[13:17:06]    [94m*[0m edge/linux-postmarketos-qcom-msm8998[0m
+[13:17:06] [93m=> (1/1)[0m [94medge/linux-postmarketos-qcom-msm8998[0m: Installing dependencies[0m
+[13:17:06] Initializing x86_64 buildroot[0m
+[13:17:06] (native) generate abuild keys[0m
+[13:17:06] (native) % busybox su pmos -c PACKAGER='pmos <pmos@local>' HOME=/home/pmos abuild-keygen -n -q -a ;[0m
+writing RSA key
+[13:17:06] (native) % cp mnt/pmbootstrap/abuild-config/pmos@local-69679752.rsa.pub /etc/apk/keys/[0m
+[13:17:06] (native) % sed -i -e s/^CLEANUP=.*/CLEANUP=''/ /etc/abuild.conf[0m
+[13:17:06] (native) % sed -i -e s/^ERROR_CLEANUP=.*/ERROR_CLEANUP=''/ /etc/abuild.conf[0m
+[13:17:06] (native) % sed -i $ a\export JOBS=4 /etc/abuild.conf[0m
+[13:17:06] (native) % busybox su pmos -c HOME=/home/pmos ccache --max-size 5G ;[0m
+Set cache size limit to 5.0 GB
+[13:17:06] Attempting to build: g++-aarch64, gcc-aarch64, abuild, ccache-cross-symlinks[0m
+[13:17:06] x86_64/g++-aarch64: Generating dependency tree[0m
+[13:17:07] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[13:17:07] x86_64/so:libgmp.so.10: marked for build[0m
+[13:17:07] x86_64/so:libisl.so.23: marked for build[0m
+[13:17:07] x86_64/so:libmpc.so.3: marked for build[0m
+[13:17:07] x86_64/so:libmpfr.so.6: marked for build[0m
+[13:17:07] x86_64/so:libz.so.1: marked for build[0m
+[13:17:07] x86_64/binutils-aarch64: marked for build[0m
+[13:17:07] x86_64/mpc1: marked for build[0m
+[13:17:07] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[13:17:07] x86_64/so:libgcc_s.so.1: marked for build[0m
+[13:17:07] x86_64/so:libgmp.so.10: marked for build[0m
+[13:17:07] x86_64/so:libisl.so.23: marked for build[0m
+[13:17:07] x86_64/so:libmpc.so.3: marked for build[0m
+[13:17:07] x86_64/so:libmpfr.so.6: marked for build[0m
+[13:17:07] x86_64/so:libstdc++.so.6: marked for build[0m
+[13:17:07] x86_64/so:libz.so.1: marked for build[0m
+[13:17:07] x86_64/gcc-aarch64: Generating dependency tree[0m
+[13:17:07] x86_64/binutils-aarch64: marked for build[0m
+[13:17:07] x86_64/bison: marked for build[0m
+[13:17:07] x86_64/flex: marked for build[0m
+[13:17:07] x86_64/g++: marked for build[0m
+[13:17:07] x86_64/gawk: marked for build[0m
+[13:17:07] x86_64/gcc: marked for build[0m
+[13:17:07] x86_64/gmp-dev: marked for build[0m
+[13:17:07] x86_64/isl-dev: marked for build[0m
+[13:17:07] x86_64/linux-headers: marked for build[0m
+[13:17:07] x86_64/mpc1: marked for build[0m
+[13:17:07] x86_64/mpc1-dev: marked for build[0m
+[13:17:07] x86_64/mpfr-dev: marked for build[0m
+[13:17:07] x86_64/musl-dev-aarch64: marked for build[0m
+[13:17:07] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[13:17:07] x86_64/so:libgcc_s.so.1: marked for build[0m
+[13:17:07] x86_64/so:libgmp.so.10: marked for build[0m
+[13:17:07] x86_64/so:libisl.so.23: marked for build[0m
+[13:17:07] x86_64/so:libmpc.so.3: marked for build[0m
+[13:17:07] x86_64/so:libmpfr.so.6: marked for build[0m
+[13:17:07] x86_64/so:libstdc++.so.6: marked for build[0m
+[13:17:07] x86_64/so:libz.so.1: marked for build[0m
+[13:17:07] x86_64/texinfo: marked for build[0m
+[13:17:07] x86_64/zip: marked for build[0m
+[13:17:07] x86_64/zlib-dev: marked for build[0m
+[13:17:07] x86_64/libstdc++-dev$_target: marked for build[0m
+[13:17:07] x86_64/gcc$_target: marked for build[0m
+[13:17:07] x86_64/musl-dev: marked for build[0m
+[13:17:07] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[13:17:07] x86_64/so:libgmp.so.10: marked for build[0m
+[13:17:07] x86_64/so:libisl.so.23: marked for build[0m
+[13:17:07] x86_64/so:libmpc.so.3: marked for build[0m
+[13:17:07] x86_64/so:libmpfr.so.6: marked for build[0m
+[13:17:07] x86_64/so:libz.so.1: marked for build[0m
+[13:17:07] x86_64/binutils-aarch64: marked for build[0m
+[13:17:07] x86_64/mpc1: marked for build[0m
+[13:17:07] x86_64/so:libc.musl-x86_64.so.1: marked for build[0m
+[13:17:07] x86_64/so:libgcc_s.so.1: marked for build[0m
+[13:17:07] x86_64/so:libgmp.so.10: marked for build[0m
+[13:17:07] x86_64/so:libisl.so.23: marked for build[0m
+[13:17:07] x86_64/so:libmpc.so.3: marked for build[0m
+[13:17:07] x86_64/so:libmpfr.so.6: marked for build[0m
+[13:17:07] x86_64/so:libstdc++.so.6: marked for build[0m
+[13:17:07] x86_64/so:libz.so.1: marked for build[0m
+[13:17:07] x86_64/ccache-cross-symlinks: Generating dependency tree[0m
+[13:17:07] /bin/sh: picked provider(s) with highest priority 100: busybox-binsh[0m
+[13:17:07] openssl: picked provider(s) with highest priority 100: openssl[0m
+[13:17:07] libcrypto3: picked provider(s) with highest priority 100: libcrypto3[0m
+[13:17:07] fakeroot: picked provider(s) with highest priority 100: fakeroot[0m
+[13:17:07] libssl3: picked provider(s) with highest priority 100: libssl3[0m
+[13:17:07] (native) install ccache-cross-symlinks abuild gcc-aarch64 g++-aarch64[0m
+[13:17:07] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/tmp[0m
+[13:17:07] % sudo rm -f /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:17:07] % sudo mkfifo /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:17:07] % sudo cat /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:17:07] % sudo sh -c exec 3>/home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo; /home/runner/.local/var/pmbootstrap/apk.static --progress-fd 3 --no-progress --root /home/runner/.local/var/pmbootstrap/chroot_native --arch x86_64 --cache-dir /home/runner/.local/var/pmbootstrap/cache_apk_x86_64 --repository /home/runner/.local/var/pmbootstrap/packages/edge --repository /home/runner/.local/var/pmbootstrap/packages/edge add --no-interactive g++-aarch64 gcc-aarch64 abuild ccache-cross-symlinks ;[0m
+[13:17:07] New background process: pid=3375, output=background[0m
+WARNING: opening /home/runner/.local/var/pmbootstrap/packages/edge/x86_64/APKINDEX.tar.gz: No such file or directory
+(1/5) Installing ccache-cross-symlinks (3-r3)
+(2/5) Installing libstdc++-dev-aarch64 (15.2.0-r2)
+(3/5) Installing binutils-aarch64 (2.45.1-r1)
+(4/5) Installing gcc-aarch64 (15.2.0-r2)
+(5/5) Installing g++-aarch64 (15.2.0-r2)
+Executing busybox-1.37.0-r31.trigger
+OK: 529.8 MiB in 66 packages
+[13:17:13] openssl-dev: picked provider(s) with highest priority 100: openssl-dev[0m
+[13:17:13] postmarketos-installkernel: picked provider(s) with highest priority 100: postmarketos-installkernel[0m
+[13:17:13] libssl3: picked provider(s) with highest priority 100: libssl3[0m
+[13:17:13] libcrypto3: picked provider(s) with highest priority 100: libcrypto3[0m
+[13:17:13] /bin/sh: picked provider(s) with highest priority 100: busybox-binsh[0m
+[13:17:13] (native) install openssl-dev bash postmarketos-installkernel bison linux-headers findutils perl flex xz[0m
+[13:17:13] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/tmp[0m
+[13:17:13] % sudo rm -f /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:17:13] % sudo mkfifo /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:17:13] % sudo cat /home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo[0m
+[13:17:13] % sudo sh -c exec 3>/home/runner/.local/var/pmbootstrap/tmp/apk_progress_fifo; /home/runner/.local/var/pmbootstrap/apk.static --progress-fd 3 --no-progress --root /home/runner/.local/var/pmbootstrap/chroot_native --arch x86_64 --cache-dir /home/runner/.local/var/pmbootstrap/cache_apk_x86_64 --repository /home/runner/.local/var/pmbootstrap/packages/edge --repository /home/runner/.local/var/pmbootstrap/packages/edge add --no-interactive openssl-dev bash postmarketos-installkernel bison linux-headers findutils perl flex xz ;[0m
+[13:17:13] New background process: pid=3389, output=background[0m
+WARNING: opening /home/runner/.local/var/pmbootstrap/packages/edge/x86_64/APKINDEX.tar.gz: No such file or directory
+( 1/18) Installing ncurses-terminfo-base (6.6_p20251231-r0)
+( 2/18) Installing libncursesw (6.6_p20251231-r0)
+( 3/18) Installing readline (8.3.3-r0)
+( 4/18) Installing bash (5.3.3-r1)
+  Executing bash-5.3.3-r1.post-install
+( 5/18) Installing m4 (1.4.20-r0)
+( 6/18) Installing bison (3.8.2-r2)
+( 7/18) Installing findutils (4.10.0-r0)
+( 8/18) Installing flex (2.6.4-r7)
+( 9/18) Installing linux-headers (6.18.5-r0)
+(10/18) Installing openssl-dev (3.5.4-r0)
+(11/18) Installing libbz2 (1.0.8-r6)
+(12/18) Installing perl (5.42.0-r0)
+(13/18) Installing perl-error (0.17030-r0)
+(14/18) Installing perl-git (2.52.0-r0)
+(15/18) Installing git-perl (2.52.0-r0)
+(16/18) Installing postmarketos-installkernel (0.1-r3)
+(17/18) Installing xz-libs (5.8.1-r0)
+(18/18) Installing xz (5.8.1-r0)
+Executing busybox-1.37.0-r31.trigger
+OK: 580.9 MiB in 84 packages
+[13:17:14] [93m=>[0m [94medge/linux-postmarketos-qcom-msm8998[0m: Building package (cross compiling: cross-native)[0m
+[13:17:14] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/packages/edge[0m
+[13:17:14] % sudo chown -R 12345:12345 /home/runner/.local/var/pmbootstrap/packages[0m
+[13:17:14] (native) % mkdir -p /home/pmos/packages; rm -f /home/pmos/packages/pmos; ln -sf /mnt/pmbootstrap/packages/edge /home/pmos/packages/pmos[0m
+[13:17:14] % sudo rm -rf /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build[0m
+[13:17:14] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build[0m
+[13:17:14] % sudo cp -rL /home/runner/.local/var/pmbootstrap/cache_git/pmaports/device/testing/linux-postmarketos-qcom-msm8998/APKBUILD /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build/APKBUILD[0m
+[13:17:14] % sudo cp -rL /home/runner/.local/var/pmbootstrap/cache_git/pmaports/device/testing/linux-postmarketos-qcom-msm8998/config-postmarketos-qcom-msm8998.aarch64 /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build/config-postmarketos-qcom-msm8998.aarch64[0m
+[13:17:14] % sudo sh -c cat /home/runner/work/xiaomi6/xiaomi6/pmbootstrap/pmb/data/abuild_overrides.sh >> /home/runner/.local/var/pmbootstrap/chroot_native/home/pmos/build/APKBUILD[0m
+[13:17:14] (native) % chown -R pmos:pmos /home/pmos/build[0m
+[13:17:14] % sudo mkdir -p /home/runner/.local/var/pmbootstrap/chroot_native/mnt/pmaports[0m
+[13:17:14] % sudo mount --bind /home/runner/.local/var/pmbootstrap/cache_git/pmaports /home/runner/.local/var/pmbootstrap/chroot_native/mnt/pmaports[0m
+[13:17:14] (native) % busybox su pmos -c HOME=/home/pmos mkdir -p /home/pmos/build ;[0m
+[13:17:14] (native) % busybox su pmos -c HOME=/home/pmos ln -sf /mnt/pmaports/.git /home/pmos/build/.git ;[0m
+[13:17:14] (native) % cd /home/pmos/build; busybox su pmos -c SUDO_APK='abuild-apk --no-progress' CROSS_COMPILE=aarch64-alpine-linux-musl- CC=aarch64-alpine-linux-musl-gcc CARCH=aarch64 RUSTC_WRAPPER=/usr/bin/sccache GOCACHE=/home/pmos/.cache/go-build HOME=/home/pmos abuild -d -D postmarketOS ;[0m
+>>> linux-postmarketos-qcom-msm8998: Building pmos/linux-postmarketos-qcom-msm8998 6.0-r10 (using abuild 3.16.0-r0) started Wed, 14 Jan 2026 13:17:14 +0000
+>>> linux-postmarketos-qcom-msm8998: Validating /home/pmos/build/APKBUILD...
+>>> WARNING: linux-postmarketos-qcom-msm8998: No maintainer
+>>> linux-postmarketos-qcom-msm8998: Cleaning up srcdir
+>>> linux-postmarketos-qcom-msm8998: Cleaning up pkgdir
+>>> linux-postmarketos-qcom-msm8998: Cleaning up tmpdir
+>>> linux-postmarketos-qcom-msm8998: Fetching https://gitlab.com/msm8998-mainline/linux/-/archive/90169e6e9fee29fae14aeac0a905246be5ce6304/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz
+/var/cache/distfiles/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz: OK
+/home/pmos/build/config-postmarketos-qcom-msm8998.aarch64: OK
+>>> linux-postmarketos-qcom-msm8998: Fetching https://gitlab.com/msm8998-mainline/linux/-/archive/90169e6e9fee29fae14aeac0a905246be5ce6304/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz
+/var/cache/distfiles/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz: OK
+/home/pmos/build/config-postmarketos-qcom-msm8998.aarch64: OK
+>>> linux-postmarketos-qcom-msm8998: Unpacking /var/cache/distfiles/linux-90169e6e9fee29fae14aeac0a905246be5ce6304.tar.gz...
+>>> linux-postmarketos-qcom-msm8998: Applying FINAL MEMORY MAP fix...
+>>> linux-postmarketos-qcom-msm8998: Found DTS file at: ./arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts
+>>> linux-postmarketos-qcom-msm8998: Checking file BEFORE modification:
+-rw-r--r--    1 pmos     pmos         18241 Oct  9  2022 ./arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts
+8c8da4c602ea58be18951f28fe9b2b11  ./arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts
+>>> linux-postmarketos-qcom-msm8998: WARNING: 8b200000 not found!
+>>> linux-postmarketos-qcom-msm8998: Executing sed commands...
+>>> linux-postmarketos-qcom-msm8998: Checking file AFTER modification:
+-rw-r--r--    1 pmos     pmos         18241 Jan 14 13:17 ./arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts
+8c8da4c602ea58be18951f28fe9b2b11  ./arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts
+>>> ERROR: linux-postmarketos-qcom-msm8998: VERIFICATION FAILED: 91900000 NOT found in DTS after sed! Dumping context:
+		};
+	};
+
+	reserved-memory {
+		/* Bootloader display framebuffer region */
+		cont_splash_mem: memory@9d400000 {
+			reg = <0x0 0x9d400000 0x0 0x2400000>;
+			no-map;
+		};
+
+		/* For getting crash logs using Android downstream kernels */
+>>> ERROR: linux-postmarketos-qcom-msm8998: prepare failed
+[13:17:21] ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[13:17:21] [94mNOTE:[0m The failed command's output is above the ^^^ line in the log file: /home/runner/.local/var/pmbootstrap/log.txt[0m
+[13:17:21] [91mERROR:[0m Couldn't build aarch64/linux-postmarketos-qcom-msm8998-6.0-r10.apk![0m
+[13:17:22] [94mNOTE:[0m Timeout enabled, commands will be killed after 900 seconds of not writing any output. Reason: running in CI based on autodetection (environment variable 'CI' set)[0m
+[13:17:22] [92m*** (1/3) PREPARE NATIVE CHROOT ***[0m
+[13:17:22] (native) install cryptsetup util-linux parted[0m
+[13:17:23] [92m*** (2/3) CREATE DEVICE ROOTFS ("xiaomi-sagit") ***[0m
+[13:17:25] (native) install qemu-aarch64[0m
+[13:17:25] (rootfs_xiaomi-sagit) Creating chroot[0m
+[13:17:30] Building [94m1[0m package[0m
+[13:17:30]    [94m*[0m edge/linux-postmarketos-qcom-msm8998[0m
+[13:17:30] [93m=> (1/1)[0m [94medge/linux-postmarketos-qcom-msm8998[0m: Installing dependencies[0m
+[13:17:31] (native) install ccache-cross-symlinks abuild gcc-aarch64 g++-aarch64[0m
+[13:17:31] (native) install flex linux-headers bison postmarketos-installkernel openssl-dev perl findutils bash xz[0m
+[13:17:32] [93m=>[0m [94medge/linux-postmarketos-qcom-msm8998[0m: Building package (cross compiling: cross-native)[0m
+[13:17:40] [94mNOTE:[0m The failed command's output is above the ^^^ line in the log file: /home/runner/.local/var/pmbootstrap/log.txt[0m
+[13:17:40] [91mERROR:[0m Couldn't build aarch64/linux-postmarketos-qcom-msm8998-6.0-r10.apk![0m
+
+Run 'pmbootstrap log' for details.
