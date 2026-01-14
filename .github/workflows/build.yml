@@ -92,6 +92,30 @@ jobs:
           echo "=== Step 4: Verifying config ===" >> build.log
           pmbootstrap status >> build.log 2>&1 || echo "pmbootstrap status failed (expected if first run)" >> build.log
 
+      - name: Patch and Rebuild Kernel
+        run: |
+          # 1. 定义路径
+          PMAPORTS=~/.local/var/pmbootstrap/cache_git/pmaports
+          KERNEL_PKG_DIR="$PMAPORTS/device/testing/linux-postmarketos-qcom-msm8998"
+          
+          echo "=== Step 5: Patching Kernel ===" >> build.log
+          
+          # 2. 复制补丁
+          cp fix-wifi-memory.patch "$KERNEL_PKG_DIR/"
+          
+          # 3. 修改 APKBUILD：添加补丁到 source，增加 pkgrel 以确保优先安装
+          cd "$KERNEL_PKG_DIR"
+          sed -i '/source="/a \        fix-wifi-memory.patch' APKBUILD
+          sed -i 's/pkgrel=3/pkgrel=4/' APKBUILD
+          
+          echo "APKBUILD modified. New pkgrel=4." >> ../../../../../build.log
+          
+          # 4. 更新 checksum 并强制编译内核
+          echo "=== Step 6: Rebuilding Kernel ===" >> ../../../../../build.log
+          pmbootstrap checksum linux-postmarketos-qcom-msm8998 >> ../../../../../build.log 2>&1
+          pmbootstrap build linux-postmarketos-qcom-msm8998 --force >> ../../../../../build.log 2>&1
+          echo "Kernel rebuild complete" >> ../../../../../build.log
+
       - name: Build Rootfs with Docker (TWRP Zip)
         run: |
           set -o pipefail
@@ -173,3 +197,9 @@ jobs:
         with:
           name: Mi6-Docker-OS-Final
           path: output/
+
+      - name: Upload Boot Image (TWRP Flashable)
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mi6-Boot-Image-Fixed
+          path: output/boot.img
