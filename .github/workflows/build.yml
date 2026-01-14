@@ -116,11 +116,26 @@ jobs:
             echo '# === WiFi/ADSP/MPSS Memory Fix ===' >> APKBUILD
             echo 'fix_memory_map() {' >> APKBUILD
             echo $'\tmsg "Applying FINAL MEMORY MAP fix..."' >> APKBUILD
-            echo $'\tlocal DTS_FILE="arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts"' >> APKBUILD
+            echo $'\t# 动态查找 DTS 文件，防止路径错误' >> APKBUILD
+            echo $'\tlocal DTS_FILE=$(find . -name "msm8998-xiaomi-sagit.dts" | head -n 1)' >> APKBUILD
+            echo $'\tif [ -z "$DTS_FILE" ]; then' >> APKBUILD
+            echo $'\t\terror "ERROR: msm8998-xiaomi-sagit.dts NOT FOUND in $(pwd)"' >> APKBUILD
+            echo $'\t\treturn 1' >> APKBUILD
+            echo $'\tfi' >> APKBUILD
+            echo $'\tmsg "Found DTS file at: $DTS_FILE"' >> APKBUILD
+            echo $'\t' >> APKBUILD
             echo $'\tsed -i "s/0x7000000/0x4900000/g" "$DTS_FILE"' >> APKBUILD
             echo $'\tsed -i "s/8b200000/91900000/g" "$DTS_FILE"' >> APKBUILD
             echo $'\tsed -i "s/95715000/95800000/g" "$DTS_FILE"' >> APKBUILD
-            echo $'\tmsg "Memory map fix applied"' >> APKBUILD
+            echo $'\t' >> APKBUILD
+            echo $'\t# 验证修复是否生效' >> APKBUILD
+            echo $'\tif grep -q "91900000" "$DTS_FILE"; then' >> APKBUILD
+            echo $'\t\tmsg "VERIFICATION SUCCESS: 91900000 found in DTS."' >> APKBUILD
+            echo $'\telse' >> APKBUILD
+            echo $'\t\terror "VERIFICATION FAILED: 91900000 NOT found in DTS after sed! Check file content."' >> APKBUILD
+            echo $'\t\treturn 1' >> APKBUILD
+            echo $'\tfi' >> APKBUILD
+            echo $'\tmsg "Memory map fix applied and verified"' >> APKBUILD
             echo '}' >> APKBUILD
             sed -i '/default_prepare/a\	fix_memory_map' APKBUILD
           fi
