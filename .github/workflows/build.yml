@@ -133,17 +133,16 @@ jobs:
           
           cd "$KERNEL_PKG_DIR"
           
-          # 3. 稳健修改 APKBUILD - 使用 echo 逐行追加避免 heredoc 缩进问题
+          # 3. 稳健修改 APKBUILD - 使用 $'...' 语法确保 Tab 正确输出
           echo '' >> APKBUILD
           echo '# === WiFi/ADSP/MPSS Memory Fix ===' >> APKBUILD
           echo 'fix_memory_map() {' >> APKBUILD
-          echo '	msg "Applying FINAL MEMORY MAP fix based on firmware analysis..."' >> APKBUILD
-          echo '	local DTS_FILE="arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts"' >> APKBUILD
-          echo '	sed -i "s/0x7000000/0x4900000/g" "$DTS_FILE"' >> APKBUILD
-          echo '	sed -i "s/8b200000/91900000/g" "$DTS_FILE"' >> APKBUILD
-          echo '	sed -i "s/95715000/95800000/g" "$DTS_FILE"' >> APKBUILD
-          echo '	# 注意: memory-region 属性由驱动动态处理，不需要手动添加' >> APKBUILD
-          echo '	msg "Memory map fix applied successfully"' >> APKBUILD
+          echo $'\tmsg "Applying FINAL MEMORY MAP fix..."' >> APKBUILD
+          echo $'\tlocal DTS_FILE="arch/arm64/boot/dts/qcom/msm8998-xiaomi-sagit.dts"' >> APKBUILD
+          echo $'\tsed -i "s/0x7000000/0x4900000/g" "$DTS_FILE"' >> APKBUILD
+          echo $'\tsed -i "s/8b200000/91900000/g" "$DTS_FILE"' >> APKBUILD
+          echo $'\tsed -i "s/95715000/95800000/g" "$DTS_FILE"' >> APKBUILD
+          echo $'\tmsg "Memory map fix applied"' >> APKBUILD
           echo '}' >> APKBUILD
           
           # 在 prepare() 函数中调用 fix_memory_map (在 default_prepare 之后)
