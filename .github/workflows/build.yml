@@ -277,38 +277,62 @@ jobs:
         if: always()
         run: |
           echo "=== Cleaning up and fixing permissions for cache ==="
-          # 1. 卸载所有还在挂载的目录 (pmbootstrap 有时会残留挂载)
-          sudo pmbootstrap shutdown || true
           
-          # 2. 显示缓存目录的实际内容和大小（调试）
+          # 1. 以非 root 身份运行 pmbootstrap shutdown（pmbootstrap 不允许 root 运行）
+          pmbootstrap shutdown || true
+          
+          # 2. 强制卸载所有 chroot 内的挂载点
+          echo "=== Force unmounting all chroot mounts ==="
+          for CHROOT_DIR in /home/runner/.local/var/pmbootstrap/chroot_*; do
+            if [ -d "$CHROOT_DIR" ]; then
+              echo "Unmounting mounts in $CHROOT_DIR..."
+              # 首先尝试卸载 /proc, /sys, /dev 等
+              sudo umount -lf "$CHROOT_DIR/proc" 2>/dev/null || true
+              sudo umount -lf "$CHROOT_DIR/sys" 2>/dev/null || true
+              sudo umount -lf "$CHROOT_DIR/dev/pts" 2>/dev/null || true
+              sudo umount -lf "$CHROOT_DIR/dev" 2>/dev/null || true
+              # 卸载所有该目录下的挂载点
+              mount | grep "$CHROOT_DIR" | awk '{print $3}' | sort -r | while read mp; do
+                sudo umount -lf "$mp" 2>/dev/null || true
+              done
+            fi
+          done
+          
+          # 3. 显示缓存目录的实际内容和大小（调试）
           echo "=== Cache directories before cleanup ==="
           echo "cache_git:"
           du -sh /home/runner/.local/var/pmbootstrap/cache_git 2>/dev/null || echo "Not found"
-          ls -la /home/runner/.local/var/pmbootstrap/cache_git 2>/dev/null | head -10 || true
           echo "packages:"
           du -sh /home/runner/.local/var/pmbootstrap/packages 2>/dev/null || echo "Not found"
-          ls -la /home/runner/.local/var/pmbootstrap/packages 2>/dev/null | head -10 || true
+          ls -la /home/runner/.local/var/pmbootstrap/packages 2>/dev/null | head -5 || true
           echo "cache_distfiles:"
           du -sh /home/runner/.local/var/pmbootstrap/cache_distfiles 2>/dev/null || echo "Not found"
-          echo "ccache:"
-          du -sh /home/runner/.cache/ccache 2>/dev/null || echo "Not found"
           
-          # 3. 修改工作目录所有权，让 runner 用户可以打包它
-          echo "=== Fixing ownership ==="
-          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap 2>&1 | tail -5 || true
-          sudo chown -R runner:runner /home/runner/.cache/ccache 2>&1 | tail -5 || true
-          
-          # 4. 删除巨大的 chroot 目录以节省空间
+          # 4. 删除 chroot 目录（现在应该可以删除了）
           echo "=== Removing chroot directories ==="
-          find /home/runner/.local/var/pmbootstrap -maxdepth 1 -name "chroot_*" -type d -exec sudo rm -rf {} + || true
+          for CHROOT_DIR in /home/runner/.local/var/pmbootstrap/chroot_*; do
+            if [ -d "$CHROOT_DIR" ]; then
+              echo "Removing $CHROOT_DIR..."
+              sudo rm -rf "$CHROOT_DIR" 2>&1 | tail -3 || true
+            fi
+          done
           
-          # 5. 最终检查缓存目录
+          # 5. 修改所有权（现在没有挂载点了，应该会成功）
+          echo "=== Fixing ownership ==="
+          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap/cache_git 2>&1 | tail -3 || true
+          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap/packages 2>&1 | tail -3 || true
+          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap/cache_distfiles 2>&1 | tail -3 || true
+          sudo chown -R runner:runner /home/runner/.cache/ccache 2>&1 | tail -3 || true
+          
+          # 6. 最终检查缓存目录
           echo "=== Cache directories after cleanup ==="
-          echo "cache_git size:"
+          echo "cache_git:"
           du -sh /home/runner/.local/var/pmbootstrap/cache_git 2>/dev/null || echo "Not found"
-          echo "packages size:"
+          ls -la /home/runner/.local/var/pmbootstrap/cache_git 2>/dev/null | head -3 || true
+          echo "packages:"
           du -sh /home/runner/.local/var/pmbootstrap/packages 2>/dev/null || echo "Not found"
-          echo "Total pmbootstrap size:"
+          ls -la /home/runner/.local/var/pmbootstrap/packages 2>/dev/null | head -3 || true
+          echo "Total pmbootstrap size (should be ~300MB+):"
           du -sh /home/runner/.local/var/pmbootstrap 2>/dev/null || echo "Not found"
 
       # 无论成功还是失败都上传日志
