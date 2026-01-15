@@ -36,6 +36,9 @@ jobs:
         run: |
           HASH=$(git ls-remote https://gitlab.postmarketos.org/postmarketOS/pmaports.git main | awk '{print $1}')
           echo "pmaports_hash=$HASH" >> $GITHUB_OUTPUT
+          # 计算当前周数，用于 ccache key（同一周内可以复用缓存）
+          WEEK=$(date +%Y-W%V)
+          echo "week_number=$WEEK" >> $GITHUB_OUTPUT
 
       # ========== 优化后的 pmbootstrap 缓存 ==========
       - name: Cache pmbootstrap work directory
@@ -56,12 +59,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /home/runner/.cache/ccache
-          # 加入周数，每周自动清理旧缓存，避免达到 10GB 限制
-          key: ccache-v2-${{ runner.os }}-sagit-week${{ github.run_number }}
+          # 使用周数作为 key，同一周内可以复用缓存
+          key: ccache-v3-${{ runner.os }}-sagit-${{ steps.get-hash.outputs.week_number }}
           restore-keys: |
-            ccache-v2-${{ runner.os }}-sagit-week
-            ccache-v2-${{ runner.os }}-sagit
-            ccache-v2-${{ runner.os }}-
+            ccache-v3-${{ runner.os }}-sagit-
+            ccache-v3-${{ runner.os }}-
 
       - name: Setup ccache
         run: |
@@ -226,8 +228,8 @@ jobs:
           
           pmbootstrap checksum linux-postmarketos-qcom-msm8998
           
-          # 使用 --force 强制重新编译，确保 fix_memory_map 被执行
-          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 --force --ccache
+          # ccache 由 pmbootstrap 配置自动启用，不需要 --ccache 参数
+          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 --force
           
           # 构建后显示 ccache 统计
           echo "=== ccache stats after kernel build ==="
