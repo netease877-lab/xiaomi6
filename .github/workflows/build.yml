@@ -48,31 +48,21 @@ jobs:
             /home/runner/.local/var/pmbootstrap/cache_git
             /home/runner/.local/var/pmbootstrap/packages
             /home/runner/.local/var/pmbootstrap/cache_distfiles
+            /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64
           # 使用 pmaports 的 hash 作为 key，确保代码更新时能部分重用
-          # v5: 强制清理之前被污染的缓存
-          key: pmb-v5-${{ runner.os }}-${{ steps.get-hash.outputs.pmaports_hash }}
+          # v6: 添加 ccache 目录到缓存
+          key: pmb-v6-${{ runner.os }}-${{ steps.get-hash.outputs.pmaports_hash }}
           restore-keys: |
-            pmb-v5-${{ runner.os }}-
+            pmb-v6-${{ runner.os }}-
 
-      # ========== ccache 编译缓存 ==========
-      - name: Cache ccache
-        uses: actions/cache@v4
-        with:
-          path: /home/runner/.cache/ccache
-          # 使用周数作为 key，同一周内可以复用缓存
-          key: ccache-v3-${{ runner.os }}-sagit-${{ steps.get-hash.outputs.week_number }}
-          restore-keys: |
-            ccache-v3-${{ runner.os }}-sagit-
-            ccache-v3-${{ runner.os }}-
-
+      # ========== ccache 初始化 ==========
       - name: Setup ccache
         run: |
-          mkdir -p /home/runner/.cache/ccache
-          ccache --set-config=max_size=2G
-          ccache --set-config=compression=true
+          # pmbootstrap 使用内部的 cache_ccache_aarch64 目录
+          mkdir -p /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64
           # 显示 ccache 统计
-          echo "=== ccache stats before build ==="
-          ccache -s
+          echo "=== ccache directory info ==="
+          du -sh /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64 2>/dev/null || echo "Empty or not found"
 
       # ========== 修复缓存恢复后的权限问题 ==========
       - name: Fix Restored Cache Permissions
@@ -327,6 +317,8 @@ jobs:
           ls -la /home/runner/.local/var/pmbootstrap/packages 2>/dev/null | head -5 || true
           echo "cache_distfiles:"
           du -sh /home/runner/.local/var/pmbootstrap/cache_distfiles 2>/dev/null || echo "Not found"
+          echo "cache_ccache_aarch64:"
+          du -sh /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64 2>/dev/null || echo "Not found"
           
           # 4. 删除 chroot 目录（现在应该可以删除了）
           echo "=== Removing chroot directories ==="
@@ -342,7 +334,7 @@ jobs:
           sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap/cache_git 2>&1 | tail -3 || true
           sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap/packages 2>&1 | tail -3 || true
           sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap/cache_distfiles 2>&1 | tail -3 || true
-          sudo chown -R runner:runner /home/runner/.cache/ccache 2>&1 | tail -3 || true
+          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64 2>&1 | tail -3 || true
           
           # 6. 最终检查缓存目录
           echo "=== Cache directories after cleanup ==="
@@ -352,6 +344,8 @@ jobs:
           echo "packages:"
           du -sh /home/runner/.local/var/pmbootstrap/packages 2>/dev/null || echo "Not found"
           ls -la /home/runner/.local/var/pmbootstrap/packages 2>/dev/null | head -3 || true
-          echo "Total pmbootstrap size (should be ~300MB+):"
+          echo "Total pmbootstrap size (should be ~300MB+):" 
           du -sh /home/runner/.local/var/pmbootstrap 2>/dev/null || echo "Not found"
+          echo "cache_ccache_aarch64:"
+          du -sh /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64 2>/dev/null || echo "Not found"
 
