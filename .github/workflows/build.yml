@@ -97,26 +97,25 @@ jobs:
       - name: Initialize pmbootstrap (Direct Config)
         run: |
           mkdir -p ~/.config ~/.local/var/pmbootstrap/cache_git
-          touch build.log
 
-          echo "=== Step 1: Setting up pmaports ===" >> build.log
+          echo "=== Step 1: Setting up pmaports ==="
           PMAPORTS_DIR=~/.local/var/pmbootstrap/cache_git/pmaports
           if [ -d "$PMAPORTS_DIR" ]; then
-            echo "pmaports exists (from cache), updating..." >> build.log
-            cd "$PMAPORTS_DIR" && git pull --rebase >> build.log 2>&1 || true
+            echo "pmaports exists (from cache), updating..."
+            cd "$PMAPORTS_DIR" && git pull --rebase 2>&1 || true
             cd -
           else
-            echo "Cloning pmaports..." >> build.log
+            echo "Cloning pmaports..."
             git clone --depth=1 https://gitlab.postmarketos.org/postmarketOS/pmaports.git \
-                "$PMAPORTS_DIR" >> build.log 2>&1
+                "$PMAPORTS_DIR" 2>&1
           fi
           
-          echo "=== Step 1.5: Patching deviceinfo for RNDIS ===" >> build.log
+          echo "=== Step 1.5: Patching deviceinfo for RNDIS ==="
           DEVICEINFO_PATH="$PMAPORTS_DIR/device/testing/device-xiaomi-sagit/deviceinfo"
           # 避免重复添加
           grep -q "rndis.usb0" "$DEVICEINFO_PATH" || echo 'deviceinfo_usb_network_function="rndis.usb0"' >> "$DEVICEINFO_PATH"
           
-          echo "=== Step 2: Generating config file ===" >> build.log
+          echo "=== Step 2: Generating config file ==="
           # 关键：在配置文件中指定 ccache 路径，pmbootstrap 会将其挂载到 chroot 内
           cat <<EOF > ~/.config/pmbootstrap_v3.cfg
           [pmbootstrap]
@@ -136,7 +135,6 @@ jobs:
 
       - name: Patch and Rebuild Kernel
         run: |
-          BUILD_LOG="$GITHUB_WORKSPACE/build.log"
           PMAPORTS=~/.local/var/pmbootstrap/cache_git/pmaports
           KERNEL_PKG_DIR="$PMAPORTS/device/testing/linux-postmarketos-qcom-msm8998"
           
@@ -152,15 +150,18 @@ jobs:
             echo $'\tls -la' >> APKBUILD
             
             # 关键：进入解压后的内核源码目录
+            # 注意：[ -d "linux-"* ] 语法在 shell 中是错误的，使用 ls -d 代替
             echo $'\t# 进入解压后的内核源码目录（通常是 linux-* 或 src/linux-*）' >> APKBUILD
-            echo $'\tif [ -d "linux-"* ]; then' >> APKBUILD
+            echo $'\tif ls -d linux-*/ >/dev/null 2>&1; then' >> APKBUILD
             echo $'\t\tcd linux-*/' >> APKBUILD
             echo $'\t\tmsg "Changed to kernel source dir: $(pwd)"' >> APKBUILD
-            echo $'\telif [ -d "src/linux-"* ]; then' >> APKBUILD
+            echo $'\telif ls -d src/linux-*/ >/dev/null 2>&1; then' >> APKBUILD
             echo $'\t\tcd src/linux-*/' >> APKBUILD
             echo $'\t\tmsg "Changed to kernel source dir: $(pwd)"' >> APKBUILD
             echo $'\telse' >> APKBUILD
             echo $'\t\tmsg "WARNING: Could not find linux-* directory, staying in $(pwd)"' >> APKBUILD
+            echo $'\t\tmsg "Directory contents:"' >> APKBUILD
+            echo $'\t\tls -la' >> APKBUILD
             echo $'\tfi' >> APKBUILD
             
             echo $'\tmsg "Listing DTS/DTSI files in qcom:"' >> APKBUILD
@@ -223,10 +224,10 @@ jobs:
           # 使用正则匹配任意 pkgrel 值，设置为更高的版本号强制重新编译
           sed -i 's/pkgrel=[0-9]*/pkgrel=20/' APKBUILD
           
-          pmbootstrap checksum linux-postmarketos-qcom-msm8998 2>&1 | tee -a "$BUILD_LOG"
+          pmbootstrap checksum linux-postmarketos-qcom-msm8998
           
           # 使用 --force 强制重新编译，确保 fix_memory_map 被执行
-          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 --force --ccache 2>&1 | tee -a "$BUILD_LOG"
+          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 --force --ccache
           
           # 构建后显示 ccache 统计
           echo "=== ccache stats after kernel build ==="
@@ -238,8 +239,7 @@ jobs:
           pmbootstrap install \
             --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs,msm-modem,ofono,android-tools \
             --password zhoutong \
-            --android-recovery-zip \
-            2>&1 | tee -a build.log
+            --android-recovery-zip
           
           # 注入固件
           FIRMWARE_URL="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/ath10k/WCN3990/hw1.0/firmware-5.bin"
@@ -335,11 +335,3 @@ jobs:
           echo "Total pmbootstrap size (should be ~300MB+):"
           du -sh /home/runner/.local/var/pmbootstrap 2>/dev/null || echo "Not found"
 
-      # 无论成功还是失败都上传日志
-      - name: Upload Build Log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build.log
-          if-no-files-found: warn
