@@ -118,20 +118,23 @@ jobs:
           grep -q "rndis.usb0" "$DEVICEINFO_PATH" || echo 'deviceinfo_usb_network_function="rndis.usb0"' >> "$DEVICEINFO_PATH"
           
           echo "=== Step 2: Generating config file ==="
-          # 关键：在配置文件中指定 ccache 路径，pmbootstrap 会将其挂载到 chroot 内
-          cat <<EOF > ~/.config/pmbootstrap_v3.cfg
-          [pmbootstrap]
-          device = xiaomi-sagit
-          ui = console
-          work = /home/runner/.local/var/pmbootstrap
-          hostname = mi6
-          user = user
-          systemd = never
-          extra_packages = docker,docker-compose,nano,htop
-          is_default_channel = False
-          aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports
-          ccache = /home/runner/.cache/ccache
-          EOF
+          # 使用 echo 命令避免 YAML 缩进产生的前导空格问题
+          mkdir -p ~/.config
+          echo "[pmbootstrap]" > ~/.config/pmbootstrap_v3.cfg
+          echo "device = xiaomi-sagit" >> ~/.config/pmbootstrap_v3.cfg
+          echo "ui = console" >> ~/.config/pmbootstrap_v3.cfg
+          echo "work = /home/runner/.local/var/pmbootstrap" >> ~/.config/pmbootstrap_v3.cfg
+          echo "hostname = mi6" >> ~/.config/pmbootstrap_v3.cfg
+          echo "user = user" >> ~/.config/pmbootstrap_v3.cfg
+          echo "systemd = never" >> ~/.config/pmbootstrap_v3.cfg
+          echo "extra_packages = docker,docker-compose,nano,htop" >> ~/.config/pmbootstrap_v3.cfg
+          echo "is_default_channel = False" >> ~/.config/pmbootstrap_v3.cfg
+          echo "aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports" >> ~/.config/pmbootstrap_v3.cfg
+          echo "ccache = /home/runner/.cache/ccache" >> ~/.config/pmbootstrap_v3.cfg
+          
+          # 验证配置文件内容
+          echo "=== pmbootstrap config file ===" 
+          cat ~/.config/pmbootstrap_v3.cfg
 
           echo "8" > ~/.local/var/pmbootstrap/version
 
