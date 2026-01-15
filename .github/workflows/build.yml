@@ -221,6 +221,21 @@ jobs:
             echo $'\t\terror "FAILED: 91900000 NOT found after sed!"' >> APKBUILD
             echo $'\t\treturn 1' >> APKBUILD
             echo $'\tfi' >> APKBUILD
+            
+            # 关键修复：强制 DTB 重新编译
+            # DTSI 修改后 make 不会自动检测到变化，需要手动触发
+            echo $'\tmsg "========== FORCING DTB REBUILD =========="' >> APKBUILD
+            echo $'\t# 删除已编译的 DTB 文件和依赖缓存，强制重新编译' >> APKBUILD
+            echo $'\tmsg "Removing old DTB files to force rebuild..."' >> APKBUILD
+            echo $'\tfind . -name "msm8998*.dtb" -delete 2>/dev/null || true' >> APKBUILD
+            echo $'\tfind . -name ".msm8998*.dtb.cmd" -delete 2>/dev/null || true' >> APKBUILD
+            echo $'\tfind . -name "msm8998*.dtb.o" -delete 2>/dev/null || true' >> APKBUILD
+            echo $'\t# Touch 所有依赖 msm8998.dtsi 的 DTS 文件' >> APKBUILD
+            echo $'\tmsg "Touching DTS files to update timestamps..."' >> APKBUILD
+            echo $'\tfind . -name "*.dts" -path "*qcom*" -exec grep -l "msm8998" {} \\; | xargs -r touch' >> APKBUILD
+            echo $'\ttouch "$DTSI_FILE"' >> APKBUILD
+            echo $'\tmsg "DTB rebuild will be triggered during kernel build"' >> APKBUILD
+            
             echo $'\tmsg "========== MEMORY MAP FIX END =========="' >> APKBUILD
             echo '}' >> APKBUILD
             sed -i '/default_prepare/a\	fix_memory_map' APKBUILD
