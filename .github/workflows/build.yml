@@ -120,7 +120,7 @@ jobs:
           echo "extra_packages = docker,docker-compose,nano,htop" >> ~/.config/pmbootstrap_v3.cfg
           echo "is_default_channel = False" >> ~/.config/pmbootstrap_v3.cfg
           echo "aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports" >> ~/.config/pmbootstrap_v3.cfg
-          echo "ccache = /home/runner/.cache/ccache" >> ~/.config/pmbootstrap_v3.cfg
+          # 不设置 ccache 路径，让 pmbootstrap 使用默认的内部目录 cache_ccache_$ARCH
           
           # 验证配置文件内容
           echo "=== pmbootstrap config file ===" 
