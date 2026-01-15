@@ -48,12 +48,22 @@ jobs:
             /home/runner/.local/var/pmbootstrap/cache_git
             /home/runner/.local/var/pmbootstrap/packages
             /home/runner/.local/var/pmbootstrap/cache_distfiles
-            /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64
+            /home/runner/.local/var/pmbootstrap/cache_distfiles
           # 使用 pmaports 的 hash 作为 key，确保代码更新时能部分重用
-          # v6: 添加 ccache 目录到缓存
+          # v6: ccache 已分离到单独的步骤
           key: pmb-v6-${{ runner.os }}-${{ steps.get-hash.outputs.pmaports_hash }}
           restore-keys: |
             pmb-v6-${{ runner.os }}-
+
+      # ========== ccache 增量编译缓存 ==========
+      # 关键：使用 run_id 确保每次构建都保存新的缓存（GitHub Actions 不会更新已存在的 Key）
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64
+          key: ccache-v4-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-v4-${{ runner.os }}-
 
       # ========== ccache 初始化 ==========
       - name: Setup ccache
