@@ -194,25 +194,25 @@ jobs:
             echo $'\tgrep -n "8b200000" "$DTSI_FILE" || msg "No 8b200000 found!"' >> APKBUILD
             
             # 执行 sed 替换
-            echo $'\tif grep -q "8b200000" "$DTSI_FILE"; then' >> APKBUILD
-            echo $'\t\tmsg "REPLACING 8b200000 -> 91900000"' >> APKBUILD
-            echo $'\t\tsed -i "s/0x8b200000/0x91900000/g" "$DTSI_FILE"' >> APKBUILD
-            echo $'\t\tsed -i "s/memory@8b200000/memory@91900000/g" "$DTSI_FILE"' >> APKBUILD
-            echo $'\t\tmsg "After sed - lines with 91900000:"' >> APKBUILD
-            echo $'\t\tgrep -n "91900000" "$DTSI_FILE" || msg "STILL NOT FOUND!"' >> APKBUILD
-            echo $'\telse' >> APKBUILD
-            echo $'\t\terror "CRITICAL: 8b200000 not found in $DTSI_FILE"' >> APKBUILD
-            echo $'\t\tmsg "Full file content (first 100 lines):"' >> APKBUILD
-            echo $'\t\thead -n 100 "$DTSI_FILE"' >> APKBUILD
-            echo $'\tfi' >> APKBUILD
+            # 侦查：全局搜索包含旧地址的文件
+            echo $'\tmsg "========== DIAGNOSTICS: SEARCHING FOR 8b200000 =========="' >> APKBUILD
+            echo $'\tgrep -r "8b200000" arch/arm64/boot/dts/qcom/ || msg "No matches specific matches found (unexpected)"' >> APKBUILD
             
-            echo $'\tif grep -q "95700000" "$DTSI_FILE"; then' >> APKBUILD
-            echo $'\t\tmsg "REPLACING 95700000 -> 95800000"' >> APKBUILD
-            echo $'\t\tsed -i "s/0x95700000/0x95800000/g" "$DTSI_FILE"' >> APKBUILD
-            echo $'\t\tsed -i "s/memory@95700000/memory@95800000/g" "$DTSI_FILE"' >> APKBUILD
-            echo $'\telse' >> APKBUILD
-            echo $'\t\terror "CRITICAL: 95700000 not found in $DTSI_FILE"' >> APKBUILD
-            echo $'\tfi' >> APKBUILD
+            # 修复：执行全局替换，涵盖所有 dts/dtsi
+            echo $'\tmsg "========== EXECUTING GLOBAL FIX =========="' >> APKBUILD
+            echo $'\tmsg "Replacing 8b200000 -> 91900000 in ALL qcom dts files..."' >> APKBUILD
+            
+            # 替换 hex 地址
+            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/0x8b200000/0x91900000/g" {} + ' >> APKBUILD
+            # 替换节点名称
+            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/memory@8b200000/memory@91900000/g" {} + ' >> APKBUILD
+            
+            # 替换 WLAN 地址 (9570 -> 9580)
+            echo $'\tmsg "Replacing 95700000 -> 95800000 in ALL qcom dts files..."' >> APKBUILD
+            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/0x95700000/0x95800000/g" {} + ' >> APKBUILD
+            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/memory@95700000/memory@95800000/g" {} + ' >> APKBUILD
+            
+            echo $'\tmsg "Global replacement completed."' >> APKBUILD
             
             # 最终验证
             echo $'\tmsg "========== FINAL VERIFICATION =========="' >> APKBUILD
