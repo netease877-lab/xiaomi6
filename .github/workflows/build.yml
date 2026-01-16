@@ -101,6 +101,11 @@ jobs:
       - name: Initialize pmbootstrap (Direct Config)
         run: |
           mkdir -p ~/.config ~/.local/var/pmbootstrap/cache_git
+          
+          # 修复 APKINDEX 签名信任问题：
+          # 由于 GitHub Actions 每次可能生成新密钥，旧的 APKINDEX 签名会失效。
+          # 删除索引文件强制 pmbootstrap 重新生成和签名。
+          find ~/.local/var/pmbootstrap/packages -name "APKINDEX*" -delete || true
 
           echo "=== Step 1: Setting up pmaports ==="
           PMAPORTS_DIR=~/.local/var/pmbootstrap/cache_git/pmaports
