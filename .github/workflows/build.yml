@@ -70,6 +70,8 @@ jobs:
         run: |
           # pmbootstrap 使用内部的 cache_ccache_aarch64 目录
           mkdir -p /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64
+          # 关键：给予 777 权限，确保 chroot 内的用户可以写入
+          chmod 777 /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64
           # 显示 ccache 统计
           echo "=== ccache directory info ==="
           du -sh /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64 2>/dev/null || echo "Empty or not found"
@@ -130,7 +132,8 @@ jobs:
           echo "extra_packages = docker,docker-compose,nano,htop" >> ~/.config/pmbootstrap_v3.cfg
           echo "is_default_channel = False" >> ~/.config/pmbootstrap_v3.cfg
           echo "aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports" >> ~/.config/pmbootstrap_v3.cfg
-          # 不设置 ccache 路径，让 pmbootstrap 使用默认的内部目录 cache_ccache_$ARCH
+          # 显式设置 ccache 大小，确保启用
+          echo "ccache_size = 5G" >> ~/.config/pmbootstrap_v3.cfg
           
           # 验证配置文件内容
           echo "=== pmbootstrap config file ===" 
