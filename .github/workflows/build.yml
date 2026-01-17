@@ -155,6 +155,9 @@ jobs:
           
           cd "$KERNEL_PKG_DIR"
           
+          # 关键修复：重置 APKBUILD 以清除之前的补丁（防止缓存导致代码未更新）
+          git checkout APKBUILD
+          
           # 检查是否已经补丁过，防止重复注入
           if ! grep -q "fix_memory_map" APKBUILD; then
             echo '' >> APKBUILD
