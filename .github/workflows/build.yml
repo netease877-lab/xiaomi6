@@ -216,9 +216,13 @@ jobs:
             # 原有问题：0x91900000 地址虽然正确，但保留区域可能检查发现只有 26MB (0x1a00000)
             # 解决方案：使用 Device Tree Overlay 覆盖法
             # 直接在 DTS 文件末尾追加新的节点定义，强制覆盖之前的配置
-            # 这种方法不依赖 sed 查找，绝对可靠
+            # 简化命令：使用 loop 避免嵌套引号导致的语法错误
             echo $'\tmsg "Appending ADSP memory override to DTS file..."' >> APKBUILD
-            echo $'\tfind arch/arm64/boot/dts/qcom -name "*xiaomi-sagit.dts" -exec sh -c \'echo "" >> $1; echo "&adsp_mem { reg = <0x0 0x91900000 0x0 0x2000000>; };" >> $1\' _ {} \;' >> APKBUILD
+            echo $'\tfor dts in $(find arch/arm64/boot/dts/qcom -name "*xiaomi-sagit.dts"); do' >> APKBUILD
+            echo $'\t\tmsg "Patching $dts ..."' >> APKBUILD
+            echo $'\t\techo "" >> "$dts"' >> APKBUILD
+            echo $'\t\techo "&adsp_mem { reg = <0x0 0x91900000 0x0 0x2000000>; };" >> "$dts"' >> APKBUILD
+            echo $'\tdone' >> APKBUILD
 
             # 替换节点名称
             echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/memory@8b200000/memory@91900000/g" {} + ' >> APKBUILD
