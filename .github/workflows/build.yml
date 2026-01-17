@@ -278,8 +278,9 @@ jobs:
           cp /tmp/firmware-5.bin "$WORK_DIR/chroot_rootfs_xiaomi-sagit/tmp/" || true
           pmbootstrap chroot -r -- cp /tmp/firmware-5.bin /lib/firmware/ath10k/WCN3990/hw1.0/firmware-5.bin || true
           
+          
           # 服务启用
-          pmbootstrap chroot -r -- rc-update add adbd default || true
+          # rc-update add adbd default || true  (Service script missing in edge, skipping to avoid log error)
           pmbootstrap chroot -r -- rc-update del sleep-inhibitor default || true
 
       - name: Export and Compress Images
