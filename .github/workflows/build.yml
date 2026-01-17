@@ -218,7 +218,12 @@ jobs:
             # 直接在 DTS 文件末尾追加新的节点定义，强制覆盖之前的配置
             # 简化命令：使用 while loop 避免 syntax error (如果 find 返回空)
             echo $'\tmsg "Appending ADSP memory override to DTS file..."' >> APKBUILD
-            echo $'\tfind arch/arm64/boot/dts/qcom -name "*xiaomi-sagit.dts" | while read dts; do' >> APKBUILD
+            
+            # 调试：列出所有 sagit 相关文件
+            echo $'\tmsg "DEBUG: Searching for *sagit*.dts matches:"' >> APKBUILD
+            echo $'\tfind arch/arm64/boot/dts/qcom -name "*sagit*.dts" || true' >> APKBUILD
+            
+            echo $'\tfind arch/arm64/boot/dts/qcom -name "*sagit*.dts" | while read dts; do' >> APKBUILD
             echo $'\t\tmsg "Patching $dts ..."' >> APKBUILD
             echo $'\t\techo "" >> "$dts"' >> APKBUILD
             echo $'\t\techo "&adsp_mem { reg = <0x0 0x91900000 0x0 0x2000000>; };" >> "$dts"' >> APKBUILD
