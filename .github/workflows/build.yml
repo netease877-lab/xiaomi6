@@ -213,10 +213,10 @@ jobs:
             echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/0x8b200000/0x91900000/g" {} + ' >> APKBUILD
             
             # 关键修复：扩大内存区域大小
-            # 原有问题：0x91900000 地址虽然正确，但保留区域可能只有 8MB (0x800000)，而 adsp.mbn 有 11MB
-            # 解决方案：正则匹配并强制将大小修改为 32MB (0x2000000)
+            # 原有问题：0x91900000 地址虽然正确，但保留区域可能检查发现只有 26MB (0x1a00000)
+            # 解决方案：使用更宽容的正则匹配 (支持 0 和 0x0) 强制将大小修改为 32MB (0x2000000)
             echo $'\tmsg "Expanding ADSP memory region size to 32MB (0x2000000)..."' >> APKBUILD
-            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i -E "s/0x91900000 0x0? 0x[0-9a-fA-F]+/0x91900000 0x0 0x2000000/g" {} + ' >> APKBUILD
+            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i -E "s/0x91900000 (0x0|0) 0x[0-9a-fA-F]+/0x91900000 0x0 0x2000000/g" {} + ' >> APKBUILD
 
             # 替换节点名称
             echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/memory@8b200000/memory@91900000/g" {} + ' >> APKBUILD
