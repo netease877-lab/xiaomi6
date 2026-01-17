@@ -214,11 +214,11 @@ jobs:
             
             # 关键修复：扩大内存区域大小
             # 原有问题：0x91900000 地址虽然正确，但保留区域可能检查发现只有 26MB (0x1a00000)
-            # 解决方案：正则匹配失败，改用全局值替换 (Brute Force)
-            # 已知当前大小为 26MB (0x1a00000)，直接将其替换为 32MB (0x2000000)
-            echo $'\tmsg "Force replacing memory size 0x1a00000 -> 0x2000000..."' >> APKBUILD
-            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/0x1a00000/0x2000000/g" {} + ' >> APKBUILD
-            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/0x01a00000/0x2000000/g" {} + ' >> APKBUILD
+            # 解决方案：使用 Device Tree Overlay 覆盖法
+            # 直接在 DTS 文件末尾追加新的节点定义，强制覆盖之前的配置
+            # 这种方法不依赖 sed 查找，绝对可靠
+            echo $'\tmsg "Appending ADSP memory override to DTS file..."' >> APKBUILD
+            echo $'\tfind arch/arm64/boot/dts/qcom -name "*xiaomi-sagit.dts" -exec sh -c \'echo "" >> $1; echo "&adsp_mem { reg = <0x0 0x91900000 0x0 0x2000000>; };" >> $1\' _ {} \;' >> APKBUILD
 
             # 替换节点名称
             echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/memory@8b200000/memory@91900000/g" {} + ' >> APKBUILD
