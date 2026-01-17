@@ -267,19 +267,9 @@ jobs:
         run: |
           set -o pipefail
           pmbootstrap install \
-            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs,msm-modem,ofono,android-tools \
+            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs,msm-modem,ofono,android-tools,linux-firmware-ath10k \
             --password zhoutong \
             --android-recovery-zip
-          
-          # 注入固件
-          FIRMWARE_URL="https://git.kernel.org/pub/scm/linux/kernel/git/firmware/linux-firmware.git/plain/ath10k/WCN3990/hw1.0/firmware-5.bin"
-          wget -O /tmp/firmware-5.bin "$FIRMWARE_URL" || true
-          
-          pmbootstrap chroot -r -- mkdir -p /lib/firmware/ath10k/WCN3990/hw1.0/
-          WORK_DIR=$(pmbootstrap config work)
-          cp /tmp/firmware-5.bin "$WORK_DIR/chroot_rootfs_xiaomi-sagit/tmp/" || true
-          pmbootstrap chroot -r -- cp /tmp/firmware-5.bin /lib/firmware/ath10k/WCN3990/hw1.0/firmware-5.bin || true
-          
           
           # 服务启用
           # rc-update add adbd default || true  (Service script missing in edge, skipping to avoid log error)
