@@ -56,22 +56,24 @@ jobs:
             pmb-v6-${{ runner.os }}-
 
       # ========== ccache 增量编译缓存 ==========
-      # 关键：使用 run_id 确保每次构建都保存新的缓存（GitHub Actions 不会更新已存在的 Key）
+      # 关键：使用 run_id 确保每次构建都保存新的缓存
       - name: Cache ccache
+        id: ccache
         uses: actions/cache@v4
         with:
-          path: /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64
-          key: ccache-v4-${{ runner.os }}-${{ github.run_id }}
+          path: /home/runner/.local/var/pmbootstrap/cache_ccache_*
+          key: ccache-v5-${{ runner.os }}-${{ steps.get-hash.outputs.week_number }}
           restore-keys: |
-            ccache-v4-${{ runner.os }}-
+            ccache-v5-${{ runner.os }}-
 
-      # ========== ccache 初始化 ==========
       - name: Setup ccache
         run: |
-          # pmbootstrap 使用内部的 cache_ccache_aarch64 目录
-          mkdir -p /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64
-          # 关键：给予 777 权限，确保 chroot 内的用户可以写入
-          chmod 777 /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64
+          mkdir -p ~/.local/var/pmbootstrap/cache_ccache_aarch64
+          mkdir -p ~/.local/var/pmbootstrap/cache_ccache_x86_64
+          echo "max_size = 5.0G" > ~/.local/var/pmbootstrap/cache_ccache_aarch64/ccache.conf
+          echo "max_size = 5.0G" > ~/.local/var/pmbootstrap/cache_ccache_x86_64/ccache.conf
+          # 确保权限宽泛，防止 chroot 内无法写入
+          chmod -R 777 ~/.local/var/pmbootstrap/cache_ccache_* || true
           # 显示 ccache 统计
           echo "=== ccache directory info ==="
           du -sh /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64 2>/dev/null || echo "Empty or not found"
@@ -349,11 +351,13 @@ jobs:
           done
           
           # 5. 修改所有权（现在没有挂载点了，应该会成功）
-          echo "=== Fixing ownership ==="
-          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap/cache_git 2>&1 | tail -3 || true
-          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap/packages 2>&1 | tail -3 || true
-          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap/cache_distfiles 2>&1 | tail -3 || true
-          sudo chown -R runner:runner /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64 2>&1 | tail -3 || true
+          echo "=== Fixing ownership for cache ==="
+          sudo chown -R $USER:$USER ~/.local/var/pmbootstrap/cache_git
+          sudo chown -R $USER:$USER ~/.local/var/pmbootstrap/cache_ccache_* || true
+          
+          echo "=== Cache directories check ==="
+          ls -ld ~/.local/var/pmbootstrap/cache_ccache_* || true
+          du -sh ~/.local/var/pmbootstrap/cache_ccache_* 2>&1 | tail -3 || true
           
           # 6. 最终检查缓存目录
           echo "=== Cache directories after cleanup ==="
