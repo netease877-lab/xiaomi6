@@ -18,6 +18,7 @@ jobs:
       - name: System Environment Setup
         run: |
           sudo apt-get update
+          # 安装构建所需的系统工具以及 binfmt-support, expect
           sudo apt-get install -y \
             python3 \
             git \
@@ -26,365 +27,87 @@ jobs:
             qemu-user-static \
             binfmt-support \
             wget \
-            expect \
-            ccache
+            expect
+          
+          # 注册 aarch64 模拟支持
           sudo update-binfmts --enable qemu-aarch64 || echo "binfmt already enabled"
-
-      # 获取 pmaports 最新提交 Hash 用于缓存控制
-      - name: Get pmaports Hash
-        id: get-hash
+      - name: Install pmbootstrap from Source (Correct Domain)
         run: |
-          HASH=$(git ls-remote https://gitlab.postmarketos.org/postmarketOS/pmaports.git main | awk '{print $1}')
-          echo "pmaports_hash=$HASH" >> $GITHUB_OUTPUT
-          # 计算当前周数，用于 ccache key（同一周内可以复用缓存）
-          WEEK=$(date +%Y-W%V)
-          echo "week_number=$WEEK" >> $GITHUB_OUTPUT
-
-      # ========== 优化后的 pmbootstrap 缓存 ==========
-      - name: Cache pmbootstrap work directory
-        uses: actions/cache@v4
-        with:
-          path: |
-            /home/runner/.local/var/pmbootstrap/cache_git
-            /home/runner/.local/var/pmbootstrap/packages
-            /home/runner/.local/var/pmbootstrap/cache_distfiles
-            /home/runner/.local/var/pmbootstrap/cache_distfiles
-          # 使用 pmaports 的 hash 作为 key，确保代码更新时能部分重用
-          # v6: ccache 已分离到单独的步骤
-          key: pmb-v6-${{ runner.os }}-${{ steps.get-hash.outputs.pmaports_hash }}
-          restore-keys: |
-            pmb-v6-${{ runner.os }}-
-
-      # ========== ccache 增量编译缓存 ==========
-      # 关键：使用 run_id 确保每次构建都保存新的缓存
-      - name: Cache ccache
-        id: ccache
-        uses: actions/cache@v4
-        with:
-          path: /home/runner/.local/var/pmbootstrap/cache_ccache_*
-          key: ccache-v5-${{ runner.os }}-${{ steps.get-hash.outputs.week_number }}
-          restore-keys: |
-            ccache-v5-${{ runner.os }}-
-
-      - name: Setup ccache
-        run: |
-          mkdir -p ~/.local/var/pmbootstrap/cache_ccache_aarch64
-          mkdir -p ~/.local/var/pmbootstrap/cache_ccache_x86_64
-          echo "max_size = 5.0G" > ~/.local/var/pmbootstrap/cache_ccache_aarch64/ccache.conf
-          echo "max_size = 5.0G" > ~/.local/var/pmbootstrap/cache_ccache_x86_64/ccache.conf
-          # 确保权限宽泛，防止 chroot 内无法写入
-          chmod -R 777 ~/.local/var/pmbootstrap/cache_ccache_* || true
-          # 显示 ccache 统计
-          echo "=== ccache directory info ==="
-          du -sh /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64 2>/dev/null || echo "Empty or not found"
-
-      # ========== 修复缓存恢复后的权限问题 ==========
-      - name: Fix Restored Cache Permissions
-        run: |
-          echo "=== Fixing permissions for restored cache ==="
-          # 如果缓存恢复了 packages 目录，需要确保 pmbootstrap 可以写入
-          if [ -d /home/runner/.local/var/pmbootstrap/packages ]; then
-            sudo chmod -R 777 /home/runner/.local/var/pmbootstrap/packages
-            echo "Fixed packages directory permissions"
-          fi
-          if [ -d /home/runner/.local/var/pmbootstrap/cache_git ]; then
-            sudo chmod -R 777 /home/runner/.local/var/pmbootstrap/cache_git
-            echo "Fixed cache_git directory permissions"
-          fi
-
-      - name: Install pmbootstrap from Source
-        run: |
+          # 修复：使用官方新域名 gitlab.postmarketos.org
           git clone --depth 1 https://gitlab.postmarketos.org/postmarketOS/pmbootstrap.git
+          
+          # 设置软链接
           PMB_PATH=$(pwd)/pmbootstrap/pmbootstrap.py
           chmod +x $PMB_PATH
           sudo ln -sf $PMB_PATH /usr/local/bin/pmbootstrap
+          
+          # 验证版本
           pmbootstrap --version
-
       - name: Initialize pmbootstrap (Direct Config)
         run: |
           mkdir -p ~/.config ~/.local/var/pmbootstrap/cache_git
-          
-          # 修复 APKINDEX 签名信任问题：
-          # 由于 GitHub Actions 每次可能生成新密钥，旧的 APKINDEX 签名会失效。
-          # 删除索引文件强制 pmbootstrap 重新生成和签名。
-          find ~/.local/var/pmbootstrap/packages -name "APKINDEX*" -delete || true
-
-          echo "=== Step 1: Setting up pmaports ==="
-          PMAPORTS_DIR=~/.local/var/pmbootstrap/cache_git/pmaports
-          if [ -d "$PMAPORTS_DIR" ]; then
-            echo "pmaports exists (from cache), updating..."
-            cd "$PMAPORTS_DIR" && git pull --rebase 2>&1 || true
-            cd -
-          else
-            echo "Cloning pmaports..."
-            git clone --depth=1 https://gitlab.postmarketos.org/postmarketOS/pmaports.git \
-                "$PMAPORTS_DIR" 2>&1
-          fi
-          
-          echo "=== Step 1.5: Patching deviceinfo for RNDIS ==="
-          DEVICEINFO_PATH="$PMAPORTS_DIR/device/testing/device-xiaomi-sagit/deviceinfo"
-          # 避免重复添加
-          grep -q "rndis.usb0" "$DEVICEINFO_PATH" || echo 'deviceinfo_usb_network_function="rndis.usb0"' >> "$DEVICEINFO_PATH"
-          
-          echo "=== Step 2: Generating config file ==="
-          # 使用 echo 命令避免 YAML 缩进产生的前导空格问题
-          mkdir -p ~/.config
-          echo "[pmbootstrap]" > ~/.config/pmbootstrap_v3.cfg
-          echo "device = xiaomi-sagit" >> ~/.config/pmbootstrap_v3.cfg
-          echo "ui = console" >> ~/.config/pmbootstrap_v3.cfg
-          echo "work = /home/runner/.local/var/pmbootstrap" >> ~/.config/pmbootstrap_v3.cfg
-          echo "hostname = mi6" >> ~/.config/pmbootstrap_v3.cfg
-          echo "user = user" >> ~/.config/pmbootstrap_v3.cfg
-          echo "systemd = never" >> ~/.config/pmbootstrap_v3.cfg
-          echo "extra_packages = docker,docker-compose,nano,htop" >> ~/.config/pmbootstrap_v3.cfg
-          echo "is_default_channel = False" >> ~/.config/pmbootstrap_v3.cfg
-          echo "aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports" >> ~/.config/pmbootstrap_v3.cfg
-          # 显式设置 ccache 大小，确保启用
-          echo "ccache_size = 5G" >> ~/.config/pmbootstrap_v3.cfg
-          
-          # 验证配置文件内容
-          echo "=== pmbootstrap config file ===" 
-          cat ~/.config/pmbootstrap_v3.cfg
-
+          touch build.log
+          # 1. 克隆 pmaports (master 分支，包含 edge 设备)
+          echo "=== Step 1: Cloning pmaports ===" >> build.log
+          git clone --depth=1 https://gitlab.postmarketos.org/postmarketOS/pmaports.git \
+              ~/.local/var/pmbootstrap/cache_git/pmaports >> build.log 2>&1
+          echo "pmaports cloned successfully" >> build.log
+          # 2. 直接生成完整配置文件 (无需 init 交互)
+          # 根据 pmb/core/config.py 源码，配置文件为 INI 格式
+          echo "=== Step 2: Generating config file ===" >> build.log
+          cat <<EOF > ~/.config/pmbootstrap_v3.cfg
+          [pmbootstrap]
+          device = xiaomi-sagit
+          ui = console
+          work = /home/runner/.local/var/pmbootstrap
+          hostname = mi6
+          user = user
+          systemd = default
+          extra_packages = docker,docker-compose,nano,htop,incus,incus-client,incus-ui-canonical
+          is_default_channel = False
+          aports = /home/runner/.local/var/pmbootstrap/cache_git/pmaports
+          EOF
+          echo "Config file content:" >> build.log
+          cat ~/.config/pmbootstrap_v3.cfg >> build.log
+          # 3. 初始化工作目录结构 (work_version = 8，来自 pmb/config/__init__.py)
+          echo "=== Step 3: Initializing work directory ===" >> build.log
+          mkdir -p ~/.local/var/pmbootstrap
           echo "8" > ~/.local/var/pmbootstrap/version
-
-      - name: Patch and Rebuild Kernel
-        run: |
-          PMAPORTS=~/.local/var/pmbootstrap/cache_git/pmaports
-          KERNEL_PKG_DIR="$PMAPORTS/device/testing/linux-postmarketos-qcom-msm8998"
-          
-          cd "$KERNEL_PKG_DIR"
-          
-          # 关键修复：重置 APKBUILD 以清除之前的补丁（防止缓存导致代码未更新）
-          git checkout APKBUILD
-          
-          # 检查是否已经补丁过，防止重复注入
-          if ! grep -q "fix_memory_map" APKBUILD; then
-            echo '' >> APKBUILD
-            echo '# === WiFi/ADSP/MPSS Memory Fix ===' >> APKBUILD
-            echo 'fix_memory_map() {' >> APKBUILD
-            echo $'\tmsg "========== MEMORY MAP FIX START =========="' >> APKBUILD
-            echo $'\tmsg "Initial directory: $(pwd)"' >> APKBUILD
-            echo $'\tls -la' >> APKBUILD
-            
-            # 关键：进入解压后的内核源码目录
-            # 注意：[ -d "linux-"* ] 语法在 shell 中是错误的，使用 ls -d 代替
-            echo $'\t# 进入解压后的内核源码目录（通常是 linux-* 或 src/linux-*）' >> APKBUILD
-            echo $'\tif ls -d linux-*/ >/dev/null 2>&1; then' >> APKBUILD
-            echo $'\t\tcd linux-*/' >> APKBUILD
-            echo $'\t\tmsg "Changed to kernel source dir: $(pwd)"' >> APKBUILD
-            echo $'\telif ls -d src/linux-*/ >/dev/null 2>&1; then' >> APKBUILD
-            echo $'\t\tcd src/linux-*/' >> APKBUILD
-            echo $'\t\tmsg "Changed to kernel source dir: $(pwd)"' >> APKBUILD
-            echo $'\telse' >> APKBUILD
-            echo $'\t\tmsg "WARNING: Could not find linux-* directory, staying in $(pwd)"' >> APKBUILD
-            echo $'\t\tmsg "Directory contents:"' >> APKBUILD
-            echo $'\t\tls -la' >> APKBUILD
-            echo $'\tfi' >> APKBUILD
-            
-            echo $'\tmsg "Listing DTS/DTSI files in qcom:"' >> APKBUILD
-            echo $'\tfind . -name "*.dts*" -path "*qcom*" 2>/dev/null | head -20' >> APKBUILD
-            
-            # 查找 DTSI 文件
-            echo $'\tlocal DTSI_FILE=$(find . -name "msm8998.dtsi" 2>/dev/null | head -n 1)' >> APKBUILD
-            echo $'\tmsg "DTSI_FILE found: $DTSI_FILE"' >> APKBUILD
-            echo $'\tif [ -z "$DTSI_FILE" ]; then' >> APKBUILD
-            echo $'\t\terror "ERROR: msm8998.dtsi NOT FOUND!"' >> APKBUILD
-            echo $'\t\tmsg "All dtsi files:"' >> APKBUILD
-            echo $'\t\tfind . -name "*.dtsi" 2>/dev/null | head -30' >> APKBUILD
-            echo $'\t\treturn 1' >> APKBUILD
-            echo $'\tfi' >> APKBUILD
-            echo $'\tmsg "Found DTSI file at: $DTSI_FILE"' >> APKBUILD
-            echo $'\tmsg "File size: $(wc -c < \"$DTSI_FILE\") bytes"' >> APKBUILD
-            
-            # 调试：显示 DTSI 中包含 adsp_mem 的行
-            echo $'\tmsg "Lines containing adsp_mem in DTSI:"' >> APKBUILD
-            echo $'\tgrep -n "adsp_mem" "$DTSI_FILE" || msg "No adsp_mem found!"' >> APKBUILD
-            echo $'\tmsg "Lines containing 8b200000 in DTSI:"' >> APKBUILD
-            echo $'\tgrep -n "8b200000" "$DTSI_FILE" || msg "No 8b200000 found!"' >> APKBUILD
-            
-            # 执行 sed 替换
-            # 侦查：全局搜索包含旧地址的文件
-            echo $'\tmsg "========== DIAGNOSTICS: SEARCHING FOR 8b200000 =========="' >> APKBUILD
-            echo $'\tgrep -r "8b200000" arch/arm64/boot/dts/qcom/ || msg "No matches specific matches found (unexpected)"' >> APKBUILD
-            
-            # 修复：执行全局替换，涵盖所有 dts/dtsi
-            echo $'\tmsg "========== EXECUTING GLOBAL FIX =========="' >> APKBUILD
-            echo $'\tmsg "Replacing 8b200000 -> 91900000 in ALL qcom dts files..."' >> APKBUILD
-            
-            # 替换 hex 地址 (8b200000 -> 91900000)
-            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/0x8b200000/0x91900000/g" {} + ' >> APKBUILD
-            
-            # 关键修复：扩大内存区域大小
-            # 原有问题：0x91900000 地址虽然正确，但保留区域可能检查发现只有 26MB (0x1a00000)
-            # 解决方案：使用 Device Tree Overlay 覆盖法
-            # 直接在 DTS 文件末尾追加新的节点定义，强制覆盖之前的配置
-            # 简化命令：使用 while loop 避免 syntax error (如果 find 返回空)
-            echo $'\tmsg "Appending ADSP memory override to DTS file..."' >> APKBUILD
-            
-            # 调试：列出所有 sagit 相关文件
-            echo $'\tmsg "DEBUG: Searching for *sagit*.dts matches:"' >> APKBUILD
-            echo $'\tfind arch/arm64/boot/dts/qcom -name "*sagit*.dts" || true' >> APKBUILD
-            
-            echo $'\tfind arch/arm64/boot/dts/qcom -name "*sagit*.dts" | while read dts; do' >> APKBUILD
-            echo $'\t\tmsg "Patching $dts ..."' >> APKBUILD
-            echo $'\t\techo "" >> "$dts"' >> APKBUILD
-            echo $'\t\techo "&adsp_mem { reg = <0x0 0x91900000 0x0 0x2000000>; };" >> "$dts"' >> APKBUILD
-            echo $'\tdone' >> APKBUILD
-            
-            # 调试：打印 APKBUILD 内容以确认生成的脚本正确
-            echo $'\tmsg "========== DEBUG: GENERATED APKBUILD =========="' >> APKBUILD
-            echo $'\tcat APKBUILD || true' >> APKBUILD
-            echo $'\tmsg "========== DEBUG END =========="' >> APKBUILD
-
-            # 替换节点名称
-            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/memory@8b200000/memory@91900000/g" {} + ' >> APKBUILD
-            
-            # 替换 WLAN 地址 (9570 -> 9580)
-            echo $'\tmsg "Replacing 95700000 -> 95800000 in ALL qcom dts files..."' >> APKBUILD
-            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/0x95700000/0x95800000/g" {} + ' >> APKBUILD
-            echo $'\tfind arch/arm64/boot/dts/qcom -name "*.dts*" -type f -exec sed -i "s/memory@95700000/memory@95800000/g" {} + ' >> APKBUILD
-            
-            echo $'\tmsg "Global replacement completed."' >> APKBUILD
-            
-            # 最终验证
-            echo $'\tmsg "========== FINAL VERIFICATION =========="' >> APKBUILD
-            echo $'\tmsg "Checking for 91900000:"' >> APKBUILD
-            echo $'\tgrep -n "91900000" "$DTSI_FILE"' >> APKBUILD
-            echo $'\tif grep -q "91900000" "$DTSI_FILE"; then' >> APKBUILD
-            echo $'\t\tmsg "SUCCESS: New address 91900000 confirmed in DTSI"' >> APKBUILD
-            echo $'\telse' >> APKBUILD
-            echo $'\t\terror "FAILED: 91900000 NOT found after sed!"' >> APKBUILD
-            echo $'\t\treturn 1' >> APKBUILD
-            echo $'\tfi' >> APKBUILD
-            
-            # 关键修复：强制 DTB 重新编译
-            # DTSI 修改后 make 不会自动检测到变化，需要手动触发
-            echo $'\tmsg "========== FORCING DTB REBUILD =========="' >> APKBUILD
-            echo $'\t# 删除已编译的 DTB 文件和依赖缓存，强制重新编译' >> APKBUILD
-            echo $'\tmsg "Removing old DTB files to force rebuild..."' >> APKBUILD
-            echo $'\tfind . -name "msm8998*.dtb" -delete 2>/dev/null || true' >> APKBUILD
-            echo $'\tfind . -name ".msm8998*.dtb.cmd" -delete 2>/dev/null || true' >> APKBUILD
-            echo $'\tfind . -name "msm8998*.dtb.o" -delete 2>/dev/null || true' >> APKBUILD
-            echo $'\t# Touch 所有依赖 msm8998.dtsi 的 DTS 文件' >> APKBUILD
-            echo $'\tmsg "Touching DTS files to update timestamps..."' >> APKBUILD
-            echo $'\tfind . -name "*.dts" -path "*qcom*" -exec grep -l "msm8998" {} \\; | xargs -r touch' >> APKBUILD
-            echo $'\ttouch "$DTSI_FILE"' >> APKBUILD
-            echo $'\tmsg "DTB rebuild will be triggered during kernel build"' >> APKBUILD
-            
-            echo $'\tmsg "========== MEMORY MAP FIX END =========="' >> APKBUILD
-            echo '}' >> APKBUILD
-            sed -i '/default_prepare/a\	fix_memory_map' APKBUILD
-          fi
-          
-          # 使用正则匹配任意 pkgrel 值，设置为更高的版本号强制重新编译
-          sed -i 's/pkgrel=[0-9]*/pkgrel=20/' APKBUILD
-          
-          pmbootstrap checksum linux-postmarketos-qcom-msm8998
-          
-          # ccache 由 pmbootstrap 配置自动启用，不需要 --ccache 参数
-          pmbootstrap --details-to-stdout build linux-postmarketos-qcom-msm8998 --force
-          
-          # 构建后显示 ccache 统计
-          echo "=== ccache stats after kernel build ==="
-          ccache -s
-
+          echo "work directory initialized with version 8" >> build.log
+          # 4. 验证配置是否被正确读取
+          echo "=== Step 4: Verifying config ===" >> build.log
+          pmbootstrap status >> build.log 2>&1 || echo "pmbootstrap status failed (expected if first run)" >> build.log
       - name: Build Rootfs with Docker (TWRP Zip)
         run: |
           set -o pipefail
-          pmbootstrap install \
-            --add docker,docker-compose,nano,htop,firmware-xiaomi-sagit,pd-mapper,tqftpserv,qrtr,rmtfs,msm-modem,ofono,android-tools,linux-firmware-ath10k \
-            --password zhoutong \
-            --android-recovery-zip
+          # --add: 预装 docker,docker-compose 等包
+          # --password: CI 自动化安装时使用的虚拟密码 (明文，仅用于测试)
+          # --android-recovery-zip: 生成 TWRP 可直接刷入的 zip 包
+          pmbootstrap install --add docker,docker-compose,nano,htop,incus,incus-client,incus-ui-canonical --password password --android-recovery-zip 2>&1 | tee -a build.log
+      - name: Upload Build Log on Failure
+        if: failure()
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           
-          # 服务启用
-          # rc-update add adbd default || true  (Service script missing in edge, skipping to avoid log error)
-          pmbootstrap chroot -r -- rc-update del sleep-inhibitor default || true
-
+          # 1. 先提交本地修改 (解决 unstaged changes 错误)
+          git add --force build.log
+          git commit -m "ci: build failure log [skip ci]"
+          
+          # 2. 再拉取远程更新 (rebase)
+          git pull --rebase
+          
+          # 3. 推送
+          git push
       - name: Export and Compress Images
         run: |
+          # 导出镜像
           pmbootstrap export
           mkdir -p output
+          # 兼容导出文件
           cp -r /tmp/postmarketOS-export/* output/
-
       - name: Upload Build Result
         uses: actions/upload-artifact@v4
         with:
           name: Mi6-Docker-OS-Final
           path: output/
-
-      - name: Upload Boot Image (TWRP Flashable)
-        uses: actions/upload-artifact@v4
-        with:
-          name: Mi6-Boot-Image-Fixed
-          path: output/boot.img
-
-      # ========== 核心修复：准备缓存阶段 ==========
-      - name: Prepare Cache Permissions
-        if: always()
-        run: |
-          echo "=== Cleaning up and fixing permissions for cache ==="
-          
-          # 1. 以非 root 身份运行 pmbootstrap shutdown（pmbootstrap 不允许 root 运行）
-          pmbootstrap shutdown || true
-          
-          # 2. 强制卸载所有 chroot 内的挂载点
-          echo "=== Force unmounting all chroot mounts ==="
-          for CHROOT_DIR in /home/runner/.local/var/pmbootstrap/chroot_*; do
-            if [ -d "$CHROOT_DIR" ]; then
-              echo "Unmounting mounts in $CHROOT_DIR..."
-              # 首先尝试卸载 /proc, /sys, /dev 等
-              sudo umount -lf "$CHROOT_DIR/proc" 2>/dev/null || true
-              sudo umount -lf "$CHROOT_DIR/sys" 2>/dev/null || true
-              sudo umount -lf "$CHROOT_DIR/dev/pts" 2>/dev/null || true
-              sudo umount -lf "$CHROOT_DIR/dev" 2>/dev/null || true
-              # 卸载所有该目录下的挂载点
-              mount | grep "$CHROOT_DIR" | awk '{print $3}' | sort -r | while read mp; do
-                sudo umount -lf "$mp" 2>/dev/null || true
-              done
-            fi
-          done
-          
-          # 3. 显示缓存目录的实际内容和大小（调试）
-          echo "=== Cache directories before cleanup ==="
-          echo "cache_git:"
-          du -sh /home/runner/.local/var/pmbootstrap/cache_git 2>/dev/null || echo "Not found"
-          echo "packages:"
-          du -sh /home/runner/.local/var/pmbootstrap/packages 2>/dev/null || echo "Not found"
-          ls -la /home/runner/.local/var/pmbootstrap/packages 2>/dev/null | head -5 || true
-          echo "cache_distfiles:"
-          du -sh /home/runner/.local/var/pmbootstrap/cache_distfiles 2>/dev/null || echo "Not found"
-          echo "cache_ccache_aarch64:"
-          du -sh /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64 2>/dev/null || echo "Not found"
-          
-          # 4. 删除 chroot 目录（现在应该可以删除了）
-          echo "=== Removing chroot directories ==="
-          for CHROOT_DIR in /home/runner/.local/var/pmbootstrap/chroot_*; do
-            if [ -d "$CHROOT_DIR" ]; then
-              echo "Removing $CHROOT_DIR..."
-              sudo rm -rf "$CHROOT_DIR" 2>&1 | tail -3 || true
-            fi
-          done
-          
-          # 5. 修改所有权（现在没有挂载点了，应该会成功）
-          echo "=== Fixing ownership for cache ==="
-          sudo chown -R $USER:$USER ~/.local/var/pmbootstrap/cache_git
-          sudo chown -R $USER:$USER ~/.local/var/pmbootstrap/cache_ccache_* || true
-          
-          echo "=== Cache directories check ==="
-          ls -ld ~/.local/var/pmbootstrap/cache_ccache_* || true
-          du -sh ~/.local/var/pmbootstrap/cache_ccache_* 2>&1 | tail -3 || true
-          
-          # 6. 最终检查缓存目录
-          echo "=== Cache directories after cleanup ==="
-          echo "cache_git:"
-          du -sh /home/runner/.local/var/pmbootstrap/cache_git 2>/dev/null || echo "Not found"
-          ls -la /home/runner/.local/var/pmbootstrap/cache_git 2>/dev/null | head -3 || true
-          echo "packages:"
-          du -sh /home/runner/.local/var/pmbootstrap/packages 2>/dev/null || echo "Not found"
-          ls -la /home/runner/.local/var/pmbootstrap/packages 2>/dev/null | head -3 || true
-          echo "Total pmbootstrap size (should be ~300MB+):" 
-          du -sh /home/runner/.local/var/pmbootstrap 2>/dev/null || echo "Not found"
-          echo "cache_ccache_aarch64:"
-          du -sh /home/runner/.local/var/pmbootstrap/cache_ccache_aarch64 2>/dev/null || echo "Not found"
-
