@@ -178,6 +178,15 @@ jobs:
           echo "=== 编译后 ccache 体积 ==="
           du -sh "$CCACHE_DIR" 2>/dev/null || true
 
+      - name: 8.5 ccache 统计（判断下一次能否命中，命中则编译时间应大幅下降）
+        if: always()
+        run: |
+          echo "=== ccache 目录体积 ==="
+          du -sh "$CCACHE_DIR" 2>/dev/null || echo "ccache dir 缺失"
+          du -sh "$SCCACHE_DIR" 2>/dev/null || true
+          echo "=== pmbootstrap stats（chroot 内 ccache -s）==="
+          pmbootstrap stats 2>&1 | tail -40 || true
+
       - name: 9. 上传内核 apk 与 config（先于校验，失败也要拿到产物）
         if: always()
         uses: actions/upload-artifact@v4
