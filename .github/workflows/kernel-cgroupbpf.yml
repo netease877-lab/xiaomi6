@@ -125,6 +125,15 @@ jobs:
           done
           echo "--- 修改后 ---"
           grep -nE 'CONFIG_(CGROUP_BPF|CGROUP_DEVICE|CGROUP_SCHED|BPF_SYSCALL|BPF_JIT)\b' "$CFG"
+          # APKBUILD 的 sha512sums 里含该 config 文件的校验和，改了 config 必须同步更新，
+          # 否则 abuild 会以 "FAILED (checked 1 checksum)" 直接中止。
+          NEWHASH=$(sha512sum "$CFG" | cut -d' ' -f1)
+          CFGNAME=$(basename "$CFG")
+          sed -i -E "s|^([[:space:]]*)[0-9a-f]{128}([[:space:]]+${CFGNAME})[[:space:]]*\$|\1${NEWHASH}\2|" "$KDIR/APKBUILD"
+          echo "new config sha512: $NEWHASH"
+          echo "--- APKBUILD 中该行 ---"
+          grep -n "${CFGNAME}" "$KDIR/APKBUILD"
+          grep -q "${NEWHASH}" "$KDIR/APKBUILD" || { echo "FATAL: 未能更新 APKBUILD 校验和" >&2; exit 1; }
           cd "$APORTS"
           git add -A
           git -c user.name="ci" -c user.email="ci@localhost" commit -m "kernel: enable CONFIG_CGROUP_BPF for $KPKG" || echo "no change to commit (config already has CONFIG_CGROUP_BPF=y)"
