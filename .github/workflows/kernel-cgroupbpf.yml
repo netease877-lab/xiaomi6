@@ -155,7 +155,10 @@ jobs:
           echo "apk: $PKG"
           echo "$PKG" > /tmp/apkpath
           tar -tzf "$PKG" | head -20
-          tar -xzOf "$PKG" boot/config > out.config || tar -xzOf "$PKG" ./boot/config > out.config
+          CFGPATH=$(tar -tzf "$PKG" 2>/dev/null | grep -E 'boot/config' | head -1)
+          echo "config in apk: ${CFGPATH:-<none>}"
+          [ -n "${CFGPATH:-}" ] || { echo "VERIFY FAILED: apk 内找不到 boot/config*"; exit 1; }
+          tar -xzOf "$PKG" "$CFGPATH" > out.config
           wc -l out.config
           echo "--- 校验 ---"
           grep -E '^CONFIG_CGROUP_BPF=' out.config
