@@ -1,0 +1,168 @@
+name: Kernel CONFIG_CGROUP_BPF (mi6)
+
+# 目标：只编译 linux-postmarketos-qcom-msm8998 内核包，并打开 CONFIG_CGROUP_BPF=y
+# 不动 rootfs、不做整机 install、不刷 TWRP zip。
+# 产物：内核 apk + 从 apk 里取出的 boot/config（用于校验）+ 构建日志
+
+on:
+  push:
+    branches: [kernel-cgroupbpf]
+    paths:
+      - '.github/workflows/kernel-cgroupbpf.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  AARCH: aarch64
+  KPKG: linux-postmarketos-qcom-msm8998
+  DEVICE: xiaomi-sagit
+  # 钉到 2026-01-23：设备上现有内核是 6.0-r3，与该日期的 pmaports/pmbootstrap 同期，
+  # 保证编出来的是同一个源码树，只多一个 CONFIG_CGROUP_BPF=y。
+  PIN: "2026-01-23"
+  PMB_WORK: /home/runner/.local/var/pmbootstrap
+
+jobs:
+  build-kernel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - name: 1. 清理磁盘并查看空间
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/boost 2>/dev/null || true
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY" 2>/dev/null || true
+          df -h /
+
+      - name: 2. 安装基础依赖
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq git python3 openssl
+          git --version
+          python3 --version
+
+      - name: 3. 克隆 pmbootstrap（钉到 PIN 日期）
+        run: |
+          set -eux
+          cd "$HOME"
+          git clone --filter=blob:none https://gitlab.postmarketos.org/postmarketOS/pmbootstrap.git
+          cd pmbootstrap
+          SHA=$(git rev-list -1 --before="$PIN 23:59:59" --all)
+          echo "pmbootstrap pin sha: $SHA"
+          git checkout --quiet "$SHA"
+          git log -1 --format='%H %ad %s'
+          chmod +x pmbootstrap.py
+          sudo ln -sf "$PWD/pmbootstrap.py" /usr/local/bin/pmbootstrap
+          pmbootstrap --version
+
+      - name: 4. 克隆 pmaports（钉到 PIN 日期）
+        run: |
+          set -eux
+          mkdir -p "$PMB_WORK/cache_git"
+          git clone --filter=blob:none https://gitlab.postmarketos.org/postMarketOS/pmaports.git "$PMB_WORK/cache_git/pmaports"
+          cd "$PMB_WORK/cache_git/pmaports"
+          SHA=$(git rev-list -1 --before="$PIN 23:59:59" --all)
+          echo "pmaports pin sha: $SHA"
+          git checkout --quiet "$SHA"
+          git log -1 --format='%H %ad %s'
+          git checkout --quiet -B master
+
+      - name: 5. 生成 pmbootstrap 配置（非交互，work_version 动态读取）
+        run: |
+          set -eux
+          mkdir -p "$HOME/.config" "$PMB_WORK"
+          {
+            printf '[pmbootstrap]\n'
+            printf 'device = %s\n' "$DEVICE"
+            printf 'ui = console\n'
+            printf 'work = %s\n' "$PMB_WORK"
+            printf 'hostname = mi6\n'
+            printf 'user = user\n'
+            printf 'systemd = default\n'
+            printf 'is_default_channel = False\n'
+            printf 'aports = %s\n' "$PMB_WORK/cache_git/pmaports"
+          } > "$HOME/.config/pmbootstrap_v3.cfg"
+          WV=$(grep -rhoiE 'work_version[[:space:]]*[:=][[:space:]]*[0-9]+' "$HOME/pmbootstrap/pmb/" | grep -oE '[0-9]+' | head -1 || true)
+          if [ -z "${WV:-}" ]; then WV=8; fi
+          echo "$WV" > "$PMB_WORK/version"
+          echo "work_version=$WV"
+          cat "$HOME/.config/pmbootstrap_v3.cfg"
+          git -C "$PMB_WORK/cache_git/pmaports" status --porcelain | head || true
+
+      - name: 6. 定位内核 aport 并打开 CONFIG_CGROUP_BPF
+        run: |
+          set -eux
+          APORTS="$PMB_WORK/cache_git/pmaports"
+          KDIR=$(find "$APORTS" -maxdepth 3 -type d -name "$KPKG" | head -1)
+          echo "kernel aport dir: $KDIR"
+          ls -la "$KDIR"
+          echo "--- APKBUILD 版本信息 ---"
+          grep -E '^(pkgname|pkgver|pkgrel|arch)=' "$KDIR/APKBUILD" || true
+          CFG=$(ls "$KDIR"/config-*"$AARCH" 2>/dev/null | head -1 || true)
+          echo "config file: ${CFG:-<none>}"
+          if [ -z "${CFG:-}" ]; then
+            echo "FATAL: 找不到 config-*aarch64，APKBUILD 可能用别的配置来源" >&2
+            grep -nE 'config|defconfig|kconfig' "$KDIR/APKBUILD" | head -20 >&2
+            exit 1
+          fi
+          echo "--- 修改前 ---"
+          grep -nE 'CONFIG_(CGROUP_BPF|CGROUP_DEVICE|CGROUP_SCHED|BPF_SYSCALL|BPF_JIT)\b' "$CFG" || echo "(no match)"
+          sed -i 's/^# CONFIG_CGROUP_BPF is not set$/CONFIG_CGROUP_BPF=y/' "$CFG"
+          grep -q '^CONFIG_CGROUP_BPF=y' "$CFG" || echo 'CONFIG_CGROUP_BPF=y' >> "$CFG"
+          for o in CONFIG_CGROUP_SCHED CONFIG_CGROUP_DEVICE CONFIG_BPF_SYSCALL CONFIG_BPF_JIT; do
+            if ! grep -q "^$o=y" "$CFG"; then
+              sed -i "s/^# $o is not set$/$o=y/" "$CFG"
+              grep -q "^$o=y" "$CFG" || echo "$o=y" >> "$CFG"
+            fi
+          done
+          echo "--- 修改后 ---"
+          grep -nE 'CONFIG_(CGROUP_BPF|CGROUP_DEVICE|CGROUP_SCHED|BPF_SYSCALL|BPF_JIT)\b' "$CFG"
+          cd "$APORTS"
+          git add -A
+          git -c user.name="ci" -c user.email="ci@localhost" commit -m "kernel: enable CONFIG_CGROUP_BPF for $KPKG" || echo "no change to commit (config already has CONFIG_CGROUP_BPF=y)"
+          git log --oneline -1
+          git status --porcelain | head || true
+
+      - name: 7. 编译内核包
+        run: |
+          set -o pipefail
+          cd "$HOME"
+          pmbootstrap --details-to-stdout build "$KPKG" 2>&1 | tee build.log
+          echo "=== 产物 ==="
+          find "$PMB_WORK/packages" -name "$KPKG-*.apk" -printf '%p  %s bytes\n'
+
+      - name: 8. 校验产物 apk 内的 config
+        run: |
+          set -eux
+          PKG=$(find "$PMB_WORK/packages" -name "$KPKG-*.apk" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+          echo "apk: $PKG"
+          echo "$PKG" > /tmp/apkpath
+          tar -tzf "$PKG" | head -20
+          tar -xzOf "$PKG" boot/config > out.config || tar -xzOf "$PKG" ./boot/config > out.config
+          wc -l out.config
+          echo "--- 校验 ---"
+          grep -E '^CONFIG_CGROUP_BPF=' out.config
+          grep -E '^CONFIG_BPF_SYSCALL=|^CONFIG_CGROUP_DEVICE=' out.config
+          grep -q '^CONFIG_CGROUP_BPF=y' out.config && echo "VERIFY OK: CONFIG_CGROUP_BPF=y" || { echo "VERIFY FAILED"; exit 1; }
+
+      - name: 9. 上传内核 apk 与校验文件
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel-cgroupbpf
+          path: |
+            /home/runner/.local/var/pmbootstrap/packages/**/${{ env.KPKG }}-*.apk
+            out.config
+            build.log
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: 10. 失败时上传日志
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-failure
+          path: |
+            build.log
+            /home/runner/.local/var/pmbootstrap/log.txt
+          if-no-files-found: ignore
+          retention-days: 7
