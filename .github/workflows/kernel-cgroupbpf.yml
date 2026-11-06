@@ -65,6 +65,16 @@ jobs:
             ccache-${{ env.KPKG }}-${{ env.PIN }}-
             ccache-${{ env.KPKG }}-
 
+      - name: 3.5 修正 ccache 属主（actions/cache 恢复出来是 runner，chroot 内编译用户是 pmos uid 12345）
+        run: |
+          echo "=== 恢复后属主（前5项）==="
+          ls -ld "$CCACHE_DIR" 2>/dev/null || true
+          sudo chown -R 12345:12345 "$CCACHE_DIR" 2>/dev/null || echo "chown 跳过"
+          sudo chown -R 12345:12345 "$SCCACHE_DIR" 2>/dev/null || true
+          echo "=== 修正后属主 ==="
+          ls -ld "$CCACHE_DIR" 2>/dev/null || true
+          du -sh "$CCACHE_DIR" 2>/dev/null || true
+
       - name: 4. 克隆 pmbootstrap（钉到 PIN 日期）
         run: |
           set -eux
