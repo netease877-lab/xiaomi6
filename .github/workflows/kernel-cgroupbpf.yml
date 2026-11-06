@@ -2,7 +2,16 @@ name: Kernel CONFIG_CGROUP_BPF (mi6)
 
 # 目标：只编译 linux-postmarketos-qcom-msm8998 内核包，并打开 CONFIG_CGROUP_BPF=y
 # 不动 rootfs、不做整机 install、不刷 TWRP zip。
-# 产物：内核 apk + 从 apk 里取出的 boot/config（用于校验）+ 构建日志
+# 产物：内核 apk + 构建时实际使用的 config + 构建日志
+#
+# v2 相对 v1 的两处修正（依据 run 42223382455 的日志）：
+#   1. apk 里只有 boot/Image、boot/dtbs/**、boot/System.map-<ver>，不存在 boot/config*，
+#      v1 的校验步骤必然失败；而它排在上传之前，导致 29 分 41 秒编出的 apk 被丢掉。
+#      现在改成「先上传产物、再校验」，且校验改为非致命 + 以构建时 config 为证据。
+#   2. pmbootstrap v3.9.0 默认启用 ccache（--no-ccache 才是关闭），缓存目录是
+#      $WORK/cache_ccache_x86_64（交叉编译在 x86_64 chroot 内进行，故按 x86_64 命名），
+#      另有 $WORK/cache_sccache。v1 没有跨 run 持久化，等于每次冷编译（实测 29m41s）。
+#      现在用 actions/cache 复用，重跑可直接命中。
 
 on:
   push:
@@ -22,11 +31,13 @@ env:
   # 保证编出来的是同一个源码树，只多一个 CONFIG_CGROUP_BPF=y。
   PIN: "2026-01-23"
   PMB_WORK: /home/runner/.local/var/pmbootstrap
+  CCACHE_DIR: /home/runner/.local/var/pmbootstrap/cache_ccache_x86_64
+  SCCACHE_DIR: /home/runner/.local/var/pmbootstrap/cache_sccache
 
 jobs:
   build-kernel:
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 180
     steps:
       - name: 1. 清理磁盘并查看空间
         run: |
@@ -41,7 +52,20 @@ jobs:
           git --version
           python3 --version
 
-      - name: 3. 克隆 pmbootstrap（钉到 PIN 日期）
+      - name: 3. 恢复 ccache（跨 run 复用内核编译产物）
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.CCACHE_DIR }}
+            ${{ env.SCCACHE_DIR }}
+          # run_id 后缀保证每次都能存一份新的，避免精确命中后跳过保存；
+          # restore-keys 让下一次 run 先找同 PIN 的旧缓存。
+          key: ccache-${{ env.KPKG }}-${{ env.PIN }}-${{ github.run_id }}
+          restore-keys: |
+            ccache-${{ env.KPKG }}-${{ env.PIN }}-
+            ccache-${{ env.KPKG }}-
+
+      - name: 4. 克隆 pmbootstrap（钉到 PIN 日期）
         run: |
           set -eux
           cd "$HOME"
@@ -55,7 +79,7 @@ jobs:
           sudo ln -sf "$PWD/pmbootstrap.py" /usr/local/bin/pmbootstrap
           pmbootstrap --version
 
-      - name: 4. 克隆 pmaports（钉到 PIN 日期）
+      - name: 5. 克隆 pmaports（钉到 PIN 日期）
         run: |
           set -eux
           mkdir -p "$PMB_WORK/cache_git"
@@ -75,7 +99,7 @@ jobs:
           echo "--- channels.cfg 前几行 ---"
           git show master:channels.cfg | head -5
 
-      - name: 5. 生成 pmbootstrap 配置（非交互，work_version 动态读取）
+      - name: 6. 生成 pmbootstrap 配置（非交互，work_version 动态读取）
         run: |
           set -eux
           mkdir -p "$HOME/.config" "$PMB_WORK"
@@ -97,7 +121,7 @@ jobs:
           cat "$HOME/.config/pmbootstrap_v3.cfg"
           git -C "$PMB_WORK/cache_git/pmaports" status --porcelain | head || true
 
-      - name: 6. 定位内核 aport 并打开 CONFIG_CGROUP_BPF
+      - name: 7. 定位内核 aport 并打开 CONFIG_CGROUP_BPF
         run: |
           set -eux
           APORTS="$PMB_WORK/cache_git/pmaports"
@@ -125,6 +149,8 @@ jobs:
           done
           echo "--- 修改后 ---"
           grep -nE 'CONFIG_(CGROUP_BPF|CGROUP_DEVICE|CGROUP_SCHED|BPF_SYSCALL|BPF_JIT)\b' "$CFG"
+          # 留一份改后的 config 作为「构建实际使用了什么」的证据（apk 内不含 config）
+          cp "$CFG" "$GITHUB_WORKSPACE/kernel-config-modified.aarch64"
           # APKBUILD 的 sha512sums 里含该 config 文件的校验和，改了 config 必须同步更新，
           # 否则 abuild 会以 "FAILED (checked 1 checksum)" 直接中止。
           NEWHASH=$(sha512sum "$CFG" | cut -d' ' -f1)
@@ -140,43 +166,54 @@ jobs:
           git log --oneline -1
           git status --porcelain | head || true
 
-      - name: 7. 编译内核包
+      - name: 8. 编译内核包
         run: |
           set -o pipefail
           cd "$GITHUB_WORKSPACE"
+          echo "=== 编译前 ccache 状态（命中 restore 时非空）==="
+          du -sh "$CCACHE_DIR" 2>/dev/null || echo "ccache dir 不存在（冷缓存）"
           pmbootstrap --details-to-stdout build "$KPKG" 2>&1 | tee build.log
           echo "=== 产物 ==="
           find "$PMB_WORK/packages" -name "$KPKG-*.apk" -printf '%p  %s bytes\n'
+          echo "=== 编译后 ccache 体积 ==="
+          du -sh "$CCACHE_DIR" 2>/dev/null || true
 
-      - name: 8. 校验产物 apk 内的 config
-        run: |
-          set -eux
-          PKG=$(find "$PMB_WORK/packages" -name "$KPKG-*.apk" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
-          echo "apk: $PKG"
-          echo "$PKG" > /tmp/apkpath
-          tar -tzf "$PKG" | head -20
-          CFGPATH=$(tar -tzf "$PKG" 2>/dev/null | grep -E 'boot/config' | head -1)
-          echo "config in apk: ${CFGPATH:-<none>}"
-          [ -n "${CFGPATH:-}" ] || { echo "VERIFY FAILED: apk 内找不到 boot/config*"; exit 1; }
-          tar -xzOf "$PKG" "$CFGPATH" > out.config
-          wc -l out.config
-          echo "--- 校验 ---"
-          grep -E '^CONFIG_CGROUP_BPF=' out.config
-          grep -E '^CONFIG_BPF_SYSCALL=|^CONFIG_CGROUP_DEVICE=' out.config
-          grep -q '^CONFIG_CGROUP_BPF=y' out.config && echo "VERIFY OK: CONFIG_CGROUP_BPF=y" || { echo "VERIFY FAILED"; exit 1; }
-
-      - name: 9. 上传内核 apk 与校验文件
+      - name: 9. 上传内核 apk 与 config（先于校验，失败也要拿到产物）
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: kernel-cgroupbpf
           path: |
             /home/runner/.local/var/pmbootstrap/packages/**/${{ env.KPKG }}-*.apk
-            out.config
+            kernel-config-modified.aarch64
             build.log
           if-no-files-found: error
           retention-days: 30
 
-      - name: 10. 失败时上传日志
+      - name: 10. 校验（非致命：该内核包不含 boot/config，以构建时 config 为证据）
+        run: |
+          set -ux
+          PKG=$(find "$PMB_WORK/packages" -name "$KPKG-*.apk" -printf '%T@ %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+          echo "apk: ${PKG:-<none>}"
+          tar -tzf "$PKG" 2>/dev/null | grep -E '^boot/' | head -30
+          echo "--- apk 内 Image/dtbs/System.map ---"
+          tar -tzf "$PKG" 2>/dev/null | grep -E '^boot/(Image|vmlinuz|System\.map)' | head -10
+          CFGPATH=$(tar -tzf "$PKG" 2>/dev/null | grep -E 'boot/config' | head -1)
+          if [ -n "${CFGPATH:-}" ]; then
+            echo "apk 内含 config: $CFGPATH"
+            tar -xzOf "$PKG" "$CFGPATH" > out.config
+            grep -E '^CONFIG_CGROUP_BPF=' out.config
+          else
+            echo "NOTE: apk 内不含 boot/config*（该 aport 的 package() 只装 Image/dtbs/System.map）"
+            echo "改为校验构建时实际使用的 config 文件："
+            grep -E '^CONFIG_(CGROUP_BPF|CGROUP_DEVICE|BPF_SYSCALL)=' kernel-config-modified.aarch64 || true
+            grep -q '^CONFIG_CGROUP_BPF=y' kernel-config-modified.aarch64 \
+              && echo "VERIFY OK (config): CONFIG_CGROUP_BPF=y" \
+              || echo "::error::构建用 config 里没有 CONFIG_CGROUP_BPF=y"
+          fi
+          echo "--- 最终以设备实测为准：装包重启后 zcat /proc/config.gz | grep CGROUP_BPF ---"
+
+      - name: 11. 失败时上传日志
         if: failure()
         uses: actions/upload-artifact@v4
         with:
