@@ -61,11 +61,19 @@ jobs:
           mkdir -p "$PMB_WORK/cache_git"
           git clone --filter=blob:none https://gitlab.postmarketos.org/postMarketOS/pmaports.git "$PMB_WORK/cache_git/pmaports"
           cd "$PMB_WORK/cache_git/pmaports"
-          SHA=$(git rev-list -1 --before="$PIN 23:59:59" --all)
+          DEFAULT=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||' || true)
+          if [ -z "${DEFAULT:-}" ]; then DEFAULT=main; fi
+          echo "pmaports default branch: $DEFAULT"
+          SHA=$(git rev-list -1 --before="$PIN 23:59:59" "origin/$DEFAULT")
           echo "pmaports pin sha: $SHA"
-          git checkout --quiet "$SHA"
+          # pmbootstrap 3.9.0 会读 origin/master 里的 channels.cfg，而 pmaports 已把
+          # 默认分支改名为 main，所以必须显式造出 origin/master 这个引用。
+          git update-ref refs/remotes/origin/master "$SHA"
+          git update-ref "refs/remotes/origin/$DEFAULT" "$SHA"
+          git checkout --quiet -B master "$SHA"
           git log -1 --format='%H %ad %s'
-          git checkout --quiet -B master
+          echo "--- channels.cfg 前几行 ---"
+          git show master:channels.cfg | head -5
 
       - name: 5. 生成 pmbootstrap 配置（非交互，work_version 动态读取）
         run: |
@@ -126,7 +134,7 @@ jobs:
       - name: 7. 编译内核包
         run: |
           set -o pipefail
-          cd "$HOME"
+          cd "$GITHUB_WORKSPACE"
           pmbootstrap --details-to-stdout build "$KPKG" 2>&1 | tee build.log
           echo "=== 产物 ==="
           find "$PMB_WORK/packages" -name "$KPKG-*.apk" -printf '%p  %s bytes\n'
