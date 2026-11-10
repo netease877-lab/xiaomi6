@@ -1,4 +1,4 @@
-name: Kernel CONFIG_CGROUP_BPF (mi6)
+name: Kernel CGROUP_BPF + netfilter (mi6)
 
 # 目标：只编译 linux-postmarketos-qcom-msm8998 内核包，并打开 CONFIG_CGROUP_BPF=y
 # 不动 rootfs、不做整机 install、不刷 TWRP zip。
@@ -159,6 +159,61 @@ jobs:
           done
           echo "--- 修改后 ---"
           grep -nE 'CONFIG_(CGROUP_BPF|CGROUP_DEVICE|CGROUP_SCHED|BPF_SYSCALL|BPF_JIT)\b' "$CFG"
+
+          # ------------------------------------------------------------------
+          # netfilter 补全：设备现状（6.0.0 #4）实测缺失项，按模块逐个补
+          # 判据：zcat /proc/config.gz 逐项比对；符号名已核对到 6.0 源码 Kconfig
+          #   注意 set 的 match/target 合并在 NETFILTER_XT_SET，没有 MATCH_SET
+          # ------------------------------------------------------------------
+          set_sym() {   # $1=CONFIG_X  $2=y|m|整数
+            sym="$1"; val="$2"
+            if grep -qE "^${sym}=" "$CFG"; then
+              sed -i -E "s|^${sym}=.*|${sym}=${val}|" "$CFG"
+            elif grep -qE "^# ${sym} is not set" "$CFG"; then
+              sed -i -E "s|^# ${sym} is not set|${sym}=${val}|" "$CFG"
+            else
+              echo "${sym}=${val}" >> "$CFG"
+            fi
+          }
+
+          # P0 docker 29 的 iptables 链路需要 raw 表
+          set_sym CONFIG_IP_NF_RAW m
+          set_sym CONFIG_IP6_NF_RAW m
+          # P1 nftables 后端兼容层
+          set_sym CONFIG_NFT_COMPAT m
+          set_sym CONFIG_NF_TABLES_BRIDGE m
+          # P2 面板 / fail2ban / 透明代理 / ipset 常用 match
+          set_sym CONFIG_NETFILTER_XT_MATCH_MULTIPORT m
+          set_sym CONFIG_NETFILTER_XT_MATCH_LIMIT m
+          set_sym CONFIG_NETFILTER_XT_MATCH_OWNER m
+          set_sym CONFIG_NETFILTER_XT_MATCH_IPRANGE m
+          set_sym CONFIG_NETFILTER_XT_MATCH_MARK m
+          set_sym CONFIG_NETFILTER_XT_MATCH_STATE m
+          set_sym CONFIG_NETFILTER_XT_TARGET_LOG m
+          set_sym CONFIG_IP_SET m
+          set_sym CONFIG_IP_SET_MAX 256
+          set_sym CONFIG_IP_SET_HASH_IP m
+          set_sym CONFIG_IP_SET_HASH_NET m
+          set_sym CONFIG_NETFILTER_XT_SET m
+          set_sym CONFIG_NETFILTER_XT_TARGET_TPROXY m
+          set_sym CONFIG_NETFILTER_XT_MATCH_SOCKET m
+          set_sym CONFIG_NF_TPROXY_IPV4 m
+          set_sym CONFIG_NF_TPROXY_IPV6 m
+          set_sym CONFIG_NF_CONNTRACK_PROCFS y
+          set_sym CONFIG_NF_CONNTRACK_EVENTS y
+          # P3 可选：zram 切 zstd（ZSTD_COMPRESS 由 CRYPTO_ZSTD 的 select 带出）
+          set_sym CONFIG_CRYPTO_ZSTD m
+          set_sym CONFIG_ZRAM_WRITEBACK m
+          set_sym CONFIG_NET_SCH_NETEM m
+
+          echo "--- netfilter 补全后 ---"
+          for s in IP_NF_RAW IP6_NF_RAW NFT_COMPAT NF_TABLES_BRIDGE NETFILTER_XT_SET \
+                   NETFILTER_XT_MATCH_MULTIPORT NETFILTER_XT_MATCH_MARK NETFILTER_XT_MATCH_STATE \
+                   IP_SET NETFILTER_XT_TARGET_TPROXY NETFILTER_XT_MATCH_SOCKET \
+                   NF_TPROXY_IPV4 NF_TPROXY_IPV6 CRYPTO_ZSTD; do
+            grep -E "^(CONFIG_$s=|# CONFIG_$s is not set)" "$CFG" || echo "CONFIG_$s=<缺>"
+          done
+
           # 留一份改后的 config 作为「构建实际使用了什么」的证据（apk 内不含 config）
           cp "$CFG" "$GITHUB_WORKSPACE/kernel-config-modified.aarch64"
           # APKBUILD 的 sha512sums 里含该 config 文件的校验和，改了 config 必须同步更新，
@@ -231,6 +286,30 @@ jobs:
               || echo "::error::构建用 config 里没有 CONFIG_CGROUP_BPF=y"
           fi
           echo "--- 最终以设备实测为准：装包重启后 zcat /proc/config.gz | grep CGROUP_BPF ---"
+          echo "=== 模块落地校验（真实 ground truth：olddefconfig 丢掉无效符号时这里会缺） ==="
+          TMPD=$(mktemp -d)
+          tar -xzf "$PKG" -C "$TMPD" 2>/dev/null || true
+          KOS=$(find "$TMPD" -name '*.ko' -o -name '*.ko.*' 2>/dev/null | wc -l)
+          echo "apk 内 .ko 总数: $KOS"
+          MISS=""
+          for m in iptable_raw ip6table_raw nft_compat nf_tables_bridge \
+                   xt_multiport xt_limit xt_owner xt_iprange xt_mark xt_state xt_LOG \
+                   ip_set ip_set_hash_ip ip_set_hash_net xt_set \
+                   xt_TPROXY xt_socket nf_tproxy_ipv4 nf_tproxy_ipv6 \
+                   crypto_zstd zram netem; do
+            if find "$TMPD" -name "${m}.ko*" | grep -q .; then
+              echo "  OK   $m"
+            else
+              echo "::warning:: 缺模块 $m"
+              MISS="$MISS $m"
+            fi
+          done
+          if [ -n "$MISS" ]; then
+            echo "::error::以下模块未生成（符号被 olddefconfig 丢弃或依赖未满足）:$MISS"
+          else
+            echo "VERIFY OK: 全部目标模块均已生成"
+          fi
+          rm -rf "$TMPD"
 
       - name: 11. 失败时上传日志
         if: failure()
