@@ -1,10 +1,12 @@
---- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
-@@ -12,6 +12,20 @@
+diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-12 15:00:05.042913597 +0000
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-12 15:00:05.045742182 +0000
+@@ -12,6 +12,21 @@
  #include "msm_gem.h"
  #include "msm_mmu.h"
  #include "a5xx_gpu.h"
 +#include <linux/moduleparam.h>
++#include <linux/err.h>
 +
 +/* ==== mi6: GPU 回退/诊断开关（默认走 upstream 语义）==== */
 +static int a5xx_pp_as = 0;
@@ -21,7 +23,17 @@
  
  extern bool hang_debug;
  static void a5xx_dump(struct msm_gpu *gpu);
-@@ -610,6 +624,14 @@
+@@ -128,6 +143,9 @@
+ 	u32 asid;
+ 	u64 memptr = rbmemptr(ring, ttbr0);
+ 
++	if (!a5xx_pp_as)
++		return;
++
+ 	if (ctx == a5xx_gpu->cur_ctx)
+ 		return;
+ 
+@@ -610,6 +628,14 @@
  	if (((buf[0] & 0xf) == 0xa) && (buf[2] & 0xf) >= 1)
  		a5xx_gpu->has_whereami = true;
  
@@ -36,7 +48,7 @@
  	msm_gem_put_vaddr(obj);
  }
  
-@@ -992,6 +1014,9 @@
+@@ -992,6 +1018,9 @@
  
  	a5xx_preempt_hw_init(gpu);
  
@@ -46,7 +58,7 @@
  	/* Disable the interrupts through the initial bringup stage */
  	gpu_write(gpu, REG_A5XX_RBBM_INT_0_MASK, A5XX_INT_MASK);
  
-@@ -1725,8 +1750,12 @@
+@@ -1725,8 +1754,12 @@
  	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
  	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
  
@@ -60,18 +72,18 @@
  
  	return ring->memptrs->rptr = gpu_read(gpu, REG_A5XX_CP_RB_RPTR);
  }
-@@ -1736,6 +1765,10 @@
+@@ -1736,6 +1769,10 @@
  {
  	struct msm_mmu *mmu;
  
 +	if (!a5xx_pp_as) {
 +		pr_info("msm: a5xx private address space disabled (upstream shared aspace)\n");
-+		return NULL;
++		return ERR_PTR(-EOPNOTSUPP);
 +	}
  	mmu = msm_iommu_pagetable_create(gpu->aspace->mmu);
  
  	if (IS_ERR(mmu))
-@@ -1832,7 +1865,8 @@
+@@ -1832,7 +1869,8 @@
  
  	check_speed_bin(&pdev->dev);
  
@@ -81,8 +93,21 @@
  	if (ret) {
  		a5xx_destroy(&(a5xx_gpu->base.base));
  		return ERR_PTR(ret);
---- a/drivers/gpu/drm/msm/msm_gpu.h
-+++ b/drivers/gpu/drm/msm/msm_gpu.h
+diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
+--- a/drivers/gpu/drm/msm/msm_gpu.c	2026-11-12 15:00:05.043966438 +0000
++++ b/drivers/gpu/drm/msm/msm_gpu.c	2026-11-12 15:00:05.045985104 +0000
+@@ -812,7 +812,7 @@
+ 	 */
+ 	if (gpu->funcs->create_private_address_space) {
+ 		aspace = gpu->funcs->create_private_address_space(gpu);
+-		if (!IS_ERR(aspace))
++		if (!IS_ERR_OR_NULL(aspace))
+ 			aspace->pid = get_pid(task_pid(task));
+ 	}
+ 
+diff -Naur a/drivers/gpu/drm/msm/msm_gpu.h b/drivers/gpu/drm/msm/msm_gpu.h
+--- a/drivers/gpu/drm/msm/msm_gpu.h	2026-11-12 15:00:05.044363335 +0000
++++ b/drivers/gpu/drm/msm/msm_gpu.h	2026-11-12 15:00:05.046147064 +0000
 @@ -437,8 +437,16 @@
  	 */
  	sp = NR_SCHED_PRIORITIES - sp - 1;
