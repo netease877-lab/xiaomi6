@@ -52,9 +52,9 @@
  
 -	if (a5xx_gpu->has_whereami)
 +	if (a5xx_gpu->has_whereami) {
-+		pr_info_ratelimited("msm: rptr ring%d shadow=%u hw=%u wptr=%u\n",
++		pr_info_ratelimited("msm: rptr ring%d shadow=%u hw=%u\n",
 +			ring->id, a5xx_gpu->shadow[ring->id],
-+			gpu_read(gpu, REG_A5XX_CP_RB_RPTR), ring->wptr);
++			gpu_read(gpu, REG_A5XX_CP_RB_RPTR));
  		return a5xx_gpu->shadow[ring->id];
 +	}
  
