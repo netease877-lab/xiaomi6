@@ -244,7 +244,7 @@ jobs:
           echo "patch in chroot: $PATCH_IN_CHROOT"
           grep -n '^build() {' "$KDIR/APKBUILD"
           cp "$KDIR/APKBUILD" /tmp/APKBUILD.before
-          export MI6_LINE="    A5XX=\$(find /home/pmos/build -name a5xx_gpu.c -path '*drm/msm/adreno*' | head -1); SRCROOT=\$(dirname \$A5XX)/../../../../..; echo MI6 srcroot=\$SRCROOT; patch -p1 -d \$SRCROOT -i "$PATCH_IN_CHROOT" || exit 1; grep -c a5xx_nr_rings \$SRCROOT/drivers/gpu/drm/msm/adreno/a5xx_gpu.c; grep -c a5xx_preempt_pkts \$SRCROOT/drivers/gpu/drm/msm/adreno/a5xx_gpu.c; grep -c preempt record alloc failed \$SRCROOT/drivers/gpu/drm/msm/adreno/a5xx_preempt.c"
+          export MI6_LINE="    A5XX=\$(find /home/pmos/build -name a5xx_gpu.c -path '*drm/msm/adreno*' | head -1); SRCROOT=\$(dirname \$A5XX)/../../../../..; echo MI6 srcroot=\$SRCROOT; patch -p1 -d \$SRCROOT -i "$PATCH_IN_CHROOT" || exit 1; grep -c a5xx_nr_rings \$SRCROOT/drivers/gpu/drm/msm/adreno/a5xx_gpu.c; grep -c a5xx_preempt_pkts \$SRCROOT/drivers/gpu/drm/msm/adreno/a5xx_gpu.c; grep -c preempt_init_ring \$SRCROOT/drivers/gpu/drm/msm/adreno/a5xx_preempt.c"
           echo "MI6_LINE=$MI6_LINE"
           awk '{print} /^build\(\) \{/ && !d {print ENVIRON["MI6_LINE"]; d=1}' /tmp/APKBUILD.before > "$KDIR/APKBUILD"
           grep -c 'MI6 srcroot' "$KDIR/APKBUILD" || { echo "FATAL: 未能插入 build()" >&2; exit 1; }
