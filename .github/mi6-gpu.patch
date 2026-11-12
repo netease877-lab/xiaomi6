@@ -259,8 +259,24 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  		return ERR_PTR(ret);
 diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c
 --- a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-12 16:43:47.770330090 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-12 16:45:27.537849690 +0000
-@@ -283,11 +283,23 @@
++++ b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-12 17:30:43.334920006 +0000
+@@ -200,8 +200,13 @@
+ 	/* Always come up on rb 0 */
+ 	a5xx_gpu->cur_ring = gpu->rb[0];
+ 
+-	/* No preemption if we only have one ring */
+-	if (gpu->nr_rings == 1)
++	/*
++	 * mi6: 单 ring 也必须初始化 preempt record。a5xx_submit() 无条件写
++	 * CP_CONTEXT_SWITCH_SAVE_ADDR，CP 恢复上下文时用记录里的 rbase 定位
++	 * 命令流；rbase 留在 0 会让 CP 从 iova 0 取指，读到 0x00000000 后报
++	 * opcode error（实测同时出现 iova=0 的 SMMU context fault）。
++	 */
++	if (!a5xx_gpu->preempt[0])
+ 		return;
+ 
+ 	for (i = 0; i < gpu->nr_rings; i++) {
+@@ -283,11 +288,23 @@
  	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
  	int i;
  
