@@ -1,0 +1,104 @@
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
+@@ -12,6 +12,20 @@
+ #include "msm_gem.h"
+ #include "msm_mmu.h"
+ #include "a5xx_gpu.h"
++#include <linux/moduleparam.h>
++
++/* ==== mi6: GPU 回退/诊断开关（默认走 upstream 语义）==== */
++static int a5xx_pp_as = 0;
++module_param_named(a5xx_pp_as, a5xx_pp_as, int, 0600);
++MODULE_PARM_DESC(a5xx_pp_as, "mi6: 1=per-process GPU address space (fork), 0=shared (upstream)");
++
++static int a5xx_nr_rings = 1;
++module_param_named(a5xx_nr_rings, a5xx_nr_rings, int, 0600);
++MODULE_PARM_DESC(a5xx_nr_rings, "mi6: forced a5xx ring count, 1 disables preemption");
++
++static int a5xx_whereami = 0;
++module_param_named(a5xx_whereami, a5xx_whereami, int, 0600);
++MODULE_PARM_DESC(a5xx_whereami, "mi6: -1=auto, 0=force no WHERE_AM_I, 1=force yes");
+ 
+ extern bool hang_debug;
+ static void a5xx_dump(struct msm_gpu *gpu);
+@@ -610,6 +624,14 @@
+ 	if (((buf[0] & 0xf) == 0xa) && (buf[2] & 0xf) >= 1)
+ 		a5xx_gpu->has_whereami = true;
+ 
++	pr_info("msm: a5xx ucode hdr %08x %08x %08x -> detected whereami=%d\n",
++		buf[0], buf[1], buf[2], a5xx_gpu->has_whereami);
++
++	if (a5xx_whereami >= 0) {
++		a5xx_gpu->has_whereami = !!a5xx_whereami;
++		pr_info("msm: a5xx whereami forced to %d\n", a5xx_gpu->has_whereami);
++	}
++
+ 	msm_gem_put_vaddr(obj);
+ }
+ 
+@@ -992,6 +1014,9 @@
+ 
+ 	a5xx_preempt_hw_init(gpu);
+ 
++	pr_info("msm: a5xx hw_init: nr_rings=%d has_whereami=%d pp_as=%d\n",
++		gpu->nr_rings, a5xx_gpu->has_whereami, a5xx_pp_as);
++
+ 	/* Disable the interrupts through the initial bringup stage */
+ 	gpu_write(gpu, REG_A5XX_RBBM_INT_0_MASK, A5XX_INT_MASK);
+ 
+@@ -1725,8 +1750,12 @@
+ 	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
+ 	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
+ 
+-	if (a5xx_gpu->has_whereami)
++	if (a5xx_gpu->has_whereami) {
++		pr_info_ratelimited("msm: rptr ring%d shadow=%u hw=%u wptr=%u\n",
++			ring->id, a5xx_gpu->shadow[ring->id],
++			gpu_read(gpu, REG_A5XX_CP_RB_RPTR), ring->wptr);
+ 		return a5xx_gpu->shadow[ring->id];
++	}
+ 
+ 	return ring->memptrs->rptr = gpu_read(gpu, REG_A5XX_CP_RB_RPTR);
+ }
+@@ -1736,6 +1765,10 @@
+ {
+ 	struct msm_mmu *mmu;
+ 
++	if (!a5xx_pp_as) {
++		pr_info("msm: a5xx private address space disabled (upstream shared aspace)\n");
++		return NULL;
++	}
+ 	mmu = msm_iommu_pagetable_create(gpu->aspace->mmu);
+ 
+ 	if (IS_ERR(mmu))
+@@ -1832,7 +1865,8 @@
+ 
+ 	check_speed_bin(&pdev->dev);
+ 
+-	ret = adreno_gpu_init(dev, pdev, adreno_gpu, &funcs, 4);
++	ret = adreno_gpu_init(dev, pdev, adreno_gpu, &funcs,
++			a5xx_nr_rings > 0 ? a5xx_nr_rings : 4);
+ 	if (ret) {
+ 		a5xx_destroy(&(a5xx_gpu->base.base));
+ 		return ERR_PTR(ret);
+--- a/drivers/gpu/drm/msm/msm_gpu.h
++++ b/drivers/gpu/drm/msm/msm_gpu.h
+@@ -437,8 +437,16 @@
+ 	 */
+ 	sp = NR_SCHED_PRIORITIES - sp - 1;
+ 
+-	if (rn >= gpu->nr_rings)
+-		return -EINVAL;
++	if (rn >= gpu->nr_rings) {
++		/*
++		 * mi6: 单 ring 时把更高优先级的 submitqueue 并到 ring 0。
++		 * Mesa 会按 rn=2 建队列，若仍返回 -EINVAL，nr_rings=1 下就开不了设备。
++		 */
++		if (gpu->nr_rings == 1)
++			rn = 0;
++		else
++			return -EINVAL;
++	}
+ 
+ 	*ring_nr = rn;
+ 	*sched_prio = sp;
