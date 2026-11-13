@@ -1,7 +1,7 @@
 diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
---- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-12 16:43:47.765424994 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-12 16:45:11.254884037 +0000
-@@ -12,6 +12,30 @@
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 04:06:23.943065197 +0000
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 04:07:27.972813666 +0000
+@@ -12,6 +12,32 @@
  #include "msm_gem.h"
  #include "msm_mmu.h"
  #include "a5xx_gpu.h"
@@ -22,17 +22,19 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
 +MODULE_PARM_DESC(a5xx_whereami, "mi6: -1=auto, 0=force no WHERE_AM_I, 1=force yes");
 +
 +/*
-+ * mi6: 1=与 upstream v6.0 一致的完整抢占包（requires valid preempt record）,
-+ *      0=只发 IB+fence 的最小序列。可在运行时切（/sys/module/msm/parameters/）
-+ *      做 A/B，下一次 submit 即生效。
++ * mi6: 0=永不发抢占包, 1=只在多 ring 时发（默认）。
++ * 单 ring 下 a5xx_preempt_trigger()/hw_init()/init() 全部提前返回，
++ * CP_CONTEXT_SWITCH_RESTORE_ADDR 永远是 0；一旦 CP 在
++ * CP_CONTEXT_SWITCH_YIELD 处真的切上下文，就会从 iova 0 读恢复记录
++ * → SMMU 读 fault(iova=0) → opcode 0x00000000 → CP 卡死。
 + */
 +static int a5xx_preempt_pkts = 1;
 +module_param_named(a5xx_preempt_pkts, a5xx_preempt_pkts, int, 0600);
-+MODULE_PARM_DESC(a5xx_preempt_pkts, "mi6: 1=upstream preempt packet sequence, 0=minimal");
++MODULE_PARM_DESC(a5xx_preempt_pkts, "mi6: 0=never emit preempt packets, 1=only when nr_rings>1");
  
  extern bool hang_debug;
  static void a5xx_dump(struct msm_gpu *gpu);
-@@ -128,6 +152,9 @@
+@@ -128,6 +154,9 @@
  	u32 asid;
  	u64 memptr = rbmemptr(ring, ttbr0);
  
@@ -42,15 +44,17 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	if (ctx == a5xx_gpu->cur_ctx)
  		return;
  
-@@ -169,6 +196,7 @@
+@@ -169,6 +198,9 @@
  	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
  	struct msm_ringbuffer *ring = submit->ring;
  	unsigned int i, ibs = 0;
-+	u64 iova;
++	bool preempt;
++
++	preempt = (a5xx_preempt_pkts == 1) && (gpu->nr_rings > 1);
  
  	if (IS_ENABLED(CONFIG_DRM_MSM_GPU_SUDO) && submit->in_rb) {
  		gpu->cur_ctx_seqno = 0;
-@@ -176,31 +204,46 @@
+@@ -176,31 +208,42 @@
  		return;
  	}
  
@@ -75,16 +79,22 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
 -	//OUT_RING(ring, 0x02);
 -	OUT_PKT7(ring, CP_PREEMPT_ENABLE_LOCAL, 1);
 -	OUT_RING(ring, 0x01);
-+	/*
-+	 * mi6: 单 ring 下用与 upstream v6.0 一致的提交序列。
-+	 * a5xx_preempt_init() 现在无论 ring 数都会给 ring0 分配 preempt
-+	 * record，所以 SAVE_ADDR 指向有效内存（V3 直接跳过整段，但上游在
-+	 * 单 ring 下同样会发这些包，缺了会让 CP 状态与上游不一致）。
-+	 * a5xx_preempt_pkts=0 可退回 V3 的最小序列，用于运行时 A/B。
-+	 */
-+	iova = a5xx_gpu->preempt_iova[submit->ring->id];
+-
+-	/* Allow CP_CONTEXT_SWITCH_YIELD packets in the IB2 */
+-	OUT_PKT7(ring, CP_YIELD_ENABLE, 1);
+-	OUT_RING(ring, 0x02);
++	pr_info_once("msm: a5xx submit: nr_rings=%d preempt_pkts=%d -> %s\n",
++		gpu->nr_rings, a5xx_preempt_pkts,
++		preempt ? "发射抢占包+CONTEXT_SWITCH_YIELD" : "不发抢占包/不 yield");
 +
-+	if (a5xx_preempt_pkts && iova) {
++	/*
++	 * mi6: 单 ring 下不发任何抢占包。fork 里 preempt_init()/hw_init()/
++	 * trigger() 在 nr_rings==1 时全部提前返回，CP_CONTEXT_SWITCH_RESTORE_ADDR
++	 * 恒为 0；若仍然发 CP_CONTEXT_SWITCH_YIELD，CP 会去 iova 0 读恢复记录，
++	 * 触发 SMMU 读 fault(iova=0) 与 opcode 0x00000000，随后 fence 永不完成、
++	 * hangcheck 每 2s 一次恢复失败（实测 179 条）。
++	 */
++	if (preempt) {
 +		OUT_PKT7(ring, CP_PREEMPT_ENABLE_GLOBAL, 1);
 +		OUT_RING(ring, 0x02);
 +
@@ -94,26 +104,17 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
 +
 +		/* Set the save preemption record for the ring/command */
 +		OUT_PKT4(ring, REG_A5XX_CP_CONTEXT_SWITCH_SAVE_ADDR_LO, 2);
-+		OUT_RING(ring, lower_32_bits(iova));
-+		OUT_RING(ring, upper_32_bits(iova));
++		OUT_RING(ring, lower_32_bits(a5xx_gpu->preempt_iova[submit->ring->id]));
++		OUT_RING(ring, upper_32_bits(a5xx_gpu->preempt_iova[submit->ring->id]));
 +
 +		/* Turn back on protected mode */
 +		OUT_PKT7(ring, CP_SET_PROTECTED_MODE, 1);
 +		OUT_RING(ring, 1);
 +
-+		if (gpu->nr_rings > 1) {
-+			/* Enable local preemption for finegrain preemption */
-+			OUT_PKT7(ring, CP_PREEMPT_ENABLE_LOCAL, 1);
-+			OUT_RING(ring, 0x01);
-+		} else {
-+			/* upstream 单 ring：全局预使能，无 LOCAL */
-+			OUT_PKT7(ring, CP_PREEMPT_ENABLE_GLOBAL, 1);
-+			OUT_RING(ring, 0x02);
-+		}
- 
--	/* Allow CP_CONTEXT_SWITCH_YIELD packets in the IB2 */
--	OUT_PKT7(ring, CP_YIELD_ENABLE, 1);
--	OUT_RING(ring, 0x02);
++		/* Enable local preemption for finegrain preemption */
++		OUT_PKT7(ring, CP_PREEMPT_ENABLE_LOCAL, 1);
++		OUT_RING(ring, 0x01);
++
 +		/* Allow CP_CONTEXT_SWITCH_YIELD packets in the IB2 */
 +		OUT_PKT7(ring, CP_YIELD_ENABLE, 1);
 +		OUT_RING(ring, 0x02);
@@ -121,51 +122,10 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	a5xx_set_pagetable(a5xx_gpu, ring, submit->queue->ctx);
  
-@@ -233,21 +276,24 @@
- 			update_shadow_rptr(gpu, ring);
- 	}
- 
--	/*
--	 * Write the render mode to NULL (0) to indicate to the CP that the IBs
--	 * are done rendering - otherwise a lucky preemption would start
--	 * replaying from the last checkpoint
--	 */
--	OUT_PKT7(ring, CP_SET_RENDER_MODE, 5);
--	OUT_RING(ring, 0);
--	OUT_RING(ring, 0);
--	OUT_RING(ring, 0);
--	OUT_RING(ring, 0);
--	OUT_RING(ring, 0);
--
--	/* Turn off IB level preemptions */
--	OUT_PKT7(ring, CP_YIELD_ENABLE, 1);
--	OUT_RING(ring, 0x01);
-+	/* mi6: 与函数开头的 prologue 共用同一个开关 */
-+	if (a5xx_preempt_pkts && iova) {
-+		/*
-+		 * Write the render mode to NULL (0) to indicate to the CP that the IBs
-+		 * are done rendering - otherwise a lucky preemption would start
-+		 * replaying from the last checkpoint
-+		 */
-+		OUT_PKT7(ring, CP_SET_RENDER_MODE, 5);
-+		OUT_RING(ring, 0);
-+		OUT_RING(ring, 0);
-+		OUT_RING(ring, 0);
-+		OUT_RING(ring, 0);
-+		OUT_RING(ring, 0);
-+
-+		/* Turn off IB level preemptions */
-+		OUT_PKT7(ring, CP_YIELD_ENABLE, 1);
-+		OUT_RING(ring, 0x01);
-+	}
- 
- 	/* Write the fence to the scratch register */
- 	OUT_PKT4(ring, REG_A5XX_CP_SCRATCH_REG(2), 1);
-@@ -264,19 +310,22 @@
- 	OUT_RING(ring, upper_32_bits(rbmemptr(ring, fence)));
+@@ -265,18 +308,20 @@
  	OUT_RING(ring, submit->seqno);
  
--	/* Yield the floor on command completion */
+ 	/* Yield the floor on command completion */
 -	OUT_PKT7(ring, CP_CONTEXT_SWITCH_YIELD, 4);
 -	/*
 -	 * If dword[2:1] are non zero, they specify an address for the CP to
@@ -178,9 +138,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
 -	OUT_RING(ring, 0x01);
 -	/* Set bit 0 to trigger an interrupt on preempt complete */
 -	OUT_RING(ring, 0x01);
-+	/* mi6: 同上，preempt_pkts=0 时不发 YIELD（V3 行为） */
-+	if (a5xx_preempt_pkts && iova) {
-+		/* Yield the floor on command completion */
++	if (preempt) {
 +		OUT_PKT7(ring, CP_CONTEXT_SWITCH_YIELD, 4);
 +		/*
 +		 * If dword[2:1] are non zero, they specify an address for the CP to
@@ -197,7 +155,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	/* A WHERE_AM_I packet is not needed after a YIELD */
  	a5xx_flush(gpu, ring, false);
-@@ -610,6 +659,14 @@
+@@ -610,6 +655,14 @@
  	if (((buf[0] & 0xf) == 0xa) && (buf[2] & 0xf) >= 1)
  		a5xx_gpu->has_whereami = true;
  
@@ -212,31 +170,18 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	msm_gem_put_vaddr(obj);
  }
  
-@@ -992,6 +1049,9 @@
+@@ -992,6 +1045,10 @@
  
  	a5xx_preempt_hw_init(gpu);
  
-+	pr_info("msm: a5xx hw_init: nr_rings=%d has_whereami=%d pp_as=%d\n",
-+		gpu->nr_rings, a5xx_gpu->has_whereami, a5xx_pp_as);
++	pr_info("msm: a5xx hw_init: nr_rings=%d has_whereami=%d pp_as=%d preempt_pkts=%d\n",
++		gpu->nr_rings, a5xx_gpu->has_whereami, a5xx_pp_as,
++		a5xx_preempt_pkts);
 +
  	/* Disable the interrupts through the initial bringup stage */
  	gpu_write(gpu, REG_A5XX_RBBM_INT_0_MASK, A5XX_INT_MASK);
  
-@@ -1725,8 +1785,12 @@
- 	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
- 	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
- 
--	if (a5xx_gpu->has_whereami)
-+	if (a5xx_gpu->has_whereami) {
-+		pr_info_ratelimited("msm: rptr ring%d shadow=%u hw=%u\n",
-+			ring->id, a5xx_gpu->shadow[ring->id],
-+			gpu_read(gpu, REG_A5XX_CP_RB_RPTR));
- 		return a5xx_gpu->shadow[ring->id];
-+	}
- 
- 	return ring->memptrs->rptr = gpu_read(gpu, REG_A5XX_CP_RB_RPTR);
- }
-@@ -1736,6 +1800,10 @@
+@@ -1736,6 +1793,11 @@
  {
  	struct msm_mmu *mmu;
  
@@ -244,10 +189,11 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
 +		pr_info("msm: a5xx private address space disabled (upstream shared aspace)\n");
 +		return ERR_PTR(-EOPNOTSUPP);
 +	}
++
  	mmu = msm_iommu_pagetable_create(gpu->aspace->mmu);
  
  	if (IS_ERR(mmu))
-@@ -1832,7 +1900,8 @@
+@@ -1832,7 +1894,8 @@
  
  	check_speed_bin(&pdev->dev);
  
@@ -257,53 +203,9 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	if (ret) {
  		a5xx_destroy(&(a5xx_gpu->base.base));
  		return ERR_PTR(ret);
-diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c
---- a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-12 16:43:47.770330090 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-12 17:30:43.334920006 +0000
-@@ -200,8 +200,13 @@
- 	/* Always come up on rb 0 */
- 	a5xx_gpu->cur_ring = gpu->rb[0];
- 
--	/* No preemption if we only have one ring */
--	if (gpu->nr_rings == 1)
-+	/*
-+	 * mi6: 单 ring 也必须初始化 preempt record。a5xx_submit() 无条件写
-+	 * CP_CONTEXT_SWITCH_SAVE_ADDR，CP 恢复上下文时用记录里的 rbase 定位
-+	 * 命令流；rbase 留在 0 会让 CP 从 iova 0 取指，读到 0x00000000 后报
-+	 * opcode error（实测同时出现 iova=0 的 SMMU context fault）。
-+	 */
-+	if (!a5xx_gpu->preempt[0])
- 		return;
- 
- 	for (i = 0; i < gpu->nr_rings; i++) {
-@@ -283,11 +288,23 @@
- 	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
- 	int i;
- 
-+	/*
-+	 * mi6: 即使只有 1 个 ring 也要给 ring0 分配 preempt record。
-+	 * a5xx_submit() 会写 CP_CONTEXT_SWITCH_SAVE_ADDR，指向 0 会让 CP
-+	 * 往 iova 0 写记录（V3 之前每帧一次 SMMU fault）。
-+	 */
-+	if (preempt_init_ring(a5xx_gpu, gpu->rb[0])) {
-+		DRM_DEV_ERROR(&gpu->pdev->dev,
-+			"a5xx preempt record alloc failed, submit 将不发抢占包\n");
-+		gpu->nr_rings = 1;
-+		return;
-+	}
-+
- 	/* No preemption if we only have one ring */
- 	if (gpu->nr_rings <= 1)
- 		return;
- 
--	for (i = 0; i < gpu->nr_rings; i++) {
-+	for (i = 1; i < gpu->nr_rings; i++) {
- 		if (preempt_init_ring(a5xx_gpu, gpu->rb[i])) {
- 			/*
- 			 * On any failure our adventure is over. Clean up and
 diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
---- a/drivers/gpu/drm/msm/msm_gpu.c	2026-11-12 16:43:47.772095163 +0000
-+++ b/drivers/gpu/drm/msm/msm_gpu.c	2026-11-12 16:43:47.781076066 +0000
+--- a/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 04:06:23.963120134 +0000
++++ b/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 04:07:41.925641159 +0000
 @@ -812,7 +812,7 @@
  	 */
  	if (gpu->funcs->create_private_address_space) {
@@ -314,8 +216,8 @@ diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
  	}
  
 diff -Naur a/drivers/gpu/drm/msm/msm_gpu.h b/drivers/gpu/drm/msm/msm_gpu.h
---- a/drivers/gpu/drm/msm/msm_gpu.h	2026-11-12 16:43:47.773831415 +0000
-+++ b/drivers/gpu/drm/msm/msm_gpu.h	2026-11-12 16:43:47.781245318 +0000
+--- a/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 04:06:23.967824803 +0000
++++ b/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 04:07:45.912877628 +0000
 @@ -437,8 +437,16 @@
  	 */
  	sp = NR_SCHED_PRIORITIES - sp - 1;
