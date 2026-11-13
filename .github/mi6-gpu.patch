@@ -1,7 +1,7 @@
 diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
---- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 07:34:42.309165872 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 07:34:42.315503959 +0000
-@@ -12,6 +12,58 @@
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 08:35:04.789479396 +0000
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 08:35:04.795820646 +0000
+@@ -12,6 +12,70 @@
  #include "msm_gem.h"
  #include "msm_mmu.h"
  #include "a5xx_gpu.h"
@@ -57,10 +57,22 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
 +int a5xx_dbg = 1;
 +module_param_named(a5xx_dbg, a5xx_dbg, int, 0600);
 +MODULE_PARM_DESC(a5xx_dbg, "mi6: 1=log preempt decision path (rate limited), 0=off");
++
++/*
++ * mi6: a5xx_preempt_hw_init() 的分步开关。hw_init 可重复执行（hangcheck
++ * recover、runtime PM resume 都会走），所以本参数能在同一次开机内改动后由
++ * 下一次 hw_init 生效，不必重刷内核。
++ *   0 = 只复位 cur_ring 与 preempt_state，不碰 record、不写 SMMU_INFO
++ *   1 = 只重置 record（wptr/rptr/rbase/rptr_addr），不写 SMMU_INFO
++ *   2 = 全做（默认，等价 upstream）
++ */
++int a5xx_preempt_hw_mode = 2;
++module_param_named(a5xx_preempt_hw_mode, a5xx_preempt_hw_mode, int, 0600);
++MODULE_PARM_DESC(a5xx_preempt_hw_mode, "mi6: 0=skip preempt hw_init, 1=record only, 2=full (default)");
  
  extern bool hang_debug;
  static void a5xx_dump(struct msm_gpu *gpu);
-@@ -124,11 +176,22 @@
+@@ -124,11 +188,22 @@
  static void a5xx_set_pagetable(struct a5xx_gpu *a5xx_gpu,
  		struct msm_ringbuffer *ring, struct msm_file_private *ctx)
  {
@@ -84,7 +96,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  		return;
  
  	if (msm_iommu_pagetable_params(ctx->aspace->mmu, &ttbr, &asid))
-@@ -169,6 +232,10 @@
+@@ -169,6 +244,10 @@
  	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
  	struct msm_ringbuffer *ring = submit->ring;
  	unsigned int i, ibs = 0;
@@ -95,7 +107,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	if (IS_ENABLED(CONFIG_DRM_MSM_GPU_SUDO) && submit->in_rb) {
  		gpu->cur_ctx_seqno = 0;
-@@ -176,31 +243,45 @@
+@@ -176,31 +255,45 @@
  		return;
  	}
  
@@ -166,7 +178,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	a5xx_set_pagetable(a5xx_gpu, ring, submit->queue->ctx);
  
-@@ -264,19 +345,25 @@
+@@ -264,19 +357,25 @@
  	OUT_RING(ring, upper_32_bits(rbmemptr(ring, fence)));
  	OUT_RING(ring, submit->seqno);
  
@@ -203,7 +215,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	/* A WHERE_AM_I packet is not needed after a YIELD */
  	a5xx_flush(gpu, ring, false);
-@@ -610,6 +697,14 @@
+@@ -610,6 +709,14 @@
  	if (((buf[0] & 0xf) == 0xa) && (buf[2] & 0xf) >= 1)
  		a5xx_gpu->has_whereami = true;
  
@@ -218,7 +230,38 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	msm_gem_put_vaddr(obj);
  }
  
-@@ -992,6 +1087,10 @@
+@@ -966,6 +1073,14 @@
+ 	gpu_write(gpu, REG_A5XX_CP_RB_CNTL,
+ 		MSM_GPU_RB_CNTL_DEFAULT | AXXX_CP_RB_CNTL_NO_UPDATE);
+ 
++	/*
++	 * mi6: has_whereami 原本只在固件首次加载时检测一次，之后无法改。
++	 * 这里让 a5xx_whereami 在每次 hw_init 重新生效，便于同一次开机内做
++	 * A/B（改参数后由下一次 hw_init 采用）。
++	 */
++	if (a5xx_whereami >= 0)
++		a5xx_gpu->has_whereami = !!a5xx_whereami;
++
+ 	/* Create a privileged buffer for the RPTR shadow */
+ 	if (a5xx_gpu->has_whereami) {
+ 		if (!a5xx_gpu->shadow_bo) {
+@@ -983,8 +1098,13 @@
+ 
+ 		gpu_write64(gpu, REG_A5XX_CP_RB_RPTR_ADDR,
+ 			REG_A5XX_CP_RB_RPTR_ADDR_HI, shadowptr(a5xx_gpu, gpu->rb[0]));
+-	} else if (gpu->nr_rings > 1) {
+-		/* Disable preemption if WHERE_AM_I isn't available */
++	} else if (gpu->nr_rings > 1 && a5xx_whereami != 0) {
++		/*
++		 * Disable preemption if WHERE_AM_I isn't available.
++		 * mi6: 运行时把 whereami 强制设 0 只是为了停用 RPTR shadow，
++		 * 不能顺手把 preempt_bo 释放掉、把 ring 数砍回 1 —— 那会让
++		 * 同一次开机内的 A/B 变成不可逆。
++		 */
+ 		a5xx_preempt_fini(gpu);
+ 		gpu->nr_rings = 1;
+ 	}
+@@ -992,6 +1112,10 @@
  
  	a5xx_preempt_hw_init(gpu);
  
@@ -229,7 +272,49 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	/* Disable the interrupts through the initial bringup stage */
  	gpu_write(gpu, REG_A5XX_RBBM_INT_0_MASK, A5XX_INT_MASK);
  
-@@ -1736,6 +1835,11 @@
+@@ -1157,6 +1281,30 @@
+ 			gpu_read(gpu, REG_A5XX_CP_SCRATCH_REG(6)),
+ 			gpu_read(gpu, REG_A5XX_CP_SCRATCH_REG(7)));
+ 
++	/*
++	 * mi6: fault 时把 CP 的上下文切换寄存器与抢占记录地址一起打出来，
++	 * 用来判定 iova 到底属于哪个页表 / 哪条 record，而不是靠猜。
++	 */
++	if (a5xx_dbg) {
++		struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(to_adreno_gpu(gpu));
++
++		pr_info("msm: a5xx fault ctx: rings=%d whereami=%d npkts=%d cur_ring=%d cur_ctx=%px "
++			"rb0_iova=%llx rptr0=%u shadow_iova=%llx preempt0=%llx "
++			"smmu_info=%08x/%08x cntl=%08x save_addr=%08x/%08x\n",
++			gpu->nr_rings, a5xx_gpu->has_whereami, a5xx_preempt_pkts,
++			a5xx_gpu->cur_ring ? a5xx_gpu->cur_ring->id : -1,
++			a5xx_gpu->cur_ctx,
++			(unsigned long long)gpu->rb[0]->iova,
++			gpu->funcs->get_rptr(gpu, gpu->rb[0]),
++			(unsigned long long)a5xx_gpu->shadow_iova,
++			(unsigned long long)a5xx_gpu->preempt_iova[0],
++			gpu_read(gpu, REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_LO),
++			gpu_read(gpu, REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_HI),
++			gpu_read(gpu, REG_A5XX_CP_CONTEXT_SWITCH_CNTL),
++			gpu_read(gpu, REG_A5XX_CP_CONTEXT_SWITCH_SAVE_ADDR_LO),
++			gpu_read(gpu, REG_A5XX_CP_CONTEXT_SWITCH_SAVE_ADDR_HI));
++	}
++
+ 	return 0;
+ }
+ 
+@@ -1164,6 +1312,10 @@
+ {
+ 	u32 status = gpu_read(gpu, REG_A5XX_CP_INTERRUPT_STATUS);
+ 
++	if (a5xx_dbg)
++		pr_info("msm: a5xx cp_irq status=0x%08x hw_fault=0x%08x\n", status,
++			gpu_read(gpu, REG_A5XX_CP_HW_FAULT));
++
+ 	if (status & A5XX_CP_INT_CP_OPCODE_ERROR) {
+ 		u32 val;
+ 
+@@ -1736,6 +1888,11 @@
  {
  	struct msm_mmu *mmu;
  
@@ -241,7 +326,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	mmu = msm_iommu_pagetable_create(gpu->aspace->mmu);
  
  	if (IS_ERR(mmu))
-@@ -1832,7 +1936,8 @@
+@@ -1832,7 +1989,8 @@
  
  	check_speed_bin(&pdev->dev);
  
@@ -252,21 +337,22 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  		a5xx_destroy(&(a5xx_gpu->base.base));
  		return ERR_PTR(ret);
 diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c
---- a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 07:34:42.309369999 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 07:34:42.315717061 +0000
-@@ -5,6 +5,11 @@
+--- a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 08:35:04.789728161 +0000
++++ b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 08:35:04.796043554 +0000
+@@ -5,6 +5,12 @@
  #include "msm_gem.h"
  #include "a5xx_gpu.h"
  
 +/* mi6: 定义在 a5xx_gpu.c，控制抢占链路日志 */
 +extern int a5xx_dbg;
++extern int a5xx_preempt_hw_mode;
 +
 +#define A5XX_DBG_MAX 200
 +
  /*
   * Try to transition the preemption state from old to new. Return
   * true on success or false if the original state wasn't 'old'
-@@ -93,10 +98,14 @@
+@@ -93,10 +99,14 @@
  	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
  	unsigned long flags;
  	struct msm_ringbuffer *ring;
@@ -281,7 +367,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adr
  	/*
  	 * Try to start preemption by moving from NONE to START. If
  	 * unsuccessful, a preemption is already in flight
-@@ -107,6 +116,17 @@
+@@ -107,6 +117,17 @@
  	/* Get the next ring to preempt to */
  	ring = get_next_ring(gpu);
  
@@ -299,7 +385,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adr
  	/*
  	 * If no ring is populated or the highest priority ring is the current
  	 * one do nothing except to update the wptr to the latest and greatest
-@@ -175,6 +195,16 @@
+@@ -175,6 +196,16 @@
  	 * chance to finish. If that happens, log and go for recovery
  	 */
  	status = gpu_read(gpu, REG_A5XX_CP_CONTEXT_SWITCH_CNTL);
@@ -316,9 +402,54 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adr
  	if (unlikely(status)) {
  		set_preempt_state(a5xx_gpu, PREEMPT_FAULTED);
  		DRM_DEV_ERROR(dev->dev, "%s: Preemption failed to complete\n",
+@@ -204,15 +235,37 @@
+ 	if (gpu->nr_rings == 1)
+ 		return;
+ 
+-	for (i = 0; i < gpu->nr_rings; i++) {
+-		a5xx_gpu->preempt[i]->wptr = 0;
+-		a5xx_gpu->preempt[i]->rptr = 0;
+-		a5xx_gpu->preempt[i]->rbase = gpu->rb[i]->iova;
++	/*
++	 * mi6: record 里除 rbase 外的字段 upstream 6.0 一个都没写。rptr_addr
++	 * 若保持 BO 分配时的残留值（非零垃圾），CP 在上下文切换时会把 RPTR
++	 * 更新写到那个地址上；data/info 留垃圾同样会让 CP 按错误的记录解释
++	 * 恢复状态。这里按 record 语义补齐。
++	 */
++	if (a5xx_preempt_hw_mode >= 1) {
++		for (i = 0; i < gpu->nr_rings; i++) {
++			struct a5xx_preempt_record *rec = a5xx_gpu->preempt[i];
++
++			rec->data = 0;
++			rec->info = 0;
++			rec->wptr = 0;
++			rec->rptr = 0;
++			rec->rbase = gpu->rb[i]->iova;
++			rec->rptr_addr = shadowptr(a5xx_gpu, gpu->rb[i]);
++		}
++	}
++
++	if (a5xx_preempt_hw_mode >= 2) {
++		/* Write a 0 to signal that we aren't switching pagetables */
++		gpu_write64(gpu, REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_LO,
++			REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_HI, 0);
+ 	}
+ 
+-	/* Write a 0 to signal that we aren't switching pagetables */
+-	gpu_write64(gpu, REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_LO,
+-		REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_HI, 0);
++	if (a5xx_dbg)
++		pr_info("msm: preempt_hw_init mode=%d rings=%d shadow=%llx p0=%llx p1=%llx\n",
++			a5xx_preempt_hw_mode, gpu->nr_rings,
++			(unsigned long long)a5xx_gpu->shadow_iova,
++			(unsigned long long)a5xx_gpu->preempt_iova[0],
++			(unsigned long long)a5xx_gpu->preempt_iova[1]);
+ 
+ 	/* Reset the preemption state */
+ 	set_preempt_state(a5xx_gpu, PREEMPT_NONE);
 diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
---- a/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 07:34:42.309565853 +0000
-+++ b/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 07:34:42.313742358 +0000
+--- a/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 08:35:04.789862011 +0000
++++ b/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 08:35:04.793993834 +0000
 @@ -812,7 +812,7 @@
  	 */
  	if (gpu->funcs->create_private_address_space) {
@@ -329,8 +460,8 @@ diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
  	}
  
 diff -Naur a/drivers/gpu/drm/msm/msm_gpu.h b/drivers/gpu/drm/msm/msm_gpu.h
---- a/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 07:34:42.309733700 +0000
-+++ b/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 07:34:42.313892312 +0000
+--- a/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 08:35:04.789996312 +0000
++++ b/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 08:35:04.794154515 +0000
 @@ -437,8 +437,16 @@
  	 */
  	sp = NR_SCHED_PRIORITIES - sp - 1;
