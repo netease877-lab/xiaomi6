@@ -1,17 +1,28 @@
 diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
 --- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 04:06:23.943065197 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 04:07:27.972813666 +0000
-@@ -12,6 +12,32 @@
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 04:50:54.416383435 +0000
+@@ -12,6 +12,43 @@
  #include "msm_gem.h"
  #include "msm_mmu.h"
  #include "a5xx_gpu.h"
 +#include <linux/moduleparam.h>
 +#include <linux/err.h>
 +
-+/* ==== mi6: GPU 回退/诊断开关（默认走 upstream 语义）==== */
-+static int a5xx_pp_as = 0;
++/* ==== mi6: GPU 回退/诊断开关 ==== */
++/*
++ * mi6: 默认 1 = fork 的 per-process GPU 地址空间（每个进程独立页表，
++ * 提交前由 a5xx_set_pagetable() 切 TTBR0 并刷 uche）。
++ *
++ * 实测（6.0.0 + nr_rings=1）：
++ *   pp_as=0（共享 aspace，跳过 set_pagetable）→ 20×200 帧短命进程循环
++ *     第 5 轮稳定触发 CP opcode error + SMMU fault(iova=0x17b000) +
++ *     hangcheck 风暴；
++ *   pp_as=1 → 100×200 帧短命循环 20000 帧、单进程 200000 帧均零故障。
++ * 因此默认走 fork 原生路径，0 仅作为回退诊断。
++ */
++static int a5xx_pp_as = 1;
 +module_param_named(a5xx_pp_as, a5xx_pp_as, int, 0600);
-+MODULE_PARM_DESC(a5xx_pp_as, "mi6: 1=per-process GPU address space (fork), 0=shared (upstream)");
++MODULE_PARM_DESC(a5xx_pp_as, "mi6: 1=per-process GPU address space (fork, default), 0=shared (upstream)");
 +
 +static int a5xx_nr_rings = 1;
 +module_param_named(a5xx_nr_rings, a5xx_nr_rings, int, 0600);
@@ -34,7 +45,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  extern bool hang_debug;
  static void a5xx_dump(struct msm_gpu *gpu);
-@@ -128,6 +154,9 @@
+@@ -128,6 +165,9 @@
  	u32 asid;
  	u64 memptr = rbmemptr(ring, ttbr0);
  
@@ -44,7 +55,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	if (ctx == a5xx_gpu->cur_ctx)
  		return;
  
-@@ -169,6 +198,9 @@
+@@ -169,6 +209,9 @@
  	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
  	struct msm_ringbuffer *ring = submit->ring;
  	unsigned int i, ibs = 0;
@@ -54,7 +65,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	if (IS_ENABLED(CONFIG_DRM_MSM_GPU_SUDO) && submit->in_rb) {
  		gpu->cur_ctx_seqno = 0;
-@@ -176,31 +208,42 @@
+@@ -176,31 +219,42 @@
  		return;
  	}
  
@@ -122,7 +133,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	a5xx_set_pagetable(a5xx_gpu, ring, submit->queue->ctx);
  
-@@ -265,18 +308,20 @@
+@@ -265,18 +319,20 @@
  	OUT_RING(ring, submit->seqno);
  
  	/* Yield the floor on command completion */
@@ -155,7 +166,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	/* A WHERE_AM_I packet is not needed after a YIELD */
  	a5xx_flush(gpu, ring, false);
-@@ -610,6 +655,14 @@
+@@ -610,6 +666,14 @@
  	if (((buf[0] & 0xf) == 0xa) && (buf[2] & 0xf) >= 1)
  		a5xx_gpu->has_whereami = true;
  
@@ -170,7 +181,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	msm_gem_put_vaddr(obj);
  }
  
-@@ -992,6 +1045,10 @@
+@@ -992,6 +1056,10 @@
  
  	a5xx_preempt_hw_init(gpu);
  
@@ -181,7 +192,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	/* Disable the interrupts through the initial bringup stage */
  	gpu_write(gpu, REG_A5XX_RBBM_INT_0_MASK, A5XX_INT_MASK);
  
-@@ -1736,6 +1793,11 @@
+@@ -1736,6 +1804,11 @@
  {
  	struct msm_mmu *mmu;
  
@@ -193,7 +204,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	mmu = msm_iommu_pagetable_create(gpu->aspace->mmu);
  
  	if (IS_ERR(mmu))
-@@ -1832,7 +1894,8 @@
+@@ -1832,7 +1905,8 @@
  
  	check_speed_bin(&pdev->dev);
  
