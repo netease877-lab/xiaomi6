@@ -1,6 +1,6 @@
 diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
---- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 10:05:34.189938192 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 10:05:34.201289023 +0000
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 10:16:22.656375868 +0000
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 10:16:22.663346542 +0000
 @@ -12,6 +12,70 @@
  #include "msm_gem.h"
  #include "msm_mmu.h"
@@ -72,7 +72,16 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  extern bool hang_debug;
  static void a5xx_dump(struct msm_gpu *gpu);
-@@ -109,6 +173,7 @@
+@@ -65,6 +129,8 @@
+ 
+ static void a5xx_submit_in_rb(struct msm_gpu *gpu, struct msm_gem_submit *submit)
+ {
++	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
++	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
+ 	struct msm_ringbuffer *ring = submit->ring;
+ 	struct msm_gem_object *obj;
+ 	uint32_t *ptr, dwords;
+@@ -109,6 +175,7 @@
  		}
  	}
  
@@ -80,7 +89,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	a5xx_flush(gpu, ring, true);
  	a5xx_preempt_trigger(gpu);
  
-@@ -124,11 +189,22 @@
+@@ -124,11 +191,22 @@
  static void a5xx_set_pagetable(struct a5xx_gpu *a5xx_gpu,
  		struct msm_ringbuffer *ring, struct msm_file_private *ctx)
  {
@@ -104,7 +113,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  		return;
  
  	if (msm_iommu_pagetable_params(ctx->aspace->mmu, &ttbr, &asid))
-@@ -169,6 +245,10 @@
+@@ -169,6 +247,10 @@
  	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
  	struct msm_ringbuffer *ring = submit->ring;
  	unsigned int i, ibs = 0;
@@ -115,7 +124,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	if (IS_ENABLED(CONFIG_DRM_MSM_GPU_SUDO) && submit->in_rb) {
  		gpu->cur_ctx_seqno = 0;
-@@ -176,31 +256,53 @@
+@@ -176,31 +258,53 @@
  		return;
  	}
  
@@ -194,7 +203,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	a5xx_set_pagetable(a5xx_gpu, ring, submit->queue->ctx);
  
-@@ -252,6 +354,7 @@
+@@ -252,6 +356,7 @@
  	/* Write the fence to the scratch register */
  	OUT_PKT4(ring, REG_A5XX_CP_SCRATCH_REG(2), 1);
  	OUT_RING(ring, submit->seqno);
@@ -202,7 +211,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	/*
  	 * Execute a CACHE_FLUSH_TS event. This will ensure that the
-@@ -264,19 +367,25 @@
+@@ -264,19 +369,25 @@
  	OUT_RING(ring, upper_32_bits(rbmemptr(ring, fence)));
  	OUT_RING(ring, submit->seqno);
  
@@ -239,7 +248,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	/* A WHERE_AM_I packet is not needed after a YIELD */
  	a5xx_flush(gpu, ring, false);
-@@ -610,6 +719,14 @@
+@@ -610,6 +721,14 @@
  	if (((buf[0] & 0xf) == 0xa) && (buf[2] & 0xf) >= 1)
  		a5xx_gpu->has_whereami = true;
  
@@ -254,7 +263,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	msm_gem_put_vaddr(obj);
  }
  
-@@ -966,6 +1083,14 @@
+@@ -966,6 +1085,14 @@
  	gpu_write(gpu, REG_A5XX_CP_RB_CNTL,
  		MSM_GPU_RB_CNTL_DEFAULT | AXXX_CP_RB_CNTL_NO_UPDATE);
  
@@ -269,7 +278,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	/* Create a privileged buffer for the RPTR shadow */
  	if (a5xx_gpu->has_whereami) {
  		if (!a5xx_gpu->shadow_bo) {
-@@ -983,8 +1108,13 @@
+@@ -983,8 +1110,13 @@
  
  		gpu_write64(gpu, REG_A5XX_CP_RB_RPTR_ADDR,
  			REG_A5XX_CP_RB_RPTR_ADDR_HI, shadowptr(a5xx_gpu, gpu->rb[0]));
@@ -285,7 +294,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  		a5xx_preempt_fini(gpu);
  		gpu->nr_rings = 1;
  	}
-@@ -992,6 +1122,10 @@
+@@ -992,6 +1124,10 @@
  
  	a5xx_preempt_hw_init(gpu);
  
@@ -296,7 +305,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	/* Disable the interrupts through the initial bringup stage */
  	gpu_write(gpu, REG_A5XX_RBBM_INT_0_MASK, A5XX_INT_MASK);
  
-@@ -1157,6 +1291,30 @@
+@@ -1157,6 +1293,30 @@
  			gpu_read(gpu, REG_A5XX_CP_SCRATCH_REG(6)),
  			gpu_read(gpu, REG_A5XX_CP_SCRATCH_REG(7)));
  
@@ -327,7 +336,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	return 0;
  }
  
-@@ -1164,6 +1322,10 @@
+@@ -1164,6 +1324,10 @@
  {
  	u32 status = gpu_read(gpu, REG_A5XX_CP_INTERRUPT_STATUS);
  
@@ -338,7 +347,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	if (status & A5XX_CP_INT_CP_OPCODE_ERROR) {
  		u32 val;
  
-@@ -1736,6 +1898,11 @@
+@@ -1736,6 +1900,11 @@
  {
  	struct msm_mmu *mmu;
  
@@ -350,7 +359,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	mmu = msm_iommu_pagetable_create(gpu->aspace->mmu);
  
  	if (IS_ERR(mmu))
-@@ -1832,7 +1999,8 @@
+@@ -1832,7 +2001,8 @@
  
  	check_speed_bin(&pdev->dev);
  
@@ -361,8 +370,8 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  		a5xx_destroy(&(a5xx_gpu->base.base));
  		return ERR_PTR(ret);
 diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.h b/drivers/gpu/drm/msm/adreno/a5xx_gpu.h
---- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.h	2026-11-13 10:05:34.190160296 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.h	2026-11-13 10:05:34.198122401 +0000
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.h	2026-11-13 10:16:22.656688954 +0000
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.h	2026-11-13 10:16:22.662621106 +0000
 @@ -36,6 +36,13 @@
  	struct a5xx_preempt_record *preempt[MSM_GPU_MAX_RINGS];
  	uint64_t preempt_iova[MSM_GPU_MAX_RINGS];
@@ -378,8 +387,8 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.h b/drivers/gpu/drm/msm/adreno/
  	struct timer_list preempt_timer;
  
 diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c
---- a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 10:05:34.190302791 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 10:05:34.201617376 +0000
+--- a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 10:16:22.656904593 +0000
++++ b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 10:16:22.663850378 +0000
 @@ -5,6 +5,12 @@
  #include "msm_gem.h"
  #include "a5xx_gpu.h"
@@ -531,8 +540,8 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adr
 +	pr_info_once("msm: a5xx preempt: v11 emptyness-fix + last_seqno\n");
  }
 diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
---- a/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 10:05:34.190434267 +0000
-+++ b/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 10:05:34.196454919 +0000
+--- a/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 10:16:22.657123325 +0000
++++ b/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 10:16:22.661623780 +0000
 @@ -812,7 +812,7 @@
  	 */
  	if (gpu->funcs->create_private_address_space) {
@@ -543,8 +552,8 @@ diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
  	}
  
 diff -Naur a/drivers/gpu/drm/msm/msm_gpu.h b/drivers/gpu/drm/msm/msm_gpu.h
---- a/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 10:05:34.190590316 +0000
-+++ b/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 10:05:34.196959155 +0000
+--- a/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 10:16:22.657338894 +0000
++++ b/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 10:16:22.661777967 +0000
 @@ -437,8 +437,16 @@
  	 */
  	sp = NR_SCHED_PRIORITIES - sp - 1;
