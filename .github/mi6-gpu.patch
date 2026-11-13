@@ -1,6 +1,6 @@
 diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
---- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 08:35:04.789479396 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 08:35:04.795820646 +0000
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 10:05:34.189938192 +0000
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 10:05:34.201289023 +0000
 @@ -12,6 +12,70 @@
  #include "msm_gem.h"
  #include "msm_mmu.h"
@@ -72,7 +72,15 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  extern bool hang_debug;
  static void a5xx_dump(struct msm_gpu *gpu);
-@@ -124,11 +188,22 @@
+@@ -109,6 +173,7 @@
+ 		}
+ 	}
+ 
++	a5xx_gpu->last_seqno[ring->id] = submit->seqno;
+ 	a5xx_flush(gpu, ring, true);
+ 	a5xx_preempt_trigger(gpu);
+ 
+@@ -124,11 +189,22 @@
  static void a5xx_set_pagetable(struct a5xx_gpu *a5xx_gpu,
  		struct msm_ringbuffer *ring, struct msm_file_private *ctx)
  {
@@ -96,7 +104,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  		return;
  
  	if (msm_iommu_pagetable_params(ctx->aspace->mmu, &ttbr, &asid))
-@@ -169,6 +244,10 @@
+@@ -169,6 +245,10 @@
  	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
  	struct msm_ringbuffer *ring = submit->ring;
  	unsigned int i, ibs = 0;
@@ -107,7 +115,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	if (IS_ENABLED(CONFIG_DRM_MSM_GPU_SUDO) && submit->in_rb) {
  		gpu->cur_ctx_seqno = 0;
-@@ -176,31 +255,45 @@
+@@ -176,31 +256,53 @@
  		return;
  	}
  
@@ -173,12 +181,28 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
 +			/* Allow CP_CONTEXT_SWITCH_YIELD packets in the IB2 */
 +			OUT_PKT7(ring, CP_YIELD_ENABLE, 1);
 +			OUT_RING(ring, 0x02);
++		} else {
++			/*
++			 * mi6: 粗粒度模式显式关掉 IB 内局部抢占，对齐 upstream
++			 * 6.12 的默认行为（Mesa 未实现 checkpoint 重放，局部
++			 * 抢占会让 CP 从 tiling 中间状态恢复 → random fault）。
++			 */
++			OUT_PKT7(ring, CP_PREEMPT_ENABLE_LOCAL, 1);
++			OUT_RING(ring, 0x00);
 +		}
 +	}
  
  	a5xx_set_pagetable(a5xx_gpu, ring, submit->queue->ctx);
  
-@@ -264,19 +357,25 @@
+@@ -252,6 +354,7 @@
+ 	/* Write the fence to the scratch register */
+ 	OUT_PKT4(ring, REG_A5XX_CP_SCRATCH_REG(2), 1);
+ 	OUT_RING(ring, submit->seqno);
++	a5xx_gpu->last_seqno[ring->id] = submit->seqno;
+ 
+ 	/*
+ 	 * Execute a CACHE_FLUSH_TS event. This will ensure that the
+@@ -264,19 +367,25 @@
  	OUT_RING(ring, upper_32_bits(rbmemptr(ring, fence)));
  	OUT_RING(ring, submit->seqno);
  
@@ -215,7 +239,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	/* A WHERE_AM_I packet is not needed after a YIELD */
  	a5xx_flush(gpu, ring, false);
-@@ -610,6 +709,14 @@
+@@ -610,6 +719,14 @@
  	if (((buf[0] & 0xf) == 0xa) && (buf[2] & 0xf) >= 1)
  		a5xx_gpu->has_whereami = true;
  
@@ -230,7 +254,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	msm_gem_put_vaddr(obj);
  }
  
-@@ -966,6 +1073,14 @@
+@@ -966,6 +1083,14 @@
  	gpu_write(gpu, REG_A5XX_CP_RB_CNTL,
  		MSM_GPU_RB_CNTL_DEFAULT | AXXX_CP_RB_CNTL_NO_UPDATE);
  
@@ -245,7 +269,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	/* Create a privileged buffer for the RPTR shadow */
  	if (a5xx_gpu->has_whereami) {
  		if (!a5xx_gpu->shadow_bo) {
-@@ -983,8 +1098,13 @@
+@@ -983,8 +1108,13 @@
  
  		gpu_write64(gpu, REG_A5XX_CP_RB_RPTR_ADDR,
  			REG_A5XX_CP_RB_RPTR_ADDR_HI, shadowptr(a5xx_gpu, gpu->rb[0]));
@@ -261,7 +285,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  		a5xx_preempt_fini(gpu);
  		gpu->nr_rings = 1;
  	}
-@@ -992,6 +1112,10 @@
+@@ -992,6 +1122,10 @@
  
  	a5xx_preempt_hw_init(gpu);
  
@@ -272,7 +296,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	/* Disable the interrupts through the initial bringup stage */
  	gpu_write(gpu, REG_A5XX_RBBM_INT_0_MASK, A5XX_INT_MASK);
  
-@@ -1157,6 +1281,30 @@
+@@ -1157,6 +1291,30 @@
  			gpu_read(gpu, REG_A5XX_CP_SCRATCH_REG(6)),
  			gpu_read(gpu, REG_A5XX_CP_SCRATCH_REG(7)));
  
@@ -303,7 +327,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	return 0;
  }
  
-@@ -1164,6 +1312,10 @@
+@@ -1164,6 +1322,10 @@
  {
  	u32 status = gpu_read(gpu, REG_A5XX_CP_INTERRUPT_STATUS);
  
@@ -314,7 +338,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	if (status & A5XX_CP_INT_CP_OPCODE_ERROR) {
  		u32 val;
  
-@@ -1736,6 +1888,11 @@
+@@ -1736,6 +1898,11 @@
  {
  	struct msm_mmu *mmu;
  
@@ -326,7 +350,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	mmu = msm_iommu_pagetable_create(gpu->aspace->mmu);
  
  	if (IS_ERR(mmu))
-@@ -1832,7 +1989,8 @@
+@@ -1832,7 +1999,8 @@
  
  	check_speed_bin(&pdev->dev);
  
@@ -336,9 +360,26 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	if (ret) {
  		a5xx_destroy(&(a5xx_gpu->base.base));
  		return ERR_PTR(ret);
+diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.h b/drivers/gpu/drm/msm/adreno/a5xx_gpu.h
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.h	2026-11-13 10:05:34.190160296 +0000
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.h	2026-11-13 10:05:34.198122401 +0000
+@@ -36,6 +36,13 @@
+ 	struct a5xx_preempt_record *preempt[MSM_GPU_MAX_RINGS];
+ 	uint64_t preempt_iova[MSM_GPU_MAX_RINGS];
+ 
++	/*
++	 * mi6: upstream a30f9f65b5ac —— 每个 ring 最后一次提交的 seqno。
++	 * whereami 模式下 RPTR shadow 由 CP_WHERE_AM_I 更新，比 CACHE_FLUSH_TS
++	 * 中断晚，判空时要用 memptrs->fence 与它对比兜住这个时间差。
++	 */
++	uint32_t last_seqno[MSM_GPU_MAX_RINGS];
++
+ 	atomic_t preempt_state;
+ 	struct timer_list preempt_timer;
+ 
 diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c
---- a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 08:35:04.789728161 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 08:35:04.796043554 +0000
+--- a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 10:05:34.190302791 +0000
++++ b/drivers/gpu/drm/msm/adreno/a5xx_preempt.c	2026-11-13 10:05:34.201617376 +0000
 @@ -5,6 +5,12 @@
  #include "msm_gem.h"
  #include "a5xx_gpu.h"
@@ -352,7 +393,39 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adr
  /*
   * Try to transition the preemption state from old to new. Return
   * true on success or false if the original state wasn't 'old'
-@@ -93,10 +99,14 @@
+@@ -55,6 +61,8 @@
+ /* Return the highest priority ringbuffer with something in it */
+ static struct msm_ringbuffer *get_next_ring(struct msm_gpu *gpu)
+ {
++	struct adreno_gpu *adreno_gpu = to_adreno_gpu(gpu);
++	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
+ 	unsigned long flags;
+ 	int i;
+ 
+@@ -63,7 +71,21 @@
+ 		struct msm_ringbuffer *ring = gpu->rb[i];
+ 
+ 		spin_lock_irqsave(&ring->preempt_lock, flags);
+-		empty = (get_wptr(ring) == ring->memptrs->rptr);
++		/*
++		 * mi6: upstream b4fb748f0b73（v6.3）—— whereami 模式下
++		 * ring->memptrs->rptr 从不更新、恒为 0，直接比较会把每个
++		 * 有提交过的 ring 都判成非空，get_next_ring 永远返回
++		 * ring0，非 0 号 ring 的提交永远不被执行。必须走驱动自己
++		 * 的 get_rptr（whereami 时读 shadow）。
++		 */
++		empty = (get_wptr(ring) == gpu->funcs->get_rptr(gpu, ring));
++		/*
++		 * mi6: upstream a30f9f65b5ac（v6.12）—— 当前 ring 可能刚提交
++		 * 完但 RPTR shadow 还没被 CP_WHERE_AM_I 更新，会被误判成
++		 * 「还有活」而永不切走。用 fence 与最后提交的 seqno 对比兜住。
++		 */
++		if (!empty && ring == a5xx_gpu->cur_ring)
++			empty = ring->memptrs->fence == a5xx_gpu->last_seqno[i];
+ 		spin_unlock_irqrestore(&ring->preempt_lock, flags);
+ 
+ 		if (!empty)
+@@ -93,10 +115,14 @@
  	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
  	unsigned long flags;
  	struct msm_ringbuffer *ring;
@@ -367,25 +440,28 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adr
  	/*
  	 * Try to start preemption by moving from NONE to START. If
  	 * unsuccessful, a preemption is already in flight
-@@ -107,6 +117,17 @@
+@@ -107,6 +133,20 @@
  	/* Get the next ring to preempt to */
  	ring = get_next_ring(gpu);
  
 +	if (a5xx_dbg && dbg_cnt < A5XX_DBG_MAX) {
 +		dbg_cnt++;
-+		pr_info("msm: preempt_trigger state=%d cur=%d next=%d w0=%u r0=%u w2=%u r2=%u\n",
++		pr_info("msm: preempt_trigger state=%d cur=%d next=%d w0=%u r0=%u f0=%u ls0=%u w2=%u r2=%u f2=%u ls2=%u\n",
 +			dbg_state,
 +			a5xx_gpu->cur_ring ? a5xx_gpu->cur_ring->id : -1,
 +			ring ? ring->id : -1,
 +			get_wptr(gpu->rb[0]), gpu->funcs->get_rptr(gpu, gpu->rb[0]),
++			gpu->rb[0]->memptrs->fence, a5xx_gpu->last_seqno[0],
 +			gpu->nr_rings > 2 ? get_wptr(gpu->rb[2]) : 0,
-+			gpu->nr_rings > 2 ? gpu->funcs->get_rptr(gpu, gpu->rb[2]) : 0);
++			gpu->nr_rings > 2 ? gpu->funcs->get_rptr(gpu, gpu->rb[2]) : 0,
++			gpu->nr_rings > 2 ? gpu->rb[2]->memptrs->fence : 0,
++			gpu->nr_rings > 2 ? a5xx_gpu->last_seqno[2] : 0);
 +	}
 +
  	/*
  	 * If no ring is populated or the highest priority ring is the current
  	 * one do nothing except to update the wptr to the latest and greatest
-@@ -175,6 +196,16 @@
+@@ -175,6 +215,16 @@
  	 * chance to finish. If that happens, log and go for recovery
  	 */
  	status = gpu_read(gpu, REG_A5XX_CP_CONTEXT_SWITCH_CNTL);
@@ -402,7 +478,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adr
  	if (unlikely(status)) {
  		set_preempt_state(a5xx_gpu, PREEMPT_FAULTED);
  		DRM_DEV_ERROR(dev->dev, "%s: Preemption failed to complete\n",
-@@ -204,15 +235,37 @@
+@@ -204,15 +254,37 @@
  	if (gpu->nr_rings == 1)
  		return;
  
@@ -427,17 +503,17 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adr
 +			rec->rbase = gpu->rb[i]->iova;
 +			rec->rptr_addr = shadowptr(a5xx_gpu, gpu->rb[i]);
 +		}
-+	}
-+
-+	if (a5xx_preempt_hw_mode >= 2) {
-+		/* Write a 0 to signal that we aren't switching pagetables */
-+		gpu_write64(gpu, REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_LO,
-+			REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_HI, 0);
  	}
  
 -	/* Write a 0 to signal that we aren't switching pagetables */
 -	gpu_write64(gpu, REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_LO,
 -		REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_HI, 0);
++	if (a5xx_preempt_hw_mode >= 2) {
++		/* Write a 0 to signal that we aren't switching pagetables */
++		gpu_write64(gpu, REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_LO,
++			REG_A5XX_CP_CONTEXT_SWITCH_SMMU_INFO_HI, 0);
++	}
++
 +	if (a5xx_dbg)
 +		pr_info("msm: preempt_hw_init mode=%d rings=%d shadow=%llx p0=%llx p1=%llx\n",
 +			a5xx_preempt_hw_mode, gpu->nr_rings,
@@ -447,9 +523,16 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adr
  
  	/* Reset the preemption state */
  	set_preempt_state(a5xx_gpu, PREEMPT_NONE);
+@@ -301,4 +373,6 @@
+ 	}
+ 
+ 	timer_setup(&a5xx_gpu->preempt_timer, a5xx_preempt_timer, 0);
++
++	pr_info_once("msm: a5xx preempt: v11 emptyness-fix + last_seqno\n");
+ }
 diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
---- a/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 08:35:04.789862011 +0000
-+++ b/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 08:35:04.793993834 +0000
+--- a/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 10:05:34.190434267 +0000
++++ b/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 10:05:34.196454919 +0000
 @@ -812,7 +812,7 @@
  	 */
  	if (gpu->funcs->create_private_address_space) {
@@ -460,8 +543,8 @@ diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
  	}
  
 diff -Naur a/drivers/gpu/drm/msm/msm_gpu.h b/drivers/gpu/drm/msm/msm_gpu.h
---- a/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 08:35:04.789996312 +0000
-+++ b/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 08:35:04.794154515 +0000
+--- a/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 10:05:34.190590316 +0000
++++ b/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 10:05:34.196959155 +0000
 @@ -437,8 +437,16 @@
  	 */
  	sp = NR_SCHED_PRIORITIES - sp - 1;
