@@ -8,25 +8,25 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
 +#include <linux/moduleparam.h>
 +#include <linux/err.h>
 +
-+/* ==== mi6: GPU 回退/诊断开关 ==== */
++/* ==== mi6: GPU 回退/诊断开关（v15 默认 = 稳定组合）==== */
 +/*
 + * mi6: 默认 1 = fork 的 per-process GPU 地址空间（每个进程独立页表，
-+ * 提交前由 a5xx_set_pagetable() 切 TTBR0 并刷 uche）。
++ * 提交前由 a5xx_set_pagetable() 切 TTBR0 并刷 uche）。0 时短命进程
++ * 循环必挂（v7 结论），故默认 1。
 + *
-+ * v8：nr_rings 默认 4、whereami 默认 -1（信任固件检测），即回到 fork
-+ * 原生的「多 ring + 硬件抢占」路径。实测 ucode hdr 005ff08a/00000f43/
-+ * 00087001 的检测值就是 whereami=1（patched microcode），此前被本开关
-+ * 强制为 0，导致 hw_init 把 nr_rings 降回 1、抢占永不启用；
-+ * pp_as=1 仍必需：0 时短命进程循环必挂（v7 结论）。
-+ * 本次默认组合 = fork 原生：4 ring + whereami auto + pp_as on。
++ * v15 默认组合 = 唯一零 fault 的 v7b 能力：nr_rings=1（不启用抢占）、
++ * whereami=-1（信任固件检测，真机检测值=1）、pp_as=1、start_mode=1
++ * （upstream 语义，单 ring 下函数内提前返回）、pkts=2（单 ring 时 submit
++ * 不发任何抢占包）。v8..v13 的 nr_rings=4 路径在真机从未跑通：start_mode=0
++ * 缺 CP_PREEMPT_ENABLE_GLOBAL 直接 10s 超时，且多 ring 无性能收益。
 + */
 +static int a5xx_pp_as = 1;
 +module_param_named(a5xx_pp_as, a5xx_pp_as, int, 0600);
 +MODULE_PARM_DESC(a5xx_pp_as, "mi6: 1=per-process GPU address space (fork, default), 0=shared (upstream)");
 +
-+static int a5xx_nr_rings = 4;
++static int a5xx_nr_rings = 1;
 +module_param_named(a5xx_nr_rings, a5xx_nr_rings, int, 0600);
-+MODULE_PARM_DESC(a5xx_nr_rings, "mi6: ring count, default 4 = preemption on (fork default), 1 disables preemption");
++MODULE_PARM_DESC(a5xx_nr_rings, "mi6: ring count, default 1 = no preemption (v15 root fix), 4 = fork multi-ring");
 +
 +static int a5xx_whereami = -1;
 +module_param_named(a5xx_whereami, a5xx_whereami, int, 0600);
@@ -77,16 +77,16 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
 + * 路径上从不设置它，CP 让出后按未初始化值恢复上下文。该函数在 nr_rings==1
 + * 时提前返回，而 upstream 的 a5xx 默认 has_whereami=0 → nr_rings 恒为 1，
 + * 所以这条路径在真机上从没跑过，缺口也没人发现。
-+ *  0 = 完全不调用（默认，先隔离 hw_init 的 YIELD 路径）
++ *  1 = upstream 原样（默认；nr_rings==1 时函数内提前返回，等价 v7b）
 + *  1 = upstream 原样（ENABLE + YIELD，不设 RESTORE_ADDR）
 + *  2 = 只 ENABLE，跳过 CP_CONTEXT_SWITCH_YIELD
 + *  3 = 先把 RESTORE_ADDR 指向一个确定为空环的 record，再 ENABLE + YIELD
 + * hw_init 可重复执行（runtime PM resume / hangcheck recover），所以改参数后由
 + * 下一次 hw_init 生效，不必重刷内核。
 + */
-+int a5xx_preempt_start_mode = 0;
++int a5xx_preempt_start_mode = 1;
 +module_param_named(a5xx_preempt_start_mode, a5xx_preempt_start_mode, int, 0600);
-+MODULE_PARM_DESC(a5xx_preempt_start_mode, "mi6: 0=skip, 1=upstream, 2=no-yield, 3=restore-addr+yield");
++MODULE_PARM_DESC(a5xx_preempt_start_mode, "mi6: 1=upstream (default), 0=skip, 2=no-yield, 3=restore-addr+yield");
  
  extern bool hang_debug;
  static void a5xx_dump(struct msm_gpu *gpu);
@@ -620,7 +620,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_preempt.c b/drivers/gpu/drm/msm/adr
  	timer_setup(&a5xx_gpu->preempt_timer, a5xx_preempt_timer, 0);
 +
 +	pr_info_once("msm: a5xx preempt: v11 emptyness-fix + last_seqno\n");
-+	pr_info_once("msm: a5xx preempt: v12 preempt_start_mode isolation\n");
++	pr_info_once("msm: a5xx preempt: v15 nr_rings1+start_mode1 defaults\n");
  }
 diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
 --- a/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 12:06:11.006606771 +0000
