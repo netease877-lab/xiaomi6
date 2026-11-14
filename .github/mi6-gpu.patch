@@ -1,7 +1,6 @@
-diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
---- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 04:06:23.943065197 +0000
-+++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c	2026-11-13 04:50:54.416383435 +0000
-@@ -12,6 +12,43 @@
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
+@@ -12,6 +12,53 @@
  #include "msm_gem.h"
  #include "msm_mmu.h"
  #include "a5xx_gpu.h"
@@ -42,20 +41,66 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
 +static int a5xx_preempt_pkts = 1;
 +module_param_named(a5xx_preempt_pkts, a5xx_preempt_pkts, int, 0600);
 +MODULE_PARM_DESC(a5xx_preempt_pkts, "mi6: 0=never emit preempt packets, 1=only when nr_rings>1");
++
++/*
++ * mi6: 只读数计数，每真正下发一次 per-process 页表切换（TTBR0 + MEM_WRITE +
++ * uche flush）就 +1。用来验证「每个新进程都切了页表」：跑 N 个短命进程后
++ * 该值应等于 N，小于 N 就说明有提交被 cur_ctx 缓存误判而跳过了切换。
++ */
++static unsigned int a5xx_pagetable_switches;
++module_param_named(a5xx_pagetable_switches, a5xx_pagetable_switches, uint, 0444);
++MODULE_PARM_DESC(a5xx_pagetable_switches,
++	"mi6: per-process page table switches emitted since boot (ro)");
  
  extern bool hang_debug;
  static void a5xx_dump(struct msm_gpu *gpu);
-@@ -128,6 +165,9 @@
+@@ -124,11 +171,35 @@
+ static void a5xx_set_pagetable(struct a5xx_gpu *a5xx_gpu,
+ 		struct msm_ringbuffer *ring, struct msm_file_private *ctx)
+ {
++	struct msm_gpu *gpu = &a5xx_gpu->base.base;
+ 	phys_addr_t ttbr;
  	u32 asid;
  	u64 memptr = rbmemptr(ring, ttbr0);
  
+-	if (ctx == a5xx_gpu->cur_ctx)
 +	if (!a5xx_pp_as)
 +		return;
 +
- 	if (ctx == a5xx_gpu->cur_ctx)
++	/*
++	 * mi6: 按 ctx->seqno 判断，不再比较 ctx 指针（根因修复）。
++	 *
++	 * msm_file_private 在 drm file 关闭时 kfree（context_close ->
++	 * msm_file_private_put -> __msm_file_private_destroy），而新进程的
++	 * msm_file_private 是同尺寸 kzalloc，极易拿到刚释放的那个地址。此时
++	 * 指针比较会假命中、整段切换被跳过，GPU 继续用上一个（已销毁）进程的
++	 * 页表去取本次提交的 IB -> SMMU translation fault，fence 永不 retire，
++	 * hangcheck 进 recover 循环，直到下次重启。
++	 *
++	 * 实测（v16，短命进程重口径压测）：ring 里前两个进程切换处都有完整的
++	 * CP_SMMU_TABLE_UPDATE + MEM_WRITE + uche flush，第三个进程首个 IB
++	 * (iova=0x10040e000) 前面这三件套一条都没有；devcoredump 的 bos iova
++	 * 与 fault iova 相同，last-fence == 该提交的 fence seqno。
++	 *
++	 * ctx->seqno 来自 msm_drv.c context_init() 的 atomic_inc_return(&ident)，
++	 * 每个 drm file 唯一且永不复用；upstream a6xx_set_pagetable() 同样用
++	 * gpu->cur_ctx_seqno 比较（见 msm_gpu.h 里 cur_ctx_seqno 的注释：正是
++	 * 为了避开 ctx 被释放后地址被新 ctx 复用的情况），这里与 upstream 对齐。
++	 */
++	if (ctx->seqno == gpu->cur_ctx_seqno)
  		return;
  
-@@ -169,6 +209,9 @@
+ 	if (msm_iommu_pagetable_params(ctx->aspace->mmu, &ttbr, &asid))
+@@ -160,7 +231,7 @@
+ 	OUT_PKT7(ring, CP_EVENT_WRITE, 1);
+ 	OUT_RING(ring, 0x31);
+ 
+-	a5xx_gpu->cur_ctx = ctx;
++	a5xx_pagetable_switches++;
+ }
+ 
+ static void a5xx_submit(struct msm_gpu *gpu, struct msm_gem_submit *submit)
+@@ -169,6 +240,9 @@
  	struct a5xx_gpu *a5xx_gpu = to_a5xx_gpu(adreno_gpu);
  	struct msm_ringbuffer *ring = submit->ring;
  	unsigned int i, ibs = 0;
@@ -65,7 +110,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	if (IS_ENABLED(CONFIG_DRM_MSM_GPU_SUDO) && submit->in_rb) {
  		gpu->cur_ctx_seqno = 0;
-@@ -176,31 +219,42 @@
+@@ -176,31 +250,42 @@
  		return;
  	}
  
@@ -133,7 +178,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	a5xx_set_pagetable(a5xx_gpu, ring, submit->queue->ctx);
  
-@@ -265,18 +319,20 @@
+@@ -265,18 +350,20 @@
  	OUT_RING(ring, submit->seqno);
  
  	/* Yield the floor on command completion */
@@ -166,7 +211,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  
  	/* A WHERE_AM_I packet is not needed after a YIELD */
  	a5xx_flush(gpu, ring, false);
-@@ -610,6 +666,14 @@
+@@ -610,6 +697,14 @@
  	if (((buf[0] & 0xf) == 0xa) && (buf[2] & 0xf) >= 1)
  		a5xx_gpu->has_whereami = true;
  
@@ -181,18 +226,28 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	msm_gem_put_vaddr(obj);
  }
  
-@@ -992,6 +1056,10 @@
+@@ -988,10 +1083,19 @@
+ 		a5xx_preempt_fini(gpu);
+ 		gpu->nr_rings = 1;
+ 	}
+-	a5xx_gpu->cur_ctx = NULL;
++	/*
++	 * mi6: hw_init 会重灌 CP、TTBR0 的实际状态不再可信（recover 路径也会
++	 * 再进这里），把 seqno 归零强制下一次提交重发页表切换。ctx->seqno 从 1
++	 * 起编号（msm_drv.c 的 atomic_inc_return），0 表示「没有已生效的页表」。
++	 */
++	gpu->cur_ctx_seqno = 0;
  
  	a5xx_preempt_hw_init(gpu);
  
-+	pr_info("msm: a5xx hw_init: v16 nr_rings=%d has_whereami=%d pp_as=%d preempt_pkts=%d\n",
++	pr_info("msm: a5xx hw_init: v17 nr_rings=%d has_whereami=%d pp_as=%d preempt_pkts=%d\n",
 +		gpu->nr_rings, a5xx_gpu->has_whereami, a5xx_pp_as,
 +		a5xx_preempt_pkts);
 +
  	/* Disable the interrupts through the initial bringup stage */
  	gpu_write(gpu, REG_A5XX_RBBM_INT_0_MASK, A5XX_INT_MASK);
  
-@@ -1736,6 +1804,11 @@
+@@ -1736,6 +1840,11 @@
  {
  	struct msm_mmu *mmu;
  
@@ -204,7 +259,7 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	mmu = msm_iommu_pagetable_create(gpu->aspace->mmu);
  
  	if (IS_ERR(mmu))
-@@ -1832,7 +1905,8 @@
+@@ -1832,7 +1941,8 @@
  
  	check_speed_bin(&pdev->dev);
  
@@ -214,9 +269,18 @@ diff -Naur a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/
  	if (ret) {
  		a5xx_destroy(&(a5xx_gpu->base.base));
  		return ERR_PTR(ret);
-diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
---- a/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 04:06:23.963120134 +0000
-+++ b/drivers/gpu/drm/msm/msm_gpu.c	2026-11-13 04:07:41.925641159 +0000
+--- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.h
++++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.h
+@@ -29,7 +29,6 @@
+ 
+ 	struct msm_ringbuffer *cur_ring;
+ 	struct msm_ringbuffer *next_ring;
+-	struct msm_file_private *cur_ctx;
+ 
+ 	struct drm_gem_object *preempt_bo[MSM_GPU_MAX_RINGS];
+ 	struct drm_gem_object *preempt_counters_bo[MSM_GPU_MAX_RINGS];
+--- a/drivers/gpu/drm/msm/msm_gpu.c
++++ b/drivers/gpu/drm/msm/msm_gpu.c
 @@ -812,7 +812,7 @@
  	 */
  	if (gpu->funcs->create_private_address_space) {
@@ -226,9 +290,8 @@ diff -Naur a/drivers/gpu/drm/msm/msm_gpu.c b/drivers/gpu/drm/msm/msm_gpu.c
  			aspace->pid = get_pid(task_pid(task));
  	}
  
-diff -Naur a/drivers/gpu/drm/msm/msm_gpu.h b/drivers/gpu/drm/msm/msm_gpu.h
---- a/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 04:06:23.967824803 +0000
-+++ b/drivers/gpu/drm/msm/msm_gpu.h	2026-11-13 04:07:45.912877628 +0000
+--- a/drivers/gpu/drm/msm/msm_gpu.h
++++ b/drivers/gpu/drm/msm/msm_gpu.h
 @@ -437,8 +437,16 @@
  	 */
  	sp = NR_SCHED_PRIORITIES - sp - 1;
