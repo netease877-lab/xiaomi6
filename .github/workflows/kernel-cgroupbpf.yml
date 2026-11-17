@@ -1,4 +1,4 @@
-name: Kernel CGROUP_BPF + netfilter + a5xx v17 ctx-seqno pagetable fix (mi6)
+name: Kernel v18 CGROUP_BPF+netfilter+policy-routing+BPF-classifier + a5xx v17 (mi6)
 
 # 目标：只编译 linux-postmarketos-qcom-msm8998 内核包，并打开 CONFIG_CGROUP_BPF=y
 # 不动 rootfs、不做整机 install、不刷 TWRP zip。
@@ -12,6 +12,17 @@ name: Kernel CGROUP_BPF + netfilter + a5xx v17 ctx-seqno pagetable fix (mi6)
 #      $WORK/cache_ccache_x86_64（交叉编译在 x86_64 chroot 内进行，故按 x86_64 命名），
 #      另有 $WORK/cache_sccache。v1 没有跨 run 持久化，等于每次冷编译（实测 29m41s）。
 #      现在用 actions/cache 复用，重跑可直接命中。
+
+# v18 相对 v17 的差异（唯一）：补 Android netd 必需的策略路由/分类器选项
+#   设备现状实测：`# CONFIG_IP_ADVANCED_ROUTER is not set`，因此 IP_MULTIPLE_TABLES
+#   在 .config 里连行都不存在；netd 启动即报
+#     E netd: Error adding IPv4 rule: Operation not supported on transport endpoint
+#     E Netd: failed to add interface eth0 to netId 102
+#   后果：per-network 路由表/ip rule 不可用 -> Android 只有 main 表，
+#   DHCP 拿到 IP 也无法下默认路由与 DNS（framework 层 LinkProperties 有，kernel 层没有）。
+#   v18 新增：IP_ADVANCED_ROUTER=y, IP_MULTIPLE_TABLES=y, IPV6_MULTIPLE_TABLES=y,
+#   NET_CLS_ACT=y, NET_CLS_BPF=m, NET_ACT_BPF=m, NET_SCH_INGRESS=m
+#   （后四项是 netd 的 traffic/uid 分类器，非连通必需但同批编入，避免二次刷机）
 
 on:
   push:
@@ -205,12 +216,22 @@ jobs:
           set_sym CONFIG_CRYPTO_ZSTD m
           set_sym CONFIG_ZRAM_WRITEBACK m
           set_sym CONFIG_NET_SCH_NETEM m
+          # P4 Android netd policy routing（本内核缺失，Waydroid 联网的硬门槛）
+          set_sym CONFIG_IP_ADVANCED_ROUTER y
+          set_sym CONFIG_IP_MULTIPLE_TABLES y
+          set_sym CONFIG_IPV6_MULTIPLE_TABLES y
+          set_sym CONFIG_NET_CLS_ACT y
+          set_sym CONFIG_NET_CLS_BPF m
+          set_sym CONFIG_NET_ACT_BPF m
+          set_sym CONFIG_NET_SCH_INGRESS m
 
           echo "--- netfilter 补全后 ---"
           for s in IP_NF_RAW IP6_NF_RAW NFT_COMPAT NF_TABLES_BRIDGE NETFILTER_XT_SET \
                    NETFILTER_XT_MATCH_MULTIPORT NETFILTER_XT_MATCH_MARK NETFILTER_XT_MATCH_STATE \
                    IP_SET NETFILTER_XT_TARGET_TPROXY NETFILTER_XT_MATCH_SOCKET \
-                   NF_TPROXY_IPV4 NF_TPROXY_IPV6 CRYPTO_ZSTD; do
+                   NF_TPROXY_IPV4 NF_TPROXY_IPV6 CRYPTO_ZSTD \
+                   IP_ADVANCED_ROUTER IP_MULTIPLE_TABLES IPV6_MULTIPLE_TABLES \
+                   NET_CLS_ACT NET_CLS_BPF NET_ACT_BPF NET_SCH_INGRESS; do
             grep -E "^(CONFIG_$s=|# CONFIG_$s is not set)" "$CFG" || echo "CONFIG_$s=<缺>"
           done
 
