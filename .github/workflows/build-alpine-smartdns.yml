@@ -56,7 +56,7 @@ jobs:
             pkgconf clang clang-dev \
             rust cargo \
             nodejs npm \
-            tar gzip curl jq bind-tools ca-certificates
+            tar gzip curl jq file binutils bind-tools ca-certificates
           echo "--- 版本 ---"
           gcc --version | head -1
           rustc --version
