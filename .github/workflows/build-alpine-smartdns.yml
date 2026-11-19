@@ -181,12 +181,16 @@ jobs:
             sleep 0.5
           done
           echo "--- WebUI 关键页面 ---"
-          for path in / /auth/sign-in/; do
+          ok=0
+          for path in / /dashboard /auth/sign-in; do
             c=$(curl -s -o /tmp/st/page.html -w '%{http_code}' "http://127.0.0.1:16080$path" || true)
             n=$(wc -c < /tmp/st/page.html 2>/dev/null || echo 0)
             echo "  $path -> HTTP $c, ${n} bytes"
-            if [ "$c" = "200" ] && [ "$n" -gt 500 ]; then ok=1; fi
+            if [ "$c" = "200" ] && [ "$n" -gt 10000 ]; then ok=1; fi
           done
+          c=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:16080/_next/static/chunks/6241cac1bd5b1e91.js || true)
+          echo "  /_next/static/chunks/6241cac1bd5b1e91.js -> HTTP $c"
+          if [ "$c" != "200" ]; then echo "WARN: 静态资源未命中"; fi
           echo "--- DNS 查询 ---"
           dig @127.0.0.1 -p 15335 example.com A +time=3 +tries=1 +short || true
           echo "--- smartdns 日志（尾部）---"
@@ -243,6 +247,7 @@ jobs:
               --data-binary "@$f" \
               "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/$REL_ID/assets?name=$f")
             URL=$(echo "$UP" | jq -r '.browser_download_url // empty')
+            if [ -z "$URL" ]; then echo "WARN: 上传 $f 失败: $(echo "$UP" | head -c 300)"; continue; fi
             echo "ASSET $f -> $URL"
             echo "- $f: $URL" >> /tmp/urls.txt
           done
