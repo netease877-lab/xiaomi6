@@ -180,6 +180,13 @@ jobs:
             if [ "$code" = "200" ] || [ "$code" = "302" ]; then ok=1; break; fi
             sleep 0.5
           done
+          echo "--- WebUI 关键页面 ---"
+          for path in / /auth/sign-in/; do
+            c=$(curl -s -o /tmp/st/page.html -w '%{http_code}' "http://127.0.0.1:16080$path" || true)
+            n=$(wc -c < /tmp/st/page.html 2>/dev/null || echo 0)
+            echo "  $path -> HTTP $c, ${n} bytes"
+            if [ "$c" = "200" ] && [ "$n" -gt 500 ]; then ok=1; fi
+          done
           echo "--- DNS 查询 ---"
           dig @127.0.0.1 -p 15335 example.com A +time=3 +tries=1 +short || true
           echo "--- smartdns 日志（尾部）---"
@@ -217,7 +224,7 @@ jobs:
           WEBUI_COMMIT=$(git -C /src/smartdns-webui rev-parse --short HEAD)
           API="https://api.github.com/repos/${GITHUB_REPOSITORY}"
           BODY=$(printf 'SmartDNS (Alpine musl x86_64) 自动编译\n\n- smartdns: %s\n- smartdns-webui: %s\n- alpine: %s\n- 构建: %s\n\n解压后执行 `./install-alpine.sh`；默认 DNS :5335，WebUI :6080（admin/password）。' \
-            "$SD_COMMIT" "$WEBUI_COMMIT" "$(cat /etc/alpine-release)" "$(date -u +%Y-%m-%dT%H:%M:%SZ")")
+            "$SD_COMMIT" "$WEBUI_COMMIT" "$(cat /etc/alpine-release)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)")
           PAYLOAD=$(jq -n --arg tag "$TAG" --arg body "$BODY" '{tag_name:$tag, name:$tag, body:$body}')
           RESP=$(curl -sS -X POST \
             -H "Authorization: Bearer $GH_TOKEN" \
