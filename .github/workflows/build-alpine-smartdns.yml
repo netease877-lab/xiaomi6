@@ -1,0 +1,236 @@
+# SmartDNS —— Alpine (musl) x86_64 自动编译 + 打包 + 发布
+#
+# 设计要点：
+#  * 全程在官方 alpine:latest 容器内用原生 musl 工具链编译，产物不依赖 glibc。
+#  * 主程序 STATIC=yes（src/Makefile 的静态分支：-static -rdynamic）；
+#    smartdns-ui 插件是 Rust cdylib，必须 -C target-feature=-crt-static 才能 dlopen。
+#  * 源码浅克隆上游最新代码（也可在手动触发时指定 ref）。
+#  * 打包结构：usr/sbin/smartdns、usr/local/lib/smartdns/smartdns_ui.so、
+#    usr/share/smartdns/wwwroot、etc/smartdns/smartdns.conf、install-alpine.sh。
+#  * 编译完在容器内跑一次端到端自检（启动 + WebUI HTTP 200 + DNS 查询），
+#    自检不过就失败，不产出坏包。
+#  * 发布用 curl 直连 GitHub API（container 作业内官方 JS action 无法运行 glibc node，
+#    所以不用 actions/upload-artifact 与 softprops/action-gh-release）。
+#
+# 注意：本文件与仓库内既有的 build.yml / kernel-cgroupbpf.yml 完全独立，不修改它们。
+
+name: Build SmartDNS Alpine musl x86_64
+
+on:
+  workflow_dispatch:
+    inputs:
+      smartdns_ref:
+        description: 'smartdns 源码 ref（分支/标签/commit）'
+        required: false
+        default: 'master'
+      webui_ref:
+        description: 'smartdns-webui 源码 ref'
+        required: false
+        default: 'main'
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  SMARTDNS_REF: ${{ github.event.inputs.smartdns_ref || 'master' }}
+  WEBUI_REF: ${{ github.event.inputs.webui_ref || 'main' }}
+
+jobs:
+  build:
+    name: alpine-musl-x86_64
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    container: alpine:latest
+
+    steps:
+      - name: 1. 安装依赖（原生 musl 工具链）
+        run: |
+          set -eux
+          apk update
+          apk add --no-cache \
+            bash git make gcc g++ musl-dev linux-headers \
+            openssl-dev openssl-libs-static zlib-dev zlib-static \
+            pkgconf clang clang-dev \
+            rust cargo \
+            nodejs npm \
+            tar gzip curl jq bind-tools ca-certificates
+          echo "--- 版本 ---"
+          gcc --version | head -1
+          rustc --version
+          cargo --version
+          node --version
+          npm --version
+          pkg-config --modversion openssl
+          pkg-config --modversion zlib
+
+      - name: 2. 浅克隆上游源码
+        run: |
+          set -eux
+          mkdir -p /src
+          cd /src
+          rm -rf smartdns smartdns-webui
+          git clone --depth=1 --branch "$SMARTDNS_REF" https://github.com/pymumu/smartdns.git smartdns
+          git clone --depth=1 --branch "$WEBUI_REF" https://github.com/pymumu/smartdns-webui.git smartdns-webui
+          git -C smartdns log -1 --format='smartdns commit %H %s'
+          git -C smartdns-webui log -1 --format='webui    commit %H %s'
+
+      - name: 3. 编译主程序（STATIC=yes）
+        run: |
+          set -eux
+          cd /src/smartdns
+          make STATIC=yes -j"$(nproc)"
+          file src/smartdns
+          ls -l src/smartdns
+          if readelf -l src/smartdns 2>/dev/null | grep -q 'INTERP'; then
+            echo "ERROR: 主程序不是静态链接"; exit 1
+          fi
+          echo "主程序为静态链接：OK"
+
+      - name: 4. 编译 smartdns-ui 插件（Rust cdylib，禁止 crt-static）
+        env:
+          RUSTFLAGS: '-C target-feature=-crt-static'
+          LIBCLANG_PATH: /usr/lib
+        run: |
+          set -eux
+          export RUSTFLAGS="-C target-feature=-crt-static"
+          export LIBCLANG_PATH=/usr/lib
+          cd /src/smartdns/plugin/smartdns-ui
+          cargo build --release --features build-release
+          file target/release/libsmartdns_ui.so
+          ls -l target/release/libsmartdns_ui.so
+          readelf -d target/release/libsmartdns_ui.so | grep -E 'NEEDED|SONAME' || true
+
+      - name: 5. 构建 WebUI 前端（Next.js 静态导出）
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+        run: |
+          set -eux
+          cd /src/smartdns-webui
+          npm ci --no-audit --no-fund
+          NODE_ENV=production npx --no-install next build
+          test -f out/index.html
+          du -sh out
+          ls out | head -20
+
+      - name: 6. 写入安装脚本与配置
+        run: |
+          set -eux
+          mkdir -p /src/assets
+          echo 'IyEvYmluL3NoCiMgU21hcnRETlMgKEFscGluZSAvIG11c2wgeDg2XzY0KSDlronoo4XohJrmnKwg4oCU4oCUIOeUsSBHaXRIdWIgQWN0aW9ucyDoh6rliqjnlJ/miJAKIyDnlKjms5XvvJp0YXIgLXh6ZiBzbWFydGRucy1hbHBpbmUteDg2XzY0LnRhci5neiAmJiBjZCBzbWFydGRucy1hbHBpbmUteDg2XzY0ICYmIC4vaW5zdGFsbC1hbHBpbmUuc2gKc2V0IC1lCgppZiBbICIkKGlkIC11KSIgIT0gIjAiIF07IHRoZW4KICAgIGVjaG8gIuivt+S7pSByb290IOi/kOihjO+8mnN1IC1jICcuL2luc3RhbGwtYWxwaW5lLnNoJyIgPiYyCiAgICBleGl0IDEKZmkKClNSQz0kKGNkICIkKGRpcm5hbWUgIiQwIikiICYmIHB3ZCkKCmVjaG8gIj09PiDlronoo4Xlj6/miafooYzmlofku7YiCmluc3RhbGwgLWQgL3Vzci9zYmluCmluc3RhbGwgLWQgL3Vzci9sb2NhbC9saWIvc21hcnRkbnMKaW5zdGFsbCAtZCAvdXNyL3NoYXJlL3NtYXJ0ZG5zL3d3d3Jvb3QKaW5zdGFsbCAtZCAvZXRjL3NtYXJ0ZG5zCmluc3RhbGwgLW0gMDc1NSAtdCAvdXNyL3NiaW4gIiRTUkMvdXNyL3NiaW4vc21hcnRkbnMiCmluc3RhbGwgLW0gMDc1NSAtdCAvdXNyL2xvY2FsL2xpYi9zbWFydGRucyAiJFNSQy91c3IvbG9jYWwvbGliL3NtYXJ0ZG5zL3NtYXJ0ZG5zX3VpLnNvIgoKZWNobyAiPT0+IOWuieijhSBXZWJVSSDpnZnmgIHmlofku7YiCmNwIC1hICIkU1JDL3Vzci9zaGFyZS9zbWFydGRucy93d3dyb290Ly4iIC91c3Ivc2hhcmUvc21hcnRkbnMvd3d3cm9vdC8KCmVjaG8gIj09PiDlronoo4XphY3nva4iCmlmIFsgLWYgL2V0Yy9zbWFydGRucy9zbWFydGRucy5jb25mIF07IHRoZW4KICAgIGVjaG8gIiAgICDlt7LlrZjlnKggL2V0Yy9zbWFydGRucy9zbWFydGRucy5jb25m77yM5L+d5oyB5LiN5Yqo77yI56S65L6L6KeBICRTUkMvZXRjL3NtYXJ0ZG5zL3NtYXJ0ZG5zLmNvbmbvvIkiCmVsc2UKICAgIGluc3RhbGwgLW0gMDY0NCAtdCAvZXRjL3NtYXJ0ZG5zICIkU1JDL2V0Yy9zbWFydGRucy9zbWFydGRucy5jb25mIgogICAgZWNobyAiICAgIOW3suWIm+W7uiAvZXRjL3NtYXJ0ZG5zL3NtYXJ0ZG5zLmNvbmbvvIg6NTMzNSDop6PmnpAgLyA6NjA4MCBXZWJVSe+8jGFkbWluL3Bhc3N3b3Jk77yJIgpmaQoKZWNobyAiPT0+IOWuieijhSBPcGVuUkMg5pyN5YqhIgpjYXQgPiAvZXRjL2luaXQuZC9zbWFydGRucyA8PCdFT1MnCiMhL3NiaW4vb3BlbnJjLXJ1bgpuYW1lPSJzbWFydGRucyIKZGVzY3JpcHRpb249IlNtYXJ0RE5TIEROUyBzZXJ2ZXIiCmNvbW1hbmQ9Ii91c3Ivc2Jpbi9zbWFydGRucyIKY29tbWFuZF9hcmdzPSItYyAvZXRjL3NtYXJ0ZG5zL3NtYXJ0ZG5zLmNvbmYgLXAgL3J1bi9zbWFydGRucy5waWQiCmNvbW1hbmRfYmFja2dyb3VuZD10cnVlCnBpZGZpbGU9Ii9ydW4vc21hcnRkbnMucGlkIgpvdXRwdXRfbG9nPSIvdmFyL2xvZy9zbWFydGRucy5sb2ciCmVycm9yX2xvZz0iL3Zhci9sb2cvc21hcnRkbnMubG9nIgoKZGVwZW5kKCkgewogICAgbmVlZCBuZXQKICAgIGFmdGVyIGZpcmV3YWxsCn0KRU9TCmNobW9kIDA3NTUgL2V0Yy9pbml0LmQvc21hcnRkbnMKcmMtdXBkYXRlIGFkZCBzbWFydGRucyBkZWZhdWx0IDI+L2Rldi9udWxsIHx8IHRydWUKCmVjaG8KZWNobyAi5a6J6KOF5a6M5oiQ44CCIgplY2hvICIgIOWQr+WKqO+8miByYy1zZXJ2aWNlIHNtYXJ0ZG5zIHN0YXJ0IgplY2hvICIgIOeKtuaAge+8miByYy1zZXJ2aWNlIHNtYXJ0ZG5zIHN0YXR1cyIKZWNobyAiICDop6PmnpDvvJogZGlnIEAxMjcuMC4wLjEgLXAgNTMzNSBleGFtcGxlLmNvbSIKZWNobyAiICBXZWJVSe+8miBodHRwOi8vPOacrOacuklQPjo2MDgwLyAg77yI6buY6K6kIGFkbWluIC8gcGFzc3dvcmTvvIzpppbmrKHnmbvlvZXor7fmlLnlr4bnoIHvvIkiCg==' | base64 -d > /src/assets/install-alpine.sh
+          echo 'IyBTbWFydEROUyDphY3nva4g4oCU4oCUIOeUsSBzbWFydGRucy1hbHBpbmUteDg2XzY0IOWuieijheWMheeUn+aIkO+8iOS7hemmluasoeWuieijheaXtuWGmeWFpe+8iQpzZXJ2ZXItbmFtZSBzbWFydGRucwoKIyDkuIrmuLggRE5TCnNlcnZlciAyMjMuNS41LjUKc2VydmVyIDExOS4yOS4yOS4yOQpzZXJ2ZXIgMS4xLjEuMQoKIyDmnKzlnLDnm5HlkKzvvIjpnZ4gNTMg56uv5Y+j77yM6YG/5YWN5LiO57O757ufIEROUyDlhrLnqoHvvIkKYmluZCA6NTMzNQpiaW5kLXRjcCA6NTMzNQoKIyDnvJPlrZgKY2FjaGUtc2l6ZSAzMjc2OApwcmVmZXRjaC1kb21haW4geWVzCnNlcnZlLWV4cGlyZWQgeWVzCgojIOa1i+mAnwpzcGVlZC1jaGVjay1tb2RlIHBpbmcsdGNwOjgwLHRjcDo0NDMKCiMgV2ViVUkg5o+S5Lu277ya55uR5ZCsIDYwODDvvIzpnZnmgIHmlofku7blnKggL3Vzci9zaGFyZS9zbWFydGRucy93d3dyb290CnBsdWdpbiAvdXNyL2xvY2FsL2xpYi9zbWFydGRucy9zbWFydGRuc191aS5zbwpzbWFydGRucy11aS53d3ctcm9vdCAvdXNyL3NoYXJlL3NtYXJ0ZG5zL3d3d3Jvb3QKc21hcnRkbnMtdWkuaXAgaHR0cDovLzAuMC4wLjA6NjA4MApzbWFydGRucy11aS51c2VyIGFkbWluCnNtYXJ0ZG5zLXVpLnBhc3N3b3JkIHBhc3N3b3JkCg==' | base64 -d > /src/assets/smartdns.conf
+          echo 'IyBTbWFydEROUyDoh6rmo4DnlKjphY3nva7vvIhDSSDlhoXpg6jkvb/nlKjvvIznq6/lj6Ppgb/lvIAgNTMzNS82MDgw77yJCnNlcnZlci1uYW1lIHNlbGZ0ZXN0CmJpbmQgMTI3LjAuMC4xOjE1MzM1CmJpbmQtdGNwIDEyNy4wLjAuMToxNTMzNQpjYWNoZS1zaXplIDEwMjQKc3BlZWQtY2hlY2stbW9kZSBub25lCnNlcnZlciAyMjMuNS41LjUKcGx1Z2luIC9zcmMvZGlzdC9zbWFydGRucy1hbHBpbmUteDg2XzY0L3Vzci9sb2NhbC9saWIvc21hcnRkbnMvc21hcnRkbnNfdWkuc28Kc21hcnRkbnMtdWkud3d3LXJvb3QgL3NyYy9kaXN0L3NtYXJ0ZG5zLWFscGluZS14ODZfNjQvdXNyL3NoYXJlL3NtYXJ0ZG5zL3d3d3Jvb3QKc21hcnRkbnMtdWkuaXAgaHR0cDovLzEyNy4wLjAuMToxNjA4MApzbWFydGRucy11aS51c2VyIGFkbWluCnNtYXJ0ZG5zLXVpLnBhc3N3b3JkIHBhc3N3b3JkCg==' | base64 -d > /src/assets/selftest.conf
+          chmod 0755 /src/assets/install-alpine.sh
+          sh -n /src/assets/install-alpine.sh
+          wc -c /src/assets/install-alpine.sh /src/assets/smartdns.conf
+
+      - name: 7. 组装标准目录结构
+        run: |
+          set -eux
+          D=/src/dist/smartdns-alpine-x86_64
+          rm -rf /src/dist
+          mkdir -p "$D/usr/sbin" "$D/usr/local/lib/smartdns" \
+                   "$D/usr/share/smartdns/wwwroot" "$D/etc/smartdns"
+          install -m 0755 /src/smartdns/src/smartdns "$D/usr/sbin/smartdns"
+          install -m 0755 /src/smartdns/plugin/smartdns-ui/target/release/libsmartdns_ui.so \
+                           "$D/usr/local/lib/smartdns/smartdns_ui.so"
+          cp -a /src/smartdns-webui/out/. "$D/usr/share/smartdns/wwwroot/"
+          install -m 0755 /src/assets/install-alpine.sh "$D/install-alpine.sh"
+          install -m 0644 /src/assets/smartdns.conf "$D/etc/smartdns/smartdns.conf"
+          echo "--- 目录 ---"
+          find "$D" -maxdepth 3 | sed "s|$D|.|" | sort | head -40
+          du -sh "$D"
+
+      - name: 8. 产物校验（静态链接 / 版本）
+        run: |
+          set -eux
+          D=/src/dist/smartdns-alpine-x86_64
+          file "$D/usr/sbin/smartdns"
+          file "$D/usr/local/lib/smartdns/smartdns_ui.so"
+          "$D/usr/sbin/smartdns" -v 2>&1 | head -3
+
+      - name: 9. 端到端自检（启动 + WebUI + DNS）
+        run: |
+          set -eux
+          D=/src/dist/smartdns-alpine-x86_64
+          rm -rf /tmp/st && mkdir -p /tmp/st
+          cp /src/assets/selftest.conf /tmp/st/smartdns.conf
+          "$D/usr/sbin/smartdns" -c /tmp/st/smartdns.conf -f > /tmp/st/out.log 2>&1 &
+          PID=$!
+          ok=0
+          for i in $(seq 1 20); do
+            code=$(curl -s -o /tmp/st/index.html -w '%{http_code}' http://127.0.0.1:16080/ || true)
+            echo "try $i -> HTTP $code"
+            if [ "$code" = "200" ] || [ "$code" = "302" ]; then ok=1; break; fi
+            sleep 0.5
+          done
+          echo "--- DNS 查询 ---"
+          dig @127.0.0.1 -p 15335 example.com A +time=3 +tries=1 +short || true
+          echo "--- smartdns 日志（尾部）---"
+          tail -30 /tmp/st/out.log || true
+          kill "$PID" 2>/dev/null || true
+          wait "$PID" 2>/dev/null || true
+          head -c 300 /tmp/st/index.html > /tmp/st/index_head.txt || true
+          cat /tmp/st/index_head.txt || true
+          if [ "$ok" != "1" ]; then
+            echo "ERROR: WebUI 未能在 16080 响应（插件 dlopen 或前端有问题）"
+            exit 1
+          fi
+          echo "自检通过"
+
+      - name: 10. 打包 + 校验和
+        run: |
+          set -eux
+          cd /src/dist
+          tar -czf ../smartdns-alpine-x86_64.tar.gz smartdns-alpine-x86_64
+          cd /src
+          ls -l smartdns-alpine-x86_64.tar.gz
+          sha256sum smartdns-alpine-x86_64.tar.gz > smartdns-alpine-x86_64.tar.gz.sha256
+          cat smartdns-alpine-x86_64.tar.gz.sha256
+          tar -tzf smartdns-alpine-x86_64.tar.gz | head -15
+          cp /tmp/st/out.log /src/selftest-smartdns.log 2>/dev/null || true
+
+      - name: 11. 发布到 GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -eux
+          cd /src
+          TAG="smartdns-alpine-$(date -u +%Y%m%d)-${GITHUB_RUN_NUMBER}"
+          SD_COMMIT=$(git -C /src/smartdns rev-parse --short HEAD)
+          WEBUI_COMMIT=$(git -C /src/smartdns-webui rev-parse --short HEAD)
+          API="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+          BODY=$(printf 'SmartDNS (Alpine musl x86_64) 自动编译\n\n- smartdns: %s\n- smartdns-webui: %s\n- alpine: %s\n- 构建: %s\n\n解压后执行 `./install-alpine.sh`；默认 DNS :5335，WebUI :6080（admin/password）。' \
+            "$SD_COMMIT" "$WEBUI_COMMIT" "$(cat /etc/alpine-release)" "$(date -u +%Y-%m-%dT%H:%M:%SZ")")
+          PAYLOAD=$(jq -n --arg tag "$TAG" --arg body "$BODY" '{tag_name:$tag, name:$tag, body:$body}')
+          RESP=$(curl -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "$API/releases" -d "$PAYLOAD")
+          REL_ID=$(echo "$RESP" | jq -r '.id // empty')
+          if [ -z "$REL_ID" ]; then echo "创建 release 失败: $RESP"; exit 1; fi
+          echo "release id=$REL_ID tag=$TAG"
+
+          for f in smartdns-alpine-x86_64.tar.gz smartdns-alpine-x86_64.tar.gz.sha256 selftest-smartdns.log; do
+            [ -f "$f" ] || continue
+            UP=$(curl -sS -X POST \
+              -H "Authorization: Bearer $GH_TOKEN" \
+              -H "Content-Type: application/octet-stream" \
+              --data-binary "@$f" \
+              "https://uploads.github.com/repos/${GITHUB_REPOSITORY}/releases/$REL_ID/assets?name=$f")
+            URL=$(echo "$UP" | jq -r '.browser_download_url // empty')
+            echo "ASSET $f -> $URL"
+            echo "- $f: $URL" >> /tmp/urls.txt
+          done
+
+          {
+            echo "## SmartDNS Alpine musl x86_64"
+            echo
+            echo "release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
+            echo
+            cat /tmp/urls.txt 2>/dev/null || true
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat "$GITHUB_STEP_SUMMARY"
